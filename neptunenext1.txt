@@ -1,0 +1,112 @@
+
+> puppeteersample01@1.0.0 start C:\EGI\Study\Node\puppeteersample01
+> node index.js
+
+URL -> https://www.neptunenext.com/agent/menu/news
+#myNavbar > ul > li.normal_srchreali.bg-green > a
+Text -> undefined
+.chosen-results > li
+
+SPL
+000-000
+DEL 05:50
+25 Mar 2019
+Delhi
+2h 50m
+Non stop 
+BLR 08:40
+25 Mar 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 5,900
+Book Now
+
+{"condition":"good","completion":"good"}
+
+SPL
+000-000
+DEL 18:35
+02 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+02 Apr 2019
+Bangalore
+Economy	- Seats Left: 9
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good"}
+
+SPL
+000-000
+DEL 18:35
+03 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+03 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good"}
+
+SPL
+000-000
+DEL 18:35
+04 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+04 Apr 2019
+Bangalore
+Economy	- Seats Left: 7
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good"}
+
+SPL
+000-000
+DEL 18:35
+05 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+05 Apr 2019
+Bangalore
+Economy	- Seats Left: 9
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good"}
+
+SPL
+000-000
+DEL 18:35
+06 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+06 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good"}
+Operation completed
+Closing Browser

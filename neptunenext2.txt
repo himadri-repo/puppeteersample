@@ -1,0 +1,525 @@
+
+> puppeteersample01@1.0.0 start C:\EGI\Study\Node\puppeteersample01
+> node index.js
+
+URL -> https://www.neptunenext.com/agent/menu/news
+#myNavbar > ul > li.normal_srchreali.bg-green > a
+Text -> undefined
+.chosen-results > li
+Selector : .madgrid
+
+SPL
+000-000
+DEL 05:50
+25 Mar 2019
+Delhi
+2h 50m
+Non stop 
+BLR 08:40
+25 Mar 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 5,900
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"05:50","date":"25 Mar 2019","epoch_date":1553473200000},"arrival":{"circle":"BLR","time":"08:40","date":"25 Mar 2019","epoch_date":1553483400000},"ticket_type":"Economy","availability":10,"price":5900}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+02 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+02 Apr 2019
+Bangalore
+Economy	- Seats Left: 9
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"02 Apr 2019","epoch_date":1554210300000},"arrival":{"circle":"BLR","time":"21:25","date":"02 Apr 2019","epoch_date":1554220500000},"ticket_type":"Economy","availability":9,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+03 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+03 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"03 Apr 2019","epoch_date":1554296700000},"arrival":{"circle":"BLR","time":"21:25","date":"03 Apr 2019","epoch_date":1554306900000},"ticket_type":"Economy","availability":10,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+04 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+04 Apr 2019
+Bangalore
+Economy	- Seats Left: 7
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"04 Apr 2019","epoch_date":1554383100000},"arrival":{"circle":"BLR","time":"21:25","date":"04 Apr 2019","epoch_date":1554393300000},"ticket_type":"Economy","availability":7,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+05 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+05 Apr 2019
+Bangalore
+Economy	- Seats Left: 9
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"05 Apr 2019","epoch_date":1554469500000},"arrival":{"circle":"BLR","time":"21:25","date":"05 Apr 2019","epoch_date":1554479700000},"ticket_type":"Economy","availability":9,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+06 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+06 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"06 Apr 2019","epoch_date":1554555900000},"arrival":{"circle":"BLR","time":"21:25","date":"06 Apr 2019","epoch_date":1554566100000},"ticket_type":"Economy","availability":10,"price":3200}}
+Selector : #headingOne > h4 > a
+Text -> undefined
+button.fc-next-button.fc-button.fc-state-default.fc-corner-left.fc-corner-right
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+02 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+02 Apr 2019
+Bangalore
+Economy	- Seats Left: 9
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"02 Apr 2019","epoch_date":1554210300000},"arrival":{"circle":"BLR","time":"21:25","date":"02 Apr 2019","epoch_date":1554220500000},"ticket_type":"Economy","availability":9,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+03 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+03 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"03 Apr 2019","epoch_date":1554296700000},"arrival":{"circle":"BLR","time":"21:25","date":"03 Apr 2019","epoch_date":1554306900000},"ticket_type":"Economy","availability":10,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+04 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+04 Apr 2019
+Bangalore
+Economy	- Seats Left: 7
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"04 Apr 2019","epoch_date":1554383100000},"arrival":{"circle":"BLR","time":"21:25","date":"04 Apr 2019","epoch_date":1554393300000},"ticket_type":"Economy","availability":7,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+05 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+05 Apr 2019
+Bangalore
+Economy	- Seats Left: 9
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"05 Apr 2019","epoch_date":1554469500000},"arrival":{"circle":"BLR","time":"21:25","date":"05 Apr 2019","epoch_date":1554479700000},"ticket_type":"Economy","availability":9,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+06 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+06 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"06 Apr 2019","epoch_date":1554555900000},"arrival":{"circle":"BLR","time":"21:25","date":"06 Apr 2019","epoch_date":1554566100000},"ticket_type":"Economy","availability":10,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+07 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+07 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,400
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"07 Apr 2019","epoch_date":1554642300000},"arrival":{"circle":"BLR","time":"21:25","date":"07 Apr 2019","epoch_date":1554652500000},"ticket_type":"Economy","availability":10,"price":3400}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+08 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+08 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,400
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"08 Apr 2019","epoch_date":1554728700000},"arrival":{"circle":"BLR","time":"21:25","date":"08 Apr 2019","epoch_date":1554738900000},"ticket_type":"Economy","availability":10,"price":3400}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+09 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+09 Apr 2019
+Bangalore
+Economy	- Seats Left: 9
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"09 Apr 2019","epoch_date":1554815100000},"arrival":{"circle":"BLR","time":"21:25","date":"09 Apr 2019","epoch_date":1554825300000},"ticket_type":"Economy","availability":9,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+10 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+10 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"10 Apr 2019","epoch_date":1554901500000},"arrival":{"circle":"BLR","time":"21:25","date":"10 Apr 2019","epoch_date":1554911700000},"ticket_type":"Economy","availability":10,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+11 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+11 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"11 Apr 2019","epoch_date":1554987900000},"arrival":{"circle":"BLR","time":"21:25","date":"11 Apr 2019","epoch_date":1554998100000},"ticket_type":"Economy","availability":10,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+12 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+12 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"12 Apr 2019","epoch_date":1555074300000},"arrival":{"circle":"BLR","time":"21:25","date":"12 Apr 2019","epoch_date":1555084500000},"ticket_type":"Economy","availability":10,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+13 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+13 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"13 Apr 2019","epoch_date":1555160700000},"arrival":{"circle":"BLR","time":"21:25","date":"13 Apr 2019","epoch_date":1555170900000},"ticket_type":"Economy","availability":10,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+14 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+14 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,400
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"14 Apr 2019","epoch_date":1555247100000},"arrival":{"circle":"BLR","time":"21:25","date":"14 Apr 2019","epoch_date":1555257300000},"ticket_type":"Economy","availability":10,"price":3400}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+15 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+15 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"15 Apr 2019","epoch_date":1555333500000},"arrival":{"circle":"BLR","time":"21:25","date":"15 Apr 2019","epoch_date":1555343700000},"ticket_type":"Economy","availability":10,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+16 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+16 Apr 2019
+Bangalore
+Economy	- Seats Left: 6
+Non-Refundable
+Flight DetailsFare Rules 3,600
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"16 Apr 2019","epoch_date":1555419900000},"arrival":{"circle":"BLR","time":"21:25","date":"16 Apr 2019","epoch_date":1555430100000},"ticket_type":"Economy","availability":6,"price":3600}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+17 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+17 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"17 Apr 2019","epoch_date":1555506300000},"arrival":{"circle":"BLR","time":"21:25","date":"17 Apr 2019","epoch_date":1555516500000},"ticket_type":"Economy","availability":10,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+18 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+18 Apr 2019
+Bangalore
+Economy	- Seats Left: 9
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"18 Apr 2019","epoch_date":1555592700000},"arrival":{"circle":"BLR","time":"21:25","date":"18 Apr 2019","epoch_date":1555602900000},"ticket_type":"Economy","availability":9,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+19 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+19 Apr 2019
+Bangalore
+Economy	- Seats Left: 2
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"19 Apr 2019","epoch_date":1555679100000},"arrival":{"circle":"BLR","time":"21:25","date":"19 Apr 2019","epoch_date":1555689300000},"ticket_type":"Economy","availability":2,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+20 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+20 Apr 2019
+Bangalore
+Economy	- Seats Left: 10
+Non-Refundable
+Flight DetailsFare Rules 3,200
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"20 Apr 2019","epoch_date":1555765500000},"arrival":{"circle":"BLR","time":"21:25","date":"20 Apr 2019","epoch_date":1555775700000},"ticket_type":"Economy","availability":10,"price":3200}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+21 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+21 Apr 2019
+Bangalore
+Economy	- Seats Left: 1
+Non-Refundable
+Flight DetailsFare Rules 4,900
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"21 Apr 2019","epoch_date":1555851900000},"arrival":{"circle":"BLR","time":"21:25","date":"21 Apr 2019","epoch_date":1555862100000},"ticket_type":"Economy","availability":1,"price":4900}}
+Selector : #headingOne > h4 > a
+Selector : .madgrid
+
+SPL
+000-000
+DEL 18:35
+28 Apr 2019
+Delhi
+2h 50m
+Non stop 
+BLR 21:25
+28 Apr 2019
+Bangalore
+Economy	- Seats Left: 6
+Non-Refundable
+Flight DetailsFare Rules 4,800
+Book Now
+
+{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"28 Apr 2019","epoch_date":1556456700000},"arrival":{"circle":"BLR","time":"21:25","date":"28 Apr 2019","epoch_date":1556466900000},"ticket_type":"Economy","availability":6,"price":4800}}
+Selector : #headingOne > h4 > a
+Operation completed
+[{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"05:50","date":"25 Mar 2019","epoch_date":1553473200000},"arrival":{"circle":"BLR","time":"08:40","date":"25 Mar 2019","epoch_date":1553483400000},"ticket_type":"Economy","availability":10,"price":5900}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"02 Apr 2019","epoch_date":1554210300000},"arrival":{"circle":"BLR","time":"21:25","date":"02 Apr 2019","epoch_date":1554220500000},"ticket_type":"Economy","availability":9,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"03 Apr 2019","epoch_date":1554296700000},"arrival":{"circle":"BLR","time":"21:25","date":"03 Apr 2019","epoch_date":1554306900000},"ticket_type":"Economy","availability":10,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"04 Apr 2019","epoch_date":1554383100000},"arrival":{"circle":"BLR","time":"21:25","date":"04 Apr 2019","epoch_date":1554393300000},"ticket_type":"Economy","availability":7,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"05 Apr 2019","epoch_date":1554469500000},"arrival":{"circle":"BLR","time":"21:25","date":"05 Apr 2019","epoch_date":1554479700000},"ticket_type":"Economy","availability":9,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"06 Apr 2019","epoch_date":1554555900000},"arrival":{"circle":"BLR","time":"21:25","date":"06 Apr 2019","epoch_date":1554566100000},"ticket_type":"Economy","availability":10,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"02 Apr 2019","epoch_date":1554210300000},"arrival":{"circle":"BLR","time":"21:25","date":"02 Apr 2019","epoch_date":1554220500000},"ticket_type":"Economy","availability":9,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"03 Apr 2019","epoch_date":1554296700000},"arrival":{"circle":"BLR","time":"21:25","date":"03 Apr 2019","epoch_date":1554306900000},"ticket_type":"Economy","availability":10,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"04 Apr 2019","epoch_date":1554383100000},"arrival":{"circle":"BLR","time":"21:25","date":"04 Apr 2019","epoch_date":1554393300000},"ticket_type":"Economy","availability":7,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"05 Apr 2019","epoch_date":1554469500000},"arrival":{"circle":"BLR","time":"21:25","date":"05 Apr 2019","epoch_date":1554479700000},"ticket_type":"Economy","availability":9,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"06 Apr 2019","epoch_date":1554555900000},"arrival":{"circle":"BLR","time":"21:25","date":"06 Apr 2019","epoch_date":1554566100000},"ticket_type":"Economy","availability":10,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"07 Apr 2019","epoch_date":1554642300000},"arrival":{"circle":"BLR","time":"21:25","date":"07 Apr 2019","epoch_date":1554652500000},"ticket_type":"Economy","availability":10,"price":3400}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"08 Apr 2019","epoch_date":1554728700000},"arrival":{"circle":"BLR","time":"21:25","date":"08 Apr 2019","epoch_date":1554738900000},"ticket_type":"Economy","availability":10,"price":3400}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"09 Apr 2019","epoch_date":1554815100000},"arrival":{"circle":"BLR","time":"21:25","date":"09 Apr 2019","epoch_date":1554825300000},"ticket_type":"Economy","availability":9,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"10 Apr 2019","epoch_date":1554901500000},"arrival":{"circle":"BLR","time":"21:25","date":"10 Apr 2019","epoch_date":1554911700000},"ticket_type":"Economy","availability":10,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"11 Apr 2019","epoch_date":1554987900000},"arrival":{"circle":"BLR","time":"21:25","date":"11 Apr 2019","epoch_date":1554998100000},"ticket_type":"Economy","availability":10,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"12 Apr 2019","epoch_date":1555074300000},"arrival":{"circle":"BLR","time":"21:25","date":"12 Apr 2019","epoch_date":1555084500000},"ticket_type":"Economy","availability":10,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"13 Apr 2019","epoch_date":1555160700000},"arrival":{"circle":"BLR","time":"21:25","date":"13 Apr 2019","epoch_date":1555170900000},"ticket_type":"Economy","availability":10,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"14 Apr 2019","epoch_date":1555247100000},"arrival":{"circle":"BLR","time":"21:25","date":"14 Apr 2019","epoch_date":1555257300000},"ticket_type":"Economy","availability":10,"price":3400}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"15 Apr 2019","epoch_date":1555333500000},"arrival":{"circle":"BLR","time":"21:25","date":"15 Apr 2019","epoch_date":1555343700000},"ticket_type":"Economy","availability":10,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"16 Apr 2019","epoch_date":1555419900000},"arrival":{"circle":"BLR","time":"21:25","date":"16 Apr 2019","epoch_date":1555430100000},"ticket_type":"Economy","availability":6,"price":3600}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"17 Apr 2019","epoch_date":1555506300000},"arrival":{"circle":"BLR","time":"21:25","date":"17 Apr 2019","epoch_date":1555516500000},"ticket_type":"Economy","availability":10,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"18 Apr 2019","epoch_date":1555592700000},"arrival":{"circle":"BLR","time":"21:25","date":"18 Apr 2019","epoch_date":1555602900000},"ticket_type":"Economy","availability":9,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"19 Apr 2019","epoch_date":1555679100000},"arrival":{"circle":"BLR","time":"21:25","date":"19 Apr 2019","epoch_date":1555689300000},"ticket_type":"Economy","availability":2,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"20 Apr 2019","epoch_date":1555765500000},"arrival":{"circle":"BLR","time":"21:25","date":"20 Apr 2019","epoch_date":1555775700000},"ticket_type":"Economy","availability":10,"price":3200}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"21 Apr 2019","epoch_date":1555851900000},"arrival":{"circle":"BLR","time":"21:25","date":"21 Apr 2019","epoch_date":1555862100000},"ticket_type":"Economy","availability":1,"price":4900}},{"condition":"good","completion":"good","result":{"flight":"SPL","flight_number":"000-000","departure":{"circle":"DEL","time":"18:35","date":"28 Apr 2019","epoch_date":1556456700000},"arrival":{"circle":"BLR","time":"21:25","date":"28 Apr 2019","epoch_date":1556466900000},"ticket_type":"Economy","availability":6,"price":4800}}]
