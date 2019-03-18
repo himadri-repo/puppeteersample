@@ -140,7 +140,7 @@ module.exports = {
                                         {
                                             parser: function(content) {
                                                 let deal = {};
-                                                //console.log(content);
+                                                console.log(content);
                                                 //let src_dest = content.match(/(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 //let src_dest = content.match(/(^\w+)|((Flight.*)([0-9,]){1,8})|(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 let lines = content.split('\n');
@@ -198,7 +198,7 @@ module.exports = {
                                                 }
                                                 store[key].push(result.result);
 
-                                                console.log(JSON.stringify(result.result));
+                                                //console.log(JSON.stringify(result));
                                                 return store;
                                             }
                                         }
@@ -251,7 +251,7 @@ module.exports = {
                                         {
                                             parser: function(content) {
                                                 let deal = {};
-                                                //console.log(content);
+                                                console.log(content);
                                                 //let src_dest = content.match(/(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 //let src_dest = content.match(/(^\w+)|((Flight.*)([0-9,]){1,8})|(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 let lines = content.split('\n');
@@ -302,15 +302,10 @@ module.exports = {
         
                                                 return {condition: 'good', completion: 'good', result: deal};
                                             },
-                                            assess: function(content, result, store) {
-                                                let key = `${result.result.departure.circle}_${result.result.arrival.circle}`;
-                                                if(store[key]===undefined || store[key]===null) {
-                                                    store[key] = [];
-                                                }
-                                                store[key].push(result.result);
+                                            assess: function(content, result) {
+                                                console.log(JSON.stringify(result));
 
-                                                console.log(JSON.stringify(result.result));
-                                                return store;
+                                                return result;
                                             }
                                         }
                                     ]
@@ -362,7 +357,7 @@ module.exports = {
                                         {
                                             parser: function(content) {
                                                 let deal = {};
-                                                //console.log(content);
+                                                console.log(content);
                                                 //let src_dest = content.match(/(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 //let src_dest = content.match(/(^\w+)|((Flight.*)([0-9,]){1,8})|(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 let lines = content.split('\n');
@@ -413,15 +408,10 @@ module.exports = {
         
                                                 return {condition: 'good', completion: 'good', result: deal};
                                             },
-                                            assess: function(content, result, store) {
-                                                let key = `${result.result.departure.circle}_${result.result.arrival.circle}`;
-                                                if(store[key]===undefined || store[key]===null) {
-                                                    store[key] = [];
-                                                }
-                                                store[key].push(result.result);
+                                            assess: function(content, result) {
+                                                console.log(JSON.stringify(result));
 
-                                                console.log(JSON.stringify(result.result));
-                                                return store;
+                                                return result;
                                             }
                                         }
                                     ]
@@ -473,7 +463,7 @@ module.exports = {
                                         {
                                             parser: function(content) {
                                                 let deal = {};
-                                                //console.log(content);
+                                                console.log(content);
                                                 //let src_dest = content.match(/(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 //let src_dest = content.match(/(^\w+)|((Flight.*)([0-9,]){1,8})|(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 let lines = content.split('\n');
@@ -524,15 +514,10 @@ module.exports = {
         
                                                 return {condition: 'good', completion: 'good', result: deal};
                                             },
-                                            assess: function(content, result, store) {
-                                                let key = `${result.result.departure.circle}_${result.result.arrival.circle}`;
-                                                if(store[key]===undefined || store[key]===null) {
-                                                    store[key] = [];
-                                                }
-                                                store[key].push(result.result);
+                                            assess: function(content, result) {
+                                                console.log(JSON.stringify(result));
 
-                                                console.log(JSON.stringify(result.result));
-                                                return store;
+                                                return result;
                                             }
                                         }
                                     ]

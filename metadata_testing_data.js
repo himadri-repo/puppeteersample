@@ -72,30 +72,6 @@ module.exports = {
                 {
                     name: 'webscrapping',
                     type: 'code',
-                    repeat: true,
-                    repeatsourceselector: '.chosen-results',
-                    repeatsourceContentType: 'text',
-                    repeatsource: function(elementData) {
-                        var data = [];
-                        //repeatsource could be number like 10 times.
-                        //repeatsource could be array of fixed data.
-                        //repeatsource could be function which will prepare data for iteration
-                        try
-                        {
-                            let lines = elementData.split('\n');
-                            for(var i=1; i<lines.length; i++) {
-                                if(lines[i]!==null && lines[i]!=="") {
-                                    data.push(lines[i]);
-                                }
-                            }
-                            console.log(JSON.stringify(data));
-                        }
-                        catch(e) {
-                            console.log(e);
-                        }
-
-                        return data;
-                    },
                     userinputs: [
                         {
                             id: 1,
@@ -103,7 +79,7 @@ module.exports = {
                             selector: '.chosen-search > input[type="text"]',
                             checkcontent: '',
                             type: 'textbox',
-                            value: '${data}',
+                            value: 'Bangalore (BLR) - Ahmedabad (AMD)',
                             action: 'keyed',
                             checkselector: ''
                         },                        
@@ -140,7 +116,7 @@ module.exports = {
                                         {
                                             parser: function(content) {
                                                 let deal = {};
-                                                //console.log(content);
+                                                console.log(content);
                                                 //let src_dest = content.match(/(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 //let src_dest = content.match(/(^\w+)|((Flight.*)([0-9,]){1,8})|(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 let lines = content.split('\n');
@@ -198,7 +174,7 @@ module.exports = {
                                                 }
                                                 store[key].push(result.result);
 
-                                                console.log(JSON.stringify(result.result));
+                                                //console.log(JSON.stringify(result));
                                                 return store;
                                             }
                                         }
@@ -251,7 +227,7 @@ module.exports = {
                                         {
                                             parser: function(content) {
                                                 let deal = {};
-                                                //console.log(content);
+                                                console.log(content);
                                                 //let src_dest = content.match(/(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 //let src_dest = content.match(/(^\w+)|((Flight.*)([0-9,]){1,8})|(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 let lines = content.split('\n');
@@ -309,7 +285,7 @@ module.exports = {
                                                 }
                                                 store[key].push(result.result);
 
-                                                console.log(JSON.stringify(result.result));
+                                                //console.log(JSON.stringify(result));
                                                 return store;
                                             }
                                         }
@@ -362,7 +338,7 @@ module.exports = {
                                         {
                                             parser: function(content) {
                                                 let deal = {};
-                                                //console.log(content);
+                                                console.log(content);
                                                 //let src_dest = content.match(/(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 //let src_dest = content.match(/(^\w+)|((Flight.*)([0-9,]){1,8})|(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 let lines = content.split('\n');
@@ -420,7 +396,7 @@ module.exports = {
                                                 }
                                                 store[key].push(result.result);
 
-                                                console.log(JSON.stringify(result.result));
+                                                //console.log(JSON.stringify(result));
                                                 return store;
                                             }
                                         }
@@ -473,7 +449,7 @@ module.exports = {
                                         {
                                             parser: function(content) {
                                                 let deal = {};
-                                                //console.log(content);
+                                                console.log(content);
                                                 //let src_dest = content.match(/(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 //let src_dest = content.match(/(^\w+)|((Flight.*)([0-9,]){1,8})|(\w+\s[0-9]{2}:[0-9]{2}|[0-9]{2}\s\w+\s[0-9]{4})|(\w+\s-\s\w+\s([A-Z0-9])\w+(\w+:\s[0-9]{0,2}))/gm);
                                                 let lines = content.split('\n');
@@ -531,7 +507,7 @@ module.exports = {
                                                 }
                                                 store[key].push(result.result);
 
-                                                console.log(JSON.stringify(result.result));
+                                                //console.log(JSON.stringify(result));
                                                 return store;
                                             }
                                         }
@@ -552,7 +528,7 @@ module.exports = {
                             checkselector: ''
                         },
                         {
-                            id: 10,
+                            id: 1,
                             controlid: '',
                             selector: '#airport_info_chosen > a',
                             isarray: false,
@@ -561,7 +537,7 @@ module.exports = {
                             value: '',
                             action: 'click',
                             checkselector: ''
-                        }
+                        }						
                     ]
                 }
             ]

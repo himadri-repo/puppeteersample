@@ -10,7 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bufferutil": "^4.0.1",
     "delay": "^3.0.0",
-    "puppeteer": "^1.4.0"
+    "puppeteer": "^1.4.0",
+    "supports-color": "^6.1.0"
   }
 }
