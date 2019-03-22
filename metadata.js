@@ -1,4 +1,7 @@
 //jshint esversion: 6
+var colors = require('colors');
+
+const ALLOWPERSIST = true;
 module.exports = {
     pages: [
         {
@@ -25,7 +28,7 @@ module.exports = {
                             selector: '#password',
                             checkcontent: '',
                             type: 'textbox',
-                            value: 'Sumit@12356',
+                            value: 'Radha@12356',
                             action: 'keyed',
                             checkselector: ''
                         },
@@ -116,7 +119,7 @@ module.exports = {
                             type: 'hyperlink',
                             value: '',
                             action: 'click',
-                            checkselector: ''
+                            checkselector: 'div.fc-left > h2'
                         },
                         {
                             id: 3,
@@ -191,15 +194,58 @@ module.exports = {
         
                                                 return {condition: 'good', completion: 'good', result: deal};
                                             },
-                                            assess: function(content, result, store) {
+                                            assess: function(content, result, store, runid, callback) {
                                                 let key = `${result.result.departure.circle}_${result.result.arrival.circle}`;
                                                 if(store[key]===undefined || store[key]===null) {
                                                     store[key] = [];
                                                 }
-                                                store[key].push(result.result);
 
+                                                let rslt = result.result;
+                                                let existingIndex = store[key].findIndex(x => x.flight === rslt.flight && 
+                                                    x.departure.circle === rslt.departure.circle && 
+                                                    x.arrival.circle === rslt.arrival.circle && 
+                                                    x.departure.epoch_date === rslt.departure.epoch_date && 
+                                                    x.arrival.epoch_date === rslt.arrival.epoch_date && 
+                                                    x.ticket_type === rslt.ticket_type);
+
+                                                // if(existingIndex>-1) {
+                                                //     console.log(`Record already exists ${existingIndex} - ${JSON.stringify(rslt)}in list not adding to list`);
+                                                // }
                                                 console.log(JSON.stringify(result.result));
-                                                return store;
+                                                if(existingIndex===-1) {
+                                                    store[key].push(result.result);
+
+                                                    //console.log(JSON.stringify(result.result));
+                                                    if(ALLOWPERSIST) {
+                                                        try {
+                                                            this.persistData(result.result, runid, function(returnVal) {
+                                                                if(callback)
+                                                                    callback(store);
+                                                            });
+                                                        }
+                                                        catch(ee1) {
+                                                            console.log('ee1');
+                                                            console.log(ee1);
+                                                        }
+                                                    }
+                                                    else {
+                                                        if(callback)
+                                                            callback(store);
+                                                    }
+                                                }
+                                                else {
+                                                    console.log(`Record already exists ${existingIndex} - ${JSON.stringify(rslt)}in list not adding to list`.red);
+                                                    if(callback)
+                                                        callback(store);
+                                                }
+                                            },
+                                            persistData: function(result, runid, callback) {
+                                                const datastore = require('./radharani/datastore');
+
+                                                datastore.saveData(result, runid, function(data) {
+                                                    //console.log(`Proceed with next record ${JSON.stringify(data)}`);
+                                                    if(callback) callback(data);
+                                                });
                                             }
                                         }
                                     ]
@@ -302,15 +348,58 @@ module.exports = {
         
                                                 return {condition: 'good', completion: 'good', result: deal};
                                             },
-                                            assess: function(content, result, store) {
+                                            assess: function(content, result, store, runid, callback) {
                                                 let key = `${result.result.departure.circle}_${result.result.arrival.circle}`;
                                                 if(store[key]===undefined || store[key]===null) {
                                                     store[key] = [];
                                                 }
-                                                store[key].push(result.result);
 
+                                                let rslt = result.result;
+                                                let existingIndex = store[key].findIndex(x => x.flight === rslt.flight && 
+                                                    x.departure.circle === rslt.departure.circle && 
+                                                    x.arrival.circle === rslt.arrival.circle && 
+                                                    x.departure.epoch_date === rslt.departure.epoch_date && 
+                                                    x.arrival.epoch_date === rslt.arrival.epoch_date && 
+                                                    x.ticket_type === rslt.ticket_type);
+
+                                                // if(existingIndex>-1) {
+                                                //     console.log(`Record already exists ${existingIndex} - ${JSON.stringify(rslt)}in list not adding to list`);
+                                                // }
                                                 console.log(JSON.stringify(result.result));
-                                                return store;
+                                                if(existingIndex===-1) {
+                                                    store[key].push(result.result);
+
+                                                    //console.log(JSON.stringify(result.result));
+                                                    if(ALLOWPERSIST) {
+                                                        try {
+                                                            this.persistData(result.result, runid, function(returnVal) {
+                                                                if(callback)
+                                                                    callback(store);
+                                                            });
+                                                        }
+                                                        catch(ee1) {
+                                                            console.log('ee1');
+                                                            console.log(ee1);
+                                                        }
+                                                    }
+                                                    else {
+                                                        if(callback)
+                                                            callback(store);
+                                                    }
+                                                }
+                                                else {
+                                                    console.log(`Record already exists ${existingIndex} - ${JSON.stringify(rslt)}in list not adding to list`.red);
+                                                    if(callback)
+                                                        callback(store);
+                                                }
+                                            },
+                                            persistData: function(result, runid, callback) {
+                                                const datastore = require('./radharani/datastore');
+
+                                                datastore.saveData(result, runid, function(data) {
+                                                    //console.log(`Proceed with next record ${JSON.stringify(data)}`);
+                                                    if(callback) callback(data);
+                                                });
                                             }
                                         }
                                     ]
@@ -413,15 +502,58 @@ module.exports = {
         
                                                 return {condition: 'good', completion: 'good', result: deal};
                                             },
-                                            assess: function(content, result, store) {
+                                            assess: function(content, result, store, runid, callback) {
                                                 let key = `${result.result.departure.circle}_${result.result.arrival.circle}`;
                                                 if(store[key]===undefined || store[key]===null) {
                                                     store[key] = [];
                                                 }
-                                                store[key].push(result.result);
 
+                                                let rslt = result.result;
+                                                let existingIndex = store[key].findIndex(x => x.flight === rslt.flight && 
+                                                    x.departure.circle === rslt.departure.circle && 
+                                                    x.arrival.circle === rslt.arrival.circle && 
+                                                    x.departure.epoch_date === rslt.departure.epoch_date && 
+                                                    x.arrival.epoch_date === rslt.arrival.epoch_date && 
+                                                    x.ticket_type === rslt.ticket_type);
+
+                                                // if(existingIndex>-1) {
+                                                //     console.log(`Record already exists ${existingIndex} - ${JSON.stringify(rslt)}in list not adding to list`);
+                                                // }
                                                 console.log(JSON.stringify(result.result));
-                                                return store;
+                                                if(existingIndex===-1) {
+                                                    store[key].push(result.result);
+
+                                                    //console.log(JSON.stringify(result.result));
+                                                    if(ALLOWPERSIST) {
+                                                        try {
+                                                            this.persistData(result.result, runid, function(returnVal) {
+                                                                if(callback)
+                                                                    callback(store);
+                                                            });
+                                                        }
+                                                        catch(ee1) {
+                                                            console.log('ee1');
+                                                            console.log(ee1);
+                                                        }
+                                                    }
+                                                    else {
+                                                        if(callback)
+                                                            callback(store);
+                                                    }
+                                                }
+                                                else {
+                                                    console.log(`Record already exists ${existingIndex} - ${JSON.stringify(rslt)}in list not adding to list`);
+                                                    if(callback)
+                                                        callback(store);
+                                                }
+                                            },
+                                            persistData: function(result, runid, callback) {
+                                                const datastore = require('./radharani/datastore');
+
+                                                datastore.saveData(result, runid, function(data) {
+                                                    //console.log(`Proceed with next record ${JSON.stringify(data)}`);
+                                                    if(callback) callback(data);
+                                                });
                                             }
                                         }
                                     ]
@@ -524,15 +656,58 @@ module.exports = {
         
                                                 return {condition: 'good', completion: 'good', result: deal};
                                             },
-                                            assess: function(content, result, store) {
+                                            assess: function(content, result, store, runid, callback) {
                                                 let key = `${result.result.departure.circle}_${result.result.arrival.circle}`;
                                                 if(store[key]===undefined || store[key]===null) {
                                                     store[key] = [];
                                                 }
-                                                store[key].push(result.result);
 
+                                                let rslt = result.result;
+                                                let existingIndex = store[key].findIndex(x => x.flight === rslt.flight && 
+                                                    x.departure.circle === rslt.departure.circle && 
+                                                    x.arrival.circle === rslt.arrival.circle && 
+                                                    x.departure.epoch_date === rslt.departure.epoch_date && 
+                                                    x.arrival.epoch_date === rslt.arrival.epoch_date && 
+                                                    x.ticket_type === rslt.ticket_type);
+
+                                                // if(existingIndex>-1) {
+                                                //     console.log(`Record already exists ${existingIndex} - ${JSON.stringify(rslt)}in list not adding to list`);
+                                                // }
                                                 console.log(JSON.stringify(result.result));
-                                                return store;
+                                                if(existingIndex===-1) {
+                                                    store[key].push(result.result);
+
+                                                    //console.log(JSON.stringify(result.result));
+                                                    if(ALLOWPERSIST) {
+                                                        try {
+                                                            this.persistData(result.result, runid, function(returnVal) {
+                                                                if(callback)
+                                                                    callback(store);
+                                                            });
+                                                        }
+                                                        catch(ee1) {
+                                                            console.log('ee1');
+                                                            console.log(ee1);
+                                                        }
+                                                    }
+                                                    else {
+                                                        if(callback)
+                                                            callback(store);
+                                                    }
+                                                }
+                                                else {
+                                                    console.log(`Record already exists ${existingIndex} - ${JSON.stringify(rslt)}in list not adding to list`);
+                                                    if(callback)
+                                                        callback(store);
+                                                }
+                                            },
+                                            persistData: function(result, runid, callback) {
+                                                const datastore = require('./radharani/datastore');
+
+                                                datastore.saveData(result, runid, function(data) {
+                                                    //console.log(`Proceed with next record ${JSON.stringify(data)}`);
+                                                    if(callback) callback(data);
+                                                });
                                             }
                                         }
                                     ]
@@ -565,6 +740,59 @@ module.exports = {
                     ]
                 }
             ]
+        },
+        {
+            id: 4,
+            name: 'finalization',
+            actions: [
+                {
+                    name: 'finalization',
+                    type: 'code',
+                    methodname: 'finalization',
+                    repeat: false,
+                    repeatsourceselector: '.chosen-results',
+                    repeatsourceContentType: 'text',
+                    repeatsource: function(elementData) {
+                        var data = [];
+                        //repeatsource could be number like 10 times.
+                        //repeatsource could be array of fixed data.
+                        //repeatsource could be function which will prepare data for iteration
+                        try
+                        {
+                            let lines = elementData.split('\n');
+                            for(var i=1; i<lines.length; i++) {
+                                if(lines[i]!==null && lines[i]!=="") {
+                                    data.push(lines[i]);
+                                }
+                            }
+                            console.log(JSON.stringify(data));
+                        }
+                        catch(e) {
+                            console.log(e);
+                        }
+
+                        return data;
+                    },
+                    finalization: function(runid) {
+                        const datastore = require('./radharani/datastore');
+
+                        try
+                        {
+                            datastore.finalization(runid);
+
+                            // datastore.finalization(runid, function(data) {
+                            //     console.log(`Proceed with next record ${JSON.stringify(data)}`);
+                            //     //callback(data);
+                            // });
+                        }
+                        catch(e3) {
+                            console.log(e3);
+                        }
+                    },
+                    userinputs: [
+                    ]
+                }
+            ]            
         }
     ]
 };

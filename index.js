@@ -2,9 +2,19 @@
 
 //jshint esversion:6
 //const tty = require('tty');
+const cron = require("node-cron");
+const express = require("express");
+const fs = require("fs");
+
+const uuidv4 = require('uuid/v4');
 const puppeteer = require('puppeteer');
 const metadata = require('./metadata');
 const delay = require('delay');
+const moment = require('moment');
+
+app = express();
+
+const TIMEOUT = 5000;
 
 var browser = null;
 var page = null;
@@ -12,17 +22,18 @@ var pageConfig = null;
 var capturedData = {};
 //jshint ignore:start
 
-// function log() {
-//     var time = moment().format("HH:mm:ss.SSS");
-//     var args = Array.from(arguments);
+function log() {
+    var time = moment().format("HH:mm:ss.SSS");
+    var args = Array.from(arguments);
 
-//     args.unshift(time);
-//     console.log.apply(console, args);
-// }
+    args.unshift(time);
+    console.log.apply(console, args);
+}
 
 async function navigatePage(pageName) {
     try
     {
+        //log('before launch of browser');
         browser = await puppeteer.launch(
             {
                 headless:true,
@@ -30,22 +41,24 @@ async function navigatePage(pageName) {
                 args: ['--start-fullscreen']
                 //slowMo: 100
             }).catch((reason) => {
-                console.log(reason);
+                log(reason);
                 return;
             });
         //const page = await browser.newPage();
         let pages = await browser.pages();
         page = pages.length>0?pages[0]:await browser.newPage();
+        //log('after new page created');
         await page.setViewport({ width: 1366, height: 768});
+        //log('after view port');
         /*page.setRequestInterception(true);
         page.on("load", interceptedRequest => {
-            console.log("Load -> " + interceptedRequest.url());
+            log("Load -> " + interceptedRequest.url());
         });*/
         //const response = await page.goto("https://github.com/login");
         let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
-
-        //console.log(await page.cookies());
+        //log(await page.cookies());
         //await page.waitForNavigation();
+        log('after navigation done');
         //assumed page loaded
         pageConfig = metadata.pages.find(pg => {
             return response.url().indexOf(pg.name)>-1;
@@ -54,7 +67,7 @@ async function navigatePage(pageName) {
         var actionItem = pageConfig.actions[0];
         
         /* puppeteer issues*/
-        const elementHandle = await page.$('body');
+        const elementHandle = await page.$('body').catch((reason)=> log(reason));
         elementHandle.constructor.prototype.boundingBox = async function() {
           const box = await this.executionContext().evaluate(element => {
             const rect = element.getBoundingClientRect();
@@ -69,7 +82,7 @@ async function navigatePage(pageName) {
         elementHandle.dispose();
         /*End of fixes */
 
-        //console.log(actionItem);
+        //log(actionItem);
 
         for(var iidx=0; iidx<actionItem.userinputs.length; iidx++) {
             try
@@ -77,20 +90,27 @@ async function navigatePage(pageName) {
                 var val = actionItem.userinputs[iidx];
                 var idx = iidx;
 
-                //console.log(val + ' - ' + idx);
+                log(JSON.stringify(val) + ' - ' + idx);
                 if(val.action==='keyed') {
-                    await page.click(val.selector);
-                    await page.keyboard.type(val.value);
+                    //log('Going to click');
+                    await page.click(val.selector).then(function(val1, val2) {
+                        //log('Click finished');
+                    });
+                    //log('Clicked');
+                    await page.keyboard.type(val.value).then(function(val1, val2) {
+                        //log('Key pressed');
+                    });
+                    //log('Keyed');
                 }
                 else if(val.action==='click') { 
                     await page.click(val.selector);
                     if(val.checkselector!=='' && val.checkselector!==null) {
-                        await page.waitForSelector(val.checkselector, {timeout: 30000});
+                        await page.waitForSelector(val.checkselector, {timeout: TIMEOUT});
                     }
                 }
             }
             catch(err) {
-                console.log(err);
+                log(err);
             }
         }
     }
@@ -99,7 +119,7 @@ async function navigatePage(pageName) {
     }
 }
 
-async function ProcessActivity(targetUri) {
+async function ProcessActivity(targetUri, runid=uuid5()) {
     //await navigatePage("https://github.com/login");
     try
     {
@@ -107,8 +127,9 @@ async function ProcessActivity(targetUri) {
             return;
 
         await navigatePage(targetUri);
+        log('Page navigated...');
         if(browser!==null && page!==null) {
-            console.log('URL -> ' + page.url());
+            log('URL -> ' + page.url());
 
             for(pageIdx=1; pageIdx<metadata.pages.length; pageIdx++) {
                 pageConfig = metadata.pages[pageIdx];
@@ -141,11 +162,11 @@ async function ProcessActivity(targetUri) {
                                 (pageConfig.actions[0].repeatsourceContentType);
 
                         if(type==='html') {
-                            await page.waitForSelector(pageConfig.actions[0].repeatsourceselector, {timeout: 30000});
+                            await page.waitForSelector(pageConfig.actions[0].repeatsourceselector, {timeout: TIMEOUT});
                             repeatsourceContent = await page.$eval(pageConfig.actions[0].repeatsourceselector, e => e.innerHTML);
                         }
                         else if(type==='text') {
-                            await page.waitForSelector(pageConfig.actions[0].repeatsourceselector, {timeout: 30000});
+                            await page.waitForSelector(pageConfig.actions[0].repeatsourceselector, {timeout: TIMEOUT});
                             repeatsourceContent = await page.$eval(pageConfig.actions[0].repeatsourceselector, e => e.innerText);
                         }
 
@@ -153,7 +174,9 @@ async function ProcessActivity(targetUri) {
                             repeatsourceData = repeatsource;
                         }
                         else if(repeatsourceType==='function') {
+                            //log('getting repeatSourceData');
                             repeatsourceData = repeatsource(repeatsourceContent); //it should return array
+                            //log('got repeatSourceData');
                             if(repeatsourceData instanceof Number) {
                                 repeatsourceType = 'number';
                             }
@@ -185,42 +208,81 @@ async function ProcessActivity(targetUri) {
                         loopCount = repeatsourceData.length;
                     }
 
-                    for(var i=0; i<loopCount; i++) { //
+                    //for(var i=0; i<loopCount; i++) { //
+                    var i=0;
+                    while(i<loopCount) {
                         let repeatsourceDataValue = (repeatsourceType==='array')?repeatsourceData[i]:'NA';
-                        //console.log(`${i} - ${repeatsourceDataValue}`);
-                        for(var iidx=0; iidx<pageConfig.actions[0].userinputs.length; iidx++) {
-                            var userInput =  pageConfig.actions[0].userinputs[iidx];
-                            
-                            //this is the place we need to use repeat functionality
-                            if(repeatsourceType===null) {
-                                await performUserOperation(page, userInput);
-                            }
-                            else if(repeatsourceType==='number') {
-                                await performUserOperation(page, userInput, i);
-                            }
-                            else if(repeatsourceType==='array') {
-                                try
-                                {
-                                    await performUserOperation(page, userInput, repeatsourceData[i]);
+                        //log(`${i} - ${repeatsourceDataValue}`);
+                        //remove false from here, this is just for testing.
+                        if(pageConfig.actions[0].userinputs.length>0) {
+                            for(var iidx=0; iidx<pageConfig.actions[0].userinputs.length; iidx++) {
+                                var userInput =  pageConfig.actions[0].userinputs[iidx];
+                                
+                                //this is the place we need to use repeat functionality
+                                if(repeatsourceType===null) {
+                                    await performUserOperation(page, userInput, i, runid);
                                 }
-                                catch(e) {
-                                    console.log(e)
+                                else if(repeatsourceType==='number') {
+                                    await performUserOperation(page, userInput, i, runid);
                                 }
-                            }
-                            else if(repeatsourceType==='object') {
-                                //no idea what to do here
+                                else if(repeatsourceType==='array') {
+                                    try
+                                    {
+                                        //log(`Perform user operation ${i} - ${userInput.action}`);
+                                        await performUserOperation(page, userInput, repeatsourceData[i], runid);
+                                        // await performUserOperation(page, userInput, repeatsourceData[i], function(input, sourcedata) {
+                                        //     log(`Error happened at index ${i}`);
+                                        //     i--; break;
+                                        // });
+                                        //log(`Perform user operation ${i} - ${userInput.action} Done`);
+                                    }
+                                    catch(e) {
+                                        log(e)
+                                        //if(e.toLowerCase()==='control missing') {
+                                        log('Retrying once again.')
+                                        i--;
+                                        break;
+                                        //}
+                                    }
+                                }
+                                else if(repeatsourceType==='object') {
+                                    //no idea what to do here
+                                }
                             }
                         }
+                        else {
+                            //there is no user input. Kind of code cleaning process.
+                            try
+                            {
+                                let action = pageConfig.actions[0];
+                                if(action.type==='code' && action.methodname!==undefined && action.methodname!==null) {
+                                    let methodName = action.methodname;
+
+                                    if(methodName!==undefined && methodName!==null) {
+                                        await action[methodName].call(action, runid);
+                                        log(`${methodName} finished`);
+                                    }
+                                }
+                            }
+                            catch(ep) {
+                                log(ep);
+                            }
+                        }
+                        i++;
+                        //log(`Next operation ${i} starting`);
                     }
                 }
             }
 
-            console.log('Operation completed');
+            log('Operation completed');
         }
     }
     catch(fe) {
-        console.log(fe);
+        log(fe);
     }
+    // finally {
+    //     exhaustSeats4Rest()
+    // }
 }
 
 function transformData(textValue, providedData) {
@@ -268,21 +330,24 @@ function transformData(textValue, providedData) {
         }
     }
     catch(e) {
-        console.log(e);
+        log(e);
     }
 
     return value;
 }
 
-async function performUserOperation(objPage, userInput, data) {
+async function performUserOperation(objPage, userInput, data, runid, callback) {
     try
     {
+        var onError = false;
+        //log(`performUserOperation ${userInput.action} starting`, userInput);
         switch (userInput.action) {
             case 'keyed':
                 if(typeof(userInput.value)==="string") {
                     //await objPage.click(userInput.selector);
                     if(userInput.selector) {
-                        let inputControl = await objPage.$(userInput.selector);
+                        //log('1', userInput.selector);
+                        let inputControl = await objPage.$(userInput.selector).catch((reason)=> log(reason));
                         if(inputControl && inputControl.click) {
                             inputControl.click();
                         }
@@ -294,15 +359,17 @@ async function performUserOperation(objPage, userInput, data) {
 
                     await page.keyboard.type(keyedValue);
 
-                    await page.waitFor(200);
+                    await page.waitFor(400);
+                    //log(`performUserOperation ${userInput.action} KEY CODE SENT`, keyedValue);
                 }
                 else if(typeof(userInput.value)==="object") { 
                     if(userInput.selector) {
-                        let inputControl = await objPage.$(userInput.selector);
+                        //log('2', userInput.selector);
+                        let inputControl = await objPage.$(userInput.selector).catch((reason)=> log(reason));
                         if(inputControl && inputControl.click) {
                             inputControl.click();
                             if(userInput.checkselector!=='' && userInput.checkselector!==null) {
-                                await objPage.waitForSelector(userInput.checkselector, {timeout: 30000});
+                                await objPage.waitForSelector(userInput.checkselector, {timeout: TIMEOUT});
                             }
                             else
                             {
@@ -356,23 +423,29 @@ async function performUserOperation(objPage, userInput, data) {
                         // }, userInput.selector);
 
                         if(userInput.controlid!=="" && userInput.controlid!==null) {
-                            inputControl = await objPage.$$(userInput.controlid);
+                            //log('3', userInput.controlid);
+                            inputControl = await objPage.$$(userInput.controlid).catch((reason)=> log(reason));
                         }
                         else if(userInput.selector!=="" && userInput.selector!==null) {
-                            inputControl = await objPage.$$(userInput.selector);
+                            //log('4', userInput.selector);
+                            inputControl = await objPage.$$(userInput.selector).catch((reason)=> log(reason));
                         }
                     }
                     else {
                         if(userInput.controlid!=="" && userInput.controlid!==null) {
-                            inputControl = await objPage.$(userInput.controlid);
+                            //log('5', userInput.controlid);
+                            inputControl = await objPage.$(userInput.controlid).catch((reason)=> log(reason));
                         }
                         else if(userInput.selector!=="" && userInput.selector!==null) {
                             if(userInput.isarray!=null && userInput.isarray) {
-                                inputControl = await objPage.$$(userInput.selector);
+                                //log('6', userInput.selector);
+                                inputControl = await objPage.$$(userInput.selector).catch((reason)=> log(reason));
                                 //inputControl = await objPage.$(userInput.selector);
+                                //log('Array type Input Control', inputControl);
                             }
                             else {
-                                inputControl = await objPage.$(userInput.selector);
+                                //log('7', userInput.selector);
+                                inputControl = await objPage.$(userInput.selector).catch((reason)=> log(reason));
                             }
                         }
                     }
@@ -383,7 +456,7 @@ async function performUserOperation(objPage, userInput, data) {
                             let innerText = await inputControl[idx].getProperty('text');
                             innerText = innerText._remoteObject.value;
                             let jsonValue = await inputControl[idx].jsonValue();
-                            //console.log("Text -> " + innerText);
+                            //log("Text -> "+innerText);
                             if(userInput.checkcontent!==null && 
                                 userInput.checkcontent!=="" && 
                                 innerText===userInput.checkcontent) 
@@ -399,64 +472,79 @@ async function performUserOperation(objPage, userInput, data) {
                     }
                 }
                 catch(err) {
-                    console.log(err);
+                    log(err);
                 }
                 if(inputControl!=null) {
-                    //console.log(inputControl);
+                    //log("Going to start operation", inputControl);
                     // if(inputControl.click)
                     //     inputControl.click();
                     // else
                     // {
-                    //     console.log(inputControl);
+                    //     log(inputControl);
                     // }
                     if(!(inputControl instanceof Array)) {
-                        //console.log(userInput.selector);
+                        //log("Input Control not Array", `Going to click ${userInput.selector}`);
                         await page.click(userInput.selector);
-                        //await page.delay(4000);
+                        await page.waitFor(400);
 
                         if(userInput.checkselector!=='' && userInput.checkselector!==null) {
                             try
                             {
-                                await page.waitForSelector(userInput.checkselector, {timeout: 30000});
+                                await page.waitForSelector(userInput.checkselector, {timeout: TIMEOUT});
                             }
                             catch(e2) {
-                                console.log(e2);
+                                log('e2');
+                                log(e2);
                                 return;
                             }
                         }
+                        //log("Input Control not Array", `click ${userInput.selector} done`);
                     }
                     else {
                         //inputControl.forEach((ctrl, idx) => {
                         for(var idx=0; idx<inputControl.length; idx++) {
                             let ctrl = inputControl[idx];
+                            //log(`Perform ${userInput.tasks.length} tasks`, `On ${inputControl.length} controls`, ctrl);
                             if(userInput.tasks!==null && userInput.tasks.length>0) {
                                 //userInput.tasks.forEach((tsk, i) => {
+                                //log("Array inputControl", idx, ctrl);
+                                //noprotect
+                                onError = false;
                                 for(var i=0; i<userInput.tasks.length; i++) {
                                     let tsk = userInput.tasks[i];
                                     let targetElement = ctrl;
                                     if(tsk.selector!==undefined && tsk.selector!==null && tsk.selector!=="") {
-                                        //console.log('Selector : ' + tsk.selector);
+                                        //log('Selector : ' + tsk.selector);
                                         if(tsk.selector!=='' && tsk.selector!==null) {
+                                            onError = false;
                                             try
                                             {
-                                                await page.waitForSelector(tsk.selector, {timeout: 30000});
+                                                await page.waitForSelector(tsk.selector, {timeout: TIMEOUT});
                                             }
                                             catch(e1) {
-                                                console.log(e1);
-                                                return;
+                                                log('e1');
+                                                log(e1);
+                                                //await page.screenshot({path: `${tsk.selector}_${moment(new Date()).format('DD-MMM-YYY_HH_mm_ss')}.png`});
+                                                onError = true;
+                                                throw 'control missing';
+                                                // if(callback) 
+                                                //     callback(userInput, data);
+                                                //if(callback) callback(e1);
+                                                //return;
                                             }
                                         }
-
-                                        targetElement = await objPage.$(tsk.selector);
+                                        //log('8', tsk.selector);
+                                        targetElement = await objPage.$(tsk.selector).catch((reason)=> log(reason));
                                     }
-                        
-                                    let returnValue = await performTask(objPage, userInput, inputControl, targetElement, tsk, i);
+                                    //log("Going to perform Task", tsk, i);
+                                    let returnValue = await performTask(objPage, userInput, inputControl, targetElement, tsk, i, runid);
+                                    //log("Task done", tsk, i);
 
-                                    await page.waitFor(500); //delay to get UI refreshed with json data
+                                    await page.waitFor(400); //delay to get UI refreshed with json data
                                 };
                             }
                             else if(userInput.action && userInput.action==='click') {
-                                console.log('not sure what to click');
+                                //log('not sure what to click');
                             }
                         };
                     }
@@ -468,23 +556,35 @@ async function performUserOperation(objPage, userInput, data) {
         }
     }
     catch(fe) {
-        console.log(fe);
+        log(fe);
+        throw fe;
     }
+    //log(`End of == performUserOperation ${userInput.action} starting`);
 }
 
-async function performTask(objPage, userInput, inputControl, element, task, idx) {
+async function performTask(objPage, userInput, inputControl, element, task, idx, runid) {
     try
     {
+        //log('Start performTask => ', idx, task);
         if(task && task.action) {
             if(task.action==='click') {
-                //console.log(typeof(element));
-                console.log(`performTask Section : ${task.selector || element._remoteObject.description}`);
-                //console.log(element);
+                //log(typeof(element));
+                let selector = task.selector || element._remoteObject.description;
+                log(`performTask Section : ${selector}`);
+                //log(element);
+
+                // if(selector!==null && selector!=='') {
+                //     await page.click(task.selector);
+                //     await page.waitFor(200);
+                // }
+                //Right code
 
                 if(element.click) {
                     await element.click();
                     page.waitFor(100);
                 }
+
+
                 // if(task.selector!=='' && task.selector!==null && element.click) {
                 //     //await page.click(task.selector);
                 //     await page.waitForSelector(task.selector, {timeout: 30000});
@@ -493,7 +593,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx)
                 // }
 
                 if(task.checkselector!=='' && task.checkselector!==null) {
-                    await page.waitForSelector(task.checkselector, {timeout: 30000});
+                    await page.waitForSelector(task.checkselector, {timeout: TIMEOUT});
                 }
             }
             else if(task.action==='read') {
@@ -504,22 +604,23 @@ async function performTask(objPage, userInput, inputControl, element, task, idx)
                     // content = await page.$eval(task.selector, function(e) {
                     //     return e.innerText;
                     // }); //targetElement._remoteObject.value;
-                    let contentsElements = await page.$$(task.selector);
+                    //log('9', task.selector);
+                    let contentsElements = await page.$$(task.selector).catch((reason)=> log(reason));
                     for(var i=0; i<contentsElements.length; i++) {
                         let msg = await (await contentsElements[i].getProperty('innerText')).jsonValue();
                         content.push(msg);
                     }
                     // content = await page.$$eval(task.selector, function(e) {
-                    //     console.log(`Length of element => ${e.length}`);
+                    //     log(`Length of element => ${e.length}`);
                     //     return e.innerText;
                     // }); //targetElement._remoteObject.value;
-                    //console.log(content);
+                    //log(content);
                 }
                 else if(task.read_type==='inner-html') {
                     //let content = await page.$eval(task.selector||userInput.selector); //targetElement._remoteObject.value;
                     content = await page.$eval(task.selector, e => e.innerHTML); //targetElement._remoteObject.value;
                     //content = await page.$$eval(task.selector, e => e.innerHTML); //targetElement._remoteObject.value;
-                    //console.log(content);
+                    //log(content);
                 }
                 if(task.plugins!==null && task.plugins.length>0 && content!==null && content!=='')
                 {
@@ -533,17 +634,45 @@ async function performTask(objPage, userInput, inputControl, element, task, idx)
                                 parsedContent = plugin.parser(contentItem);
                             }
                             if(plugin.assess!==null && typeof(plugin.assess)==='function') {
-                                capturedData = plugin.assess(contentItem, parsedContent, capturedData);
+                                //capturedData = plugin.assess(contentItem, parsedContent, capturedData);
+                                plugin.assess(contentItem, parsedContent, capturedData, runid, function(store) {
+                                    if(store)
+                                    {
+                                        capturedData = store;
+                                    }
+                                });
+                                // capturedData = await new Promise((resolve, reject) => {
+                                //     try
+                                //     {
+                                //         plugin.assess(contentItem, parsedContent, capturedData, function(capdata) {
+                                //             resolve(capdata);
+                                //         });
+                                //     }
+                                //     catch(e) {
+                                //         log('e-plugin');
+                                //         log(e);
+                                //         page.screenshot({path: `${tsk.selector}_${moment(new Date()).format('DD-MMM-YYY_HH_mm_ss')}.png`});
+                                //         return reject(e);
+                                //     }
+                                // }).catch((reason)=> {
+                                //     log(reason);
+                                //     return reject(reason);
+                                // }).finally(()=> {
+                                //     log('Request completed');
+                                // });
                                 //capturedData.push(parsedContent);
+                                //log(`Captured Data : \n ${JSON.stringify(capturedData)}`);
                             }
                         };
                     }
                 }
             }
         }
+        //log('End performTask => ', idx, task);
     }
     catch(fe) {
-        console.log(fe);
+        log(fe);
+        throw(fe);
     }
     return;
 }
@@ -555,10 +684,10 @@ async function performTask(objPage, userInput, inputControl, element, task, idx)
 
 // var stdin = process.openStdin();
 // if(stdin.isTTY) {
-//     console.log('Keypress Event added');
+//     log('Keypress Event added');
 //     stdin.on("keypress", function(chunk, key) {
-//         console.log('Chunk : ' + chunk + "\n");
-//         console.log('Key : ' + key + "\n");
+//         log('Chunk : ' + chunk + "\n");
+//         log('Key : ' + key + "\n");
 
 //         if(key && (key.name=='c' || key.name=='C')) {
 //             if(browser) {
@@ -567,18 +696,56 @@ async function performTask(objPage, userInput, inputControl, element, task, idx)
 //         }
 //     });
 // }
-let crawlingUri = "https://www.neptunenext.com/agent/general/index";
-ProcessActivity(crawlingUri).then(()=> {
-    //what to do after the promise being called
 
-    console.log(JSON.stringify(capturedData));
-    //console.log('Closing Browser');
-    page.waitFor(500);
-    browser.close();
-}).catch((reason) => {
-    console.log(reason);
-    console.log(JSON.stringify(capturedData));
-    //console.log('Closing Browser');
-    page.waitFor(500);
-    browser.close();
-});
+var excutionStarted = false;
+//cron.schedule("*/30 * * * *", function() {
+    log("Cron started");
+    if(excutionStarted)
+        return false;
+
+    try
+    {
+        excutionStarted = true;
+        capturedData = {};
+        process.on('unhandledRejection', (reason, promise) => {
+            log('Unhandled Rejection at:', reason.stack || reason);
+            // Recommended: send the information to sentry.io
+            // or whatever crash reporting service you use
+        });
+
+        let runid = `${uuidv4()}_${moment().format("DD-MMM-YYYY HH:mm:ss.SSS")}`;
+        let crawlingUri = "https://www.neptunenext.com/agent/general/index";
+        ProcessActivity(crawlingUri, runid).then(()=> {
+            //what to do after the promise being called
+            try
+            {
+                log('Process completed.');
+
+                //log(JSON.stringify(capturedData));
+                //log('Closing Browser');
+                //page.waitFor(500);
+                browser.close();
+            }
+            catch(e) {
+                log(e);
+            }
+            finally {
+                //process.exit(0);
+                excutionStarted = false;
+            }
+        }).catch((reason) => {
+            log(reason);
+            log(JSON.stringify(capturedData));
+            //log('Closing Browser');
+            page.waitFor(500);
+            excutionStarted = false;
+            browser.close();
+        });
+    }
+    catch(e) {
+        log(e);
+        excutionStarted = false;
+    }
+//});
+
+app.listen("3128");
