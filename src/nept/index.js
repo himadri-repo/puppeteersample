@@ -12,7 +12,7 @@ const metadata = require('./metadata');
 const delay = require('delay');
 const moment = require('moment');
 
-app = express();
+var app = express();
 
 const TIMEOUT = 5000;
 
@@ -941,5 +941,6 @@ cron.schedule("*/30 * * * *", function() {
         excutionStarted = false;
     }
 });
+log(`Starting ${process.env.NODE_ENV} server`);
 
 app.listen("3128");
