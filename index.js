@@ -22,6 +22,14 @@ var pageConfig = null;
 var capturedData = {};
 //jshint ignore:start
 
+function getStore() {
+    if(capturedData) return capturedData;
+
+    capturedData = {}
+
+    return capturedData;
+}
+
 function log() {
     var time = moment().format("HH:mm:ss.SSS");
     var args = Array.from(arguments);
@@ -58,7 +66,7 @@ async function navigatePage(pageName) {
         let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
         //log(await page.cookies());
         //await page.waitForNavigation();
-        log('after navigation done');
+        //log('after navigation done');
         //assumed page loaded
         pageConfig = metadata.pages.find(pg => {
             return response.url().indexOf(pg.name)>-1;
@@ -67,19 +75,19 @@ async function navigatePage(pageName) {
         var actionItem = pageConfig.actions[0];
         
         /* puppeteer issues*/
-        const elementHandle = await page.$('body').catch((reason)=> log(reason));
-        elementHandle.constructor.prototype.boundingBox = async function() {
-          const box = await this.executionContext().evaluate(element => {
-            const rect = element.getBoundingClientRect();
-            const x = Math.max(rect.left, 0);
-            const width = Math.min(rect.right, window.innerWidth) - x;
-            const y = Math.max(rect.top, 0);
-            const height = Math.min(rect.bottom, window.innerHeight) - y;
-            return { x: x, width: width, y: y, height: height };
-          }, this);
-          return box;
-        };
-        elementHandle.dispose();
+        // const elementHandle = await page.$('body').catch((reason)=> log(reason));
+        // elementHandle.constructor.prototype.boundingBox = async function() {
+        //   const box = await this.executionContext().evaluate(element => {
+        //     const rect = element.getBoundingClientRect();
+        //     const x = Math.max(rect.left, 0);
+        //     const width = Math.min(rect.right, window.innerWidth) - x;
+        //     const y = Math.max(rect.top, 0);
+        //     const height = Math.min(rect.bottom, window.innerHeight) - y;
+        //     return { x: x, width: width, y: y, height: height };
+        //   }, this);
+        //   return box;
+        // };
+        // elementHandle.dispose();
         /*End of fixes */
 
         //log(actionItem);
@@ -90,7 +98,10 @@ async function navigatePage(pageName) {
                 var val = actionItem.userinputs[iidx];
                 var idx = iidx;
 
-                log(JSON.stringify(val) + ' - ' + idx);
+                // autoScrollToHight(page, 0);
+                // page.waitFor(100);
+
+                //log(JSON.stringify(val) + ' - ' + idx);
                 if(val.action==='keyed') {
                     //log('Going to click');
                     await page.click(val.selector).then(function(val1, val2) {
@@ -103,6 +114,7 @@ async function navigatePage(pageName) {
                     //log('Keyed');
                 }
                 else if(val.action==='click') { 
+
                     await page.click(val.selector);
                     if(val.checkselector!=='' && val.checkselector!==null) {
                         await page.waitForSelector(val.checkselector, {timeout: TIMEOUT});
@@ -110,6 +122,7 @@ async function navigatePage(pageName) {
                 }
             }
             catch(err) {
+                log('err1');
                 log(err);
             }
         }
@@ -127,9 +140,9 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
             return;
 
         await navigatePage(targetUri);
-        log('Page navigated...');
+        //log('Page navigated...');
         if(browser!==null && page!==null) {
-            log('URL -> ' + page.url());
+            //log('URL -> ' + page.url());
 
             for(pageIdx=1; pageIdx<metadata.pages.length; pageIdx++) {
                 pageConfig = metadata.pages[pageIdx];
@@ -141,8 +154,16 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                 let repeatsourceType = null;
                 let repeatsource = null;
 
-                let isrepeat = (pageConfig.actions[0].repeat===undefined || pageConfig.actions[0].repeat===null)?false:pageConfig.actions[0].repeat;
+                let isrepeat = (pageConfig.actions[0].repeat===undefined 
+                    || pageConfig.actions[0].repeat===null)?false:pageConfig.actions[0].repeat;
                 if(isrepeat) {
+                    // let ctrlItem = await page.evaluate(() => {
+                    //     let chatCtrl = document.querySelector('div.meshim_widget_components_chatButton_Button.ltr');
+                    //     if(chatCtrl!==null) {
+                    //         chatCtrl.setAttribute('style', 'display:none');
+                    //     }
+                    // });
+
                     repeatsource = pageConfig.actions[0].repeatsource;
                     repeatsourceType = (repeatsource===undefined || repeatsource===null)?null:((repeatsource instanceof Array)?
                         'array':((repeatsource instanceof Number)?'number':(typeof(repeatsource)==='function'?'function':null)));
@@ -212,10 +233,21 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                     var i=0;
                     while(i<loopCount) {
                         let repeatsourceDataValue = (repeatsourceType==='array')?repeatsourceData[i]:'NA';
-                        //log(`${i} - ${repeatsourceDataValue}`);
+
+                        let src_dest = repeatsourceDataValue.match(/\((.*?)\)/gi);
+                        let key = '';
+                        if(src_dest!==null && src_dest.length>1) {
+                            key = (src_dest[0].replace('(','').replace(')','') + '_' + src_dest[1].replace('(','').replace(')',''));
+                            let storeData = getStore();
+                            storeData[key]=[];
+                        }
+
+                        log(`${i} - ${repeatsourceDataValue}`);
                         //remove false from here, this is just for testing.
                         if(pageConfig.actions[0].userinputs.length>0) {
-                            for(var iidx=0; iidx<pageConfig.actions[0].userinputs.length; iidx++) {
+                            //for(var iidx=0; iidx<pageConfig.actions[0].userinputs.length; iidx++) {
+                            var iidx = 0;
+                            while(iidx<pageConfig.actions[0].userinputs.length) {
                                 var userInput =  pageConfig.actions[0].userinputs[iidx];
                                 
                                 //this is the place we need to use repeat functionality
@@ -229,7 +261,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                                     try
                                     {
                                         //log(`Perform user operation ${i} - ${userInput.action}`);
-                                        await performUserOperation(page, userInput, repeatsourceData[i], runid);
+                                        await performUserOperation(page, userInput, repeatsourceData[i], i, runid);
                                         // await performUserOperation(page, userInput, repeatsourceData[i], function(input, sourcedata) {
                                         //     log(`Error happened at index ${i}`);
                                         //     i--; break;
@@ -240,14 +272,16 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                                         log(e)
                                         //if(e.toLowerCase()==='control missing') {
                                         log('Retrying once again.')
+                                        iidx = pageConfig.actions[0].userinputs.length-2;
                                         i--;
-                                        break;
+                                        //break;
                                         //}
                                     }
                                 }
                                 else if(repeatsourceType==='object') {
                                     //no idea what to do here
                                 }
+                                iidx++;
                             }
                         }
                         else {
@@ -336,7 +370,7 @@ function transformData(textValue, providedData) {
     return value;
 }
 
-async function performUserOperation(objPage, userInput, data, runid, callback) {
+async function performUserOperation(objPage, userInput, data, ndx, runid, callback) {
     try
     {
         var onError = false;
@@ -413,40 +447,61 @@ async function performUserOperation(objPage, userInput, data, runid, callback) {
                 try
                 {
                     if(userInput.checkcontent!==null && userInput.checkcontent!=="") {
-                        // let values = await objPage.evaluate((sel) => {
-                        //     let controlItem = (await document.getElementsByClassName(sel)) || 
-                        //         (await document.getElementById(sel));
+                        try
+                        {
+                            let position = 0;
+                            // let values = await objPage.evaluate((sel) => {
+                            //     let controlItem = (await document.getElementsByClassName(sel)) || 
+                            //         (await document.getElementById(sel));
 
-                        //     if(controlItem.text===userInput.checkcontent) {
-                        //         inputControl = 
-                        //     }
-                        // }, userInput.selector);
+                            //     if(controlItem.text===userInput.checkcontent) {
+                            //         inputControl = 
+                            //     }
+                            // }, userInput.selector);
 
-                        if(userInput.controlid!=="" && userInput.controlid!==null) {
-                            //log('3', userInput.controlid);
-                            inputControl = await objPage.$$(userInput.controlid).catch((reason)=> log(reason));
+                            if(userInput.controlid!=="" && userInput.controlid!==null) {
+                                //log('3', userInput.controlid);
+                                position = 4;
+                                inputControl = await objPage.$$(userInput.controlid).catch((reason)=> log(`1 - ${reason}`));
+                            }
+                            else if(userInput.selector!=="" && userInput.selector!==null) {
+                                //log('4', userInput.selector);
+                                position = 5;
+                                inputControl = await objPage.$$(userInput.selector).catch((reason)=> log(`2 - ${reason}`));
+                            }
                         }
-                        else if(userInput.selector!=="" && userInput.selector!==null) {
-                            //log('4', userInput.selector);
-                            inputControl = await objPage.$$(userInput.selector).catch((reason)=> log(reason));
+                        catch(en1) {
+                            log(`en1 - ${position}`);
+                            log(en1);
                         }
                     }
                     else {
-                        if(userInput.controlid!=="" && userInput.controlid!==null) {
-                            //log('5', userInput.controlid);
-                            inputControl = await objPage.$(userInput.controlid).catch((reason)=> log(reason));
+                        try
+                        {
+                            let position=0;
+                            if(userInput.controlid!=="" && userInput.controlid!==null) {
+                                //log('5', userInput.controlid);
+                                position = 1;
+                                inputControl = await objPage.$(userInput.controlid).catch((reason)=> log(`3 - ${reason}`));
+                            }
+                            else if(userInput.selector!=="" && userInput.selector!==null) {
+                                if(userInput.isarray!=null && userInput.isarray) {
+                                    //log('6', userInput.selector);
+                                    position = 2;
+                                    inputControl = await objPage.$$(userInput.selector).catch((reason)=> log(`4 - ${reason}`));
+                                    //inputControl = await objPage.$(userInput.selector);
+                                    //log('Array type Input Control', inputControl);
+                                }
+                                else {
+                                    //log('7', userInput.selector);
+                                    position = 3;
+                                    inputControl = await objPage.$(userInput.selector).catch((reason)=> log(`5 - ${reason}`));
+                                }
+                            }
                         }
-                        else if(userInput.selector!=="" && userInput.selector!==null) {
-                            if(userInput.isarray!=null && userInput.isarray) {
-                                //log('6', userInput.selector);
-                                inputControl = await objPage.$$(userInput.selector).catch((reason)=> log(reason));
-                                //inputControl = await objPage.$(userInput.selector);
-                                //log('Array type Input Control', inputControl);
-                            }
-                            else {
-                                //log('7', userInput.selector);
-                                inputControl = await objPage.$(userInput.selector).catch((reason)=> log(reason));
-                            }
+                        catch(en2) {
+                            log(`en2 - ${position}`);
+                            log(en2);
                         }
                     }
 
@@ -472,8 +527,10 @@ async function performUserOperation(objPage, userInput, data, runid, callback) {
                     }
                 }
                 catch(err) {
+                    log('err');
                     log(err);
                 }
+
                 if(inputControl!=null) {
                     //log("Going to start operation", inputControl);
                     // if(inputControl.click)
@@ -484,8 +541,22 @@ async function performUserOperation(objPage, userInput, data, runid, callback) {
                     // }
                     if(!(inputControl instanceof Array)) {
                         //log("Input Control not Array", `Going to click ${userInput.selector}`);
+                        // autoScrollToHight(page, 0);
+                        // page.waitFor(100);
+
+                        try
+                        {
+                            await setProprtyItem(page, 'body > div:nth-child(1)', 'style', 'display:none');
+                            // let elm = await page.$('.zopim').catch((reason)=> log(reason));
+                            // await elm.setProperty('style', 'display:none');
+                        }
+                        catch(c1) {
+                            log('zopim Error');
+                            log(c1);
+                        }
+
                         await page.click(userInput.selector);
-                        await page.waitFor(400);
+                        await page.waitFor(300);
 
                         if(userInput.checkselector!=='' && userInput.checkselector!==null) {
                             try
@@ -562,44 +633,147 @@ async function performUserOperation(objPage, userInput, data, runid, callback) {
     //log(`End of == performUserOperation ${userInput.action} starting`);
 }
 
+/*helper method */
+async function autoScroll(page){
+    await page.evaluate(async () => {
+        await new Promise((resolve, reject) => {
+            var totalHeight = 0;
+            var distance = 100;
+            var timer = setInterval(() => {
+                var scrollHeight = document.body.scrollHeight;
+                window.scrollBy(0, distance);
+                totalHeight += distance;
+
+                if(totalHeight >= scrollHeight){
+                    clearInterval(timer);
+                    resolve();
+                }
+            }, 100);
+        });
+    });
+}
+
+async function autoScrollToHight(page, hightPercentage){
+    await page.evaluate(async (hp) => {
+        await new Promise((resolve, reject) => {
+            var scrollHeight = 0;
+            if(hp>0)
+                scrollHeight = (document.body.scrollHeight/hp)*100;
+            
+            //console.log('Scrolling ...');
+            if(hp>0)
+                window.scrollBy(0, scrollHeight);
+            else
+                window.scrollTo(0, 0);
+
+            resolve();
+        });
+    }, hightPercentage);
+}
+
+async function setProprtyItem(page, selector, property, value) {
+    await page.evaluate(async (sel, prop, val) => {
+        await new Promise((resolve, reject) => {
+            try
+            {
+                let elm = document.querySelector(sel);
+                if(elm)
+                    elm.style.display = 'none';
+                // if(elm) {
+                //     elm.setProperty('style', 'display: none');
+                // }
+                //window.scrollBy(0, scrollHeight);
+                resolve();
+            }
+            catch(eex) {
+                reject(eex);
+            }
+        });
+    }, selector, property, value);
+}
+
+/*end of helper */
+
 async function performTask(objPage, userInput, inputControl, element, task, idx, runid) {
     try
     {
         //log('Start performTask => ', idx, task);
         if(task && task.action) {
             if(task.action==='click') {
-                //log(typeof(element));
-                let selector = task.selector || element._remoteObject.description;
-                log(`performTask Section : ${selector}`);
-                //log(element);
+                try
+                {
+                    //log(typeof(element));
+                    let selector = task.selector || element._remoteObject.description;
+                    //log(`performTask Section : ${selector}`);
+                    //log(element);
 
-                // if(selector!==null && selector!=='') {
-                //     await page.click(task.selector);
-                //     await page.waitFor(200);
-                // }
-                //Right code
+                    // if(selector!==null && selector!=='') {
+                    //     await page.click(task.selector);
+                    //     await page.waitFor(200);
+                    // }
+                    
+                    //var value = await element.getProperty('value');
+                    // var textValue = await element.getProperty('text');
+                    // if(textValue!=null)
+                    //     log(`${idx} - Link text => ${textValue._remoteObject.value.trim()}`);
+                    // else
+                    //     log(`${idx} - Link text => EMPTY`);
 
-                if(element.click) {
-                    await element.click();
-                    page.waitFor(100);
+
+                    //Right code
+                    // await page.evaluate(() => {
+                    //     document.querySelector(selector).scrollIntoView();
+                    // });
+                    if(element.click) {
+                        //await autoScroll(page);
+                        // await autoScrollToHight(page, 50);
+                        // page.waitFor(100);
+
+                        // let chatelm = await page.evaluateHandle((sel) => {
+                        //      let selctrl = document.querySelector(sel);
+                        //      selctrl.setAttribute('style', 'display:none');
+                        //      return selctrl;
+                        // }, 'div.meshim_widget_components_chatButton_Button.ltr');
+
+                        //await element.scrollIntoView({ behavior: "smooth"});
+                        //await elm.click();
+                        //element.scrollTop = 50;
+                        try {
+                            await setProprtyItem(page, 'body > div:nth-child(1)', 'style', 'display:none');
+                        }
+                        catch(ep) {
+                            log(ep);
+                        }
+
+                        await element.click();
+                        page.waitFor(200);
+                        // autoScrollToHight(page, 0);
+                        // page.waitFor(100);
+                    }
+
+
+                    // if(task.selector!=='' && task.selector!==null && element.click) {
+                    //     //await page.click(task.selector);
+                    //     await page.waitForSelector(task.selector, {timeout: 30000});
+                    //     await element.click();
+                    //     page.waitFor(100);
+                    // }
+
+                    if(task.checkselector!=='' && task.checkselector!==null) {
+                        await page.waitForSelector(task.checkselector, {timeout: TIMEOUT});
+                    }
                 }
-
-
-                // if(task.selector!=='' && task.selector!==null && element.click) {
-                //     //await page.click(task.selector);
-                //     await page.waitForSelector(task.selector, {timeout: 30000});
-                //     await element.click();
-                //     page.waitFor(100);
-                // }
-
-                if(task.checkselector!=='' && task.checkselector!==null) {
-                    await page.waitForSelector(task.checkselector, {timeout: TIMEOUT});
+                catch(eclick) {
+                    log('eclick');
+                    log(eclick);
                 }
             }
             else if(task.action==='read') {
                 let targetElement = element;
                 let content = [];
                 if(task.read_type==='inner-text') {
+                    try
+                    {
                     //let content = await page.$eval(task.selector||userInput.selector); //targetElement._remoteObject.value;
                     // content = await page.$eval(task.selector, function(e) {
                     //     return e.innerText;
@@ -615,55 +789,74 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                     //     return e.innerText;
                     // }); //targetElement._remoteObject.value;
                     //log(content);
+                    }
+                    catch(erd_txt) {
+                        log('erd_txt');
+                        log(erd_txt);
+                    }
                 }
                 else if(task.read_type==='inner-html') {
-                    //let content = await page.$eval(task.selector||userInput.selector); //targetElement._remoteObject.value;
-                    content = await page.$eval(task.selector, e => e.innerHTML); //targetElement._remoteObject.value;
-                    //content = await page.$$eval(task.selector, e => e.innerHTML); //targetElement._remoteObject.value;
-                    //log(content);
+                    try
+                    {
+                        //let content = await page.$eval(task.selector||userInput.selector); //targetElement._remoteObject.value;
+                        content = await page.$eval(task.selector, e => e.innerHTML); //targetElement._remoteObject.value;
+                        //content = await page.$$eval(task.selector, e => e.innerHTML); //targetElement._remoteObject.value;
+                        //log(content);
+                    }
+                    catch(erd_html) {
+                        log('erd_html');
+                        log(erd_html);
+                    }
                 }
                 if(task.plugins!==null && task.plugins.length>0 && content!==null && content!=='')
                 {
-                    for(var i=0; i<content.length; i++) {
-                        let contentItem = content[i];
-                        for(var iidx=0; iidx<task.plugins.length; iidx++) {
-                            let plugin = task.plugins[iidx];
-                        // task.plugins.forEach((plugin, iidx) => {
-                            let parsedContent = null;
-                            if(plugin.parser!==null && typeof(plugin.parser)==='function') {
-                                parsedContent = plugin.parser(contentItem);
-                            }
-                            if(plugin.assess!==null && typeof(plugin.assess)==='function') {
-                                //capturedData = plugin.assess(contentItem, parsedContent, capturedData);
-                                plugin.assess(contentItem, parsedContent, capturedData, runid, function(store) {
-                                    if(store)
-                                    {
-                                        capturedData = store;
-                                    }
-                                });
-                                // capturedData = await new Promise((resolve, reject) => {
-                                //     try
-                                //     {
-                                //         plugin.assess(contentItem, parsedContent, capturedData, function(capdata) {
-                                //             resolve(capdata);
-                                //         });
-                                //     }
-                                //     catch(e) {
-                                //         log('e-plugin');
-                                //         log(e);
-                                //         page.screenshot({path: `${tsk.selector}_${moment(new Date()).format('DD-MMM-YYY_HH_mm_ss')}.png`});
-                                //         return reject(e);
-                                //     }
-                                // }).catch((reason)=> {
-                                //     log(reason);
-                                //     return reject(reason);
-                                // }).finally(()=> {
-                                //     log('Request completed');
-                                // });
-                                //capturedData.push(parsedContent);
-                                //log(`Captured Data : \n ${JSON.stringify(capturedData)}`);
-                            }
-                        };
+                    try
+                    {
+                        for(var i=0; i<content.length; i++) {
+                            let contentItem = content[i];
+                            for(var iidx=0; iidx<task.plugins.length; iidx++) {
+                                let plugin = task.plugins[iidx];
+                            // task.plugins.forEach((plugin, iidx) => {
+                                let parsedContent = null;
+                                if(plugin.parser!==null && typeof(plugin.parser)==='function') {
+                                    parsedContent = plugin.parser(contentItem);
+                                }
+                                if(plugin.assess!==null && typeof(plugin.assess)==='function') {
+                                    //capturedData = plugin.assess(contentItem, parsedContent, capturedData);
+                                    plugin.assess(contentItem, parsedContent, getStore(), runid, function(store) {
+                                        if(store)
+                                        {
+                                            //capturedData = store;
+                                        }
+                                    });
+                                    // capturedData = await new Promise((resolve, reject) => {
+                                    //     try
+                                    //     {
+                                    //         plugin.assess(contentItem, parsedContent, capturedData, function(capdata) {
+                                    //             resolve(capdata);
+                                    //         });
+                                    //     }
+                                    //     catch(e) {
+                                    //         log('e-plugin');
+                                    //         log(e);
+                                    //         page.screenshot({path: `${tsk.selector}_${moment(new Date()).format('DD-MMM-YYY_HH_mm_ss')}.png`});
+                                    //         return reject(e);
+                                    //     }
+                                    // }).catch((reason)=> {
+                                    //     log(reason);
+                                    //     return reject(reason);
+                                    // }).finally(()=> {
+                                    //     log('Request completed');
+                                    // });
+                                    //capturedData.push(parsedContent);
+                                    //log(`Captured Data : \n ${JSON.stringify(capturedData)}`);
+                                }
+                            };
+                        }
+                    }
+                    catch (ex1) {
+                        log('ex1');
+                        log(ex1);
                     }
                 }
             }
@@ -671,6 +864,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
         //log('End performTask => ', idx, task);
     }
     catch(fe) {
+        log('fe error');
         log(fe);
         throw(fe);
     }
@@ -721,7 +915,7 @@ var excutionStarted = false;
             {
                 log('Process completed.');
 
-                //log(JSON.stringify(capturedData));
+                log(JSON.stringify(capturedData));
                 //log('Closing Browser');
                 //page.waitFor(500);
                 browser.close();
@@ -748,4 +942,4 @@ var excutionStarted = false;
     }
 //});
 
-app.listen("3128");
+//app.listen("3128");

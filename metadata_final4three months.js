@@ -397,6 +397,58 @@ module.exports = {
                             checkselector: ''
                         },
                         {
+                            id: 8,
+                            controlid: '',
+                            selector: 'button.fc-next-button.fc-button.fc-state-default.fc-corner-left.fc-corner-right',
+                            isarray: false,
+                            checkcontent: 'Please Select',
+                            type: 'hyperlink',
+                            value: '',
+                            action: 'click',
+                            checkselector: ''
+                        },
+                        {
+                            id: 9,
+                            controlid: '',
+                            selector: '.fc-event-container > a',
+                            isarray: true,
+                            tasks: [
+                                {
+                                    task_id: 1,
+                                    task_name: 'click event',
+                                    action: 'click',
+                                    checkselector: '.madgrid',
+                                },
+                                {
+                                    task_id: 2,
+                                    task_name: 'read content',
+                                    action: 'read',
+                                    selector: '.madgrid',
+                                    read_type: 'inner-text',
+                                    plugins: [
+                                        {
+                                            parser: dataParser,
+                                            assess: assessor,
+                                            persistData: persistDataItem
+
+                                        }
+                                    ]
+                                },
+                                {
+                                    task_id: 3,
+                                    task_name: 'click calender',
+                                    action: 'click',
+                                    selector: '#headingOne > h4 > a',
+                                    checkselector: '#special-fare-calendar'
+                                }
+                            ],
+                            checkcontent: '',
+                            type: '',
+                            value: '',
+                            action: 'click',
+                            checkselector: ''
+                        },
+                        {
                             id: 10,
                             controlid: '',
                             selector: '#airport_info_chosen > a',

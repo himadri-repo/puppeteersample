@@ -9,26 +9,26 @@ function getDBPool() {
     if(pool) return pool;
 
     //Local DB
-    // pool = mysql.createPool({
-    //     connectionLimit: 30,
-    //     connectTimeout: 15000,
-    //     host: "139.59.92.9",
-    //     user: "oxyusr",
-    //     password: "oxy@123",
-    //     database: "oxytra",
-    //     port: 3306
-    // });
-
-    //Remote DB
     pool = mysql.createPool({
         connectionLimit: 30,
         connectTimeout: 15000,
-        host: "www.oxytra.com",
+        host: "139.59.92.9",
         user: "oxyusr",
-        password: "oxy@321-#",
+        password: "oxy@123",
         database: "oxytra",
         port: 3306
     });
+
+    //Remote DB
+    // pool = mysql.createPool({
+    //     connectionLimit: 30,
+    //     connectTimeout: 15000,
+    //     host: "www.oxytra.com",
+    //     user: "oxyusr",
+    //     password: "oxy@321-#",
+    //     database: "oxytra",
+    //     port: 3306
+    // });
 
     return pool;
 }
@@ -208,11 +208,12 @@ async function saveTicket(conn, result, runid, callback) {
         }
         let insertStatus = {};
 
+        console.log((data.length>0?'Update':'Insert') + JSON.stringify(result));
         if(data.length>0) {
             //var updateSql = `update tickets_tbl set no_of_person=${result.availability}, max_no_of_person=${result.availability}, availibility= ${result.availability}, price=${result.price}, total=${result.price}+baggage+meal+markup+admin_markup-discount where source='${result.departure.id}' and destination='${result.arrival.id}' and departure_date_time='${deptDate}' and arrival_date_time='${arrvDate}' and airline='${result.flight_id}' and data_collected_from='neptunenext'`;
             var updateSql = `update tickets_tbl set no_of_person=${result.availability}, max_no_of_person=${result.availability}, availibility= ${result.availability}, available='${result.availability>0?'YES':'NO'}', price=${result.price}, total=${result.price}, last_sync_key='${runid}' where source='${result.departure.id}' and destination='${result.arrival.id}' and departure_date_time='${deptDate}' and arrival_date_time='${arrvDate}' and airline='${result.flight_id}' and data_collected_from='neptunenext'`;
-            console.log(`Duplicate ticket (${data[0].id}) exists. Updating record.`);
-            console.log(JSON.stringify(result));
+            //console.log(`Duplicate ticket (${data[0].id}) exists. Updating record.`);
+            //console.log(JSON.stringify(result));
 
             conn.query(updateSql, function (err, data) {
                 if (err) {
@@ -220,7 +221,7 @@ async function saveTicket(conn, result, runid, callback) {
                 }
                 else {
                     //console.log(JSON.stringify(data));
-                    console.log(JSON.stringify(result));
+                    //console.log(JSON.stringify(result));
                     //console.log(`${data.insertId} ticket record inserted - ${JSON.stringify(data)}`);
                     insertStatus = data;
                 }
@@ -240,8 +241,8 @@ async function saveTicket(conn, result, runid, callback) {
                 }
                 else {
                     //console.log(JSON.stringify(data));
-                    console.log(JSON.stringify(result));
-                    console.log(`${data.insertId} ticket record inserted`);
+                    //console.log(JSON.stringify(result));
+                    //console.log(`${data.insertId} ticket record inserted`);
                     insertStatus = data;
                 }
         
@@ -269,7 +270,7 @@ function finalization(runid, callback) {
                     }
                     conn.release();
 
-                    console.log(JSON.stringify(data));
+                    //console.log(JSON.stringify(data));
                     if(callback) {
                         callback(data);
                     }
