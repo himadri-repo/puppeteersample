@@ -1,0 +1,10 @@
+16:20:51.987 Cron started
+16:20:56.718 0 - Bagdogra // Bangalore
+Data : {"flight":"Class (A)","flight_number":"AIQ-000","ticket_type":"Economy","departure":{"circle":"Bagdogra","date":"10 Apr 2019","time":"13:20","epoch_date":1554882600000},"arrival":{"circle":"Bangalore","date":"10 Apr 2019","time":"13:20","epoch_date":1554882600000},"availability":6,"price":5500}
+Data : {"flight":"Class (A)","flight_number":"AIQ-000","ticket_type":"Economy","departure":{"circle":"Bagdogra","date":"11 Apr 2019","time":"13:20","epoch_date":1554969000000},"arrival":{"circle":"Bangalore","date":"11 Apr 2019","time":"13:20","epoch_date":1554969000000},"availability":10,"price":5500}
+Data : {"flight":"Class (I)","flight_number":"AIQ-000","ticket_type":"Economy","departure":{"circle":"Bagdogra","date":"14 Apr 2019","time":"09:05","epoch_date":1555212900000},"arrival":{"circle":"Bangalore","date":"14 Apr 2019","time":"09:05","epoch_date":1555212900000},"availability":24,"price":6000}
+Data : {"flight":"Class (A)","flight_number":"AIQ-000","ticket_type":"Economy","departure":{"circle":"Bagdogra","date":"05 May 2019","time":"13:20","epoch_date":1557042600000},"arrival":{"circle":"Bangalore","date":"05 May 2019","time":"13:20","epoch_date":1557042600000},"availability":-1,"price":-1}
+16:21:20.155 moving to next circle
+circleCrawlingFinished called
+going to call saveCircleBatchData
+16:21:20.324 1 - Bagdogra // Chennai

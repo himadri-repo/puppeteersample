@@ -355,6 +355,9 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                             }
                         }
                         i++;
+                        //going for next circle
+                        //log('moving to next circle');
+                        let impactedRows = metadata.circlecrawlfinished(runid, getStore(), key);
                         //log(`Next operation ${i} starting`);
                     }
                 }
@@ -871,10 +874,6 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                 if(task.read_type==='inner-text') {
                     try
                     {
-                        //let content = await page.$eval(task.selector||userInput.selector); //targetElement._remoteObject.value;
-                        // content = await page.$eval(task.selector, function(e) {
-                        //     return e.innerText;
-                        // }); //targetElement._remoteObject.value;
                         //log('9', task.selector);
                         await page.waitFor(500).catch(reason => log(`E22 => ${reason}`));
                         //let contentsElements = await page.$$(task.selector).catch((reason)=> log('Read content : ', reason));
@@ -906,6 +905,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                         log(erd_html);
                     }
                 }
+
                 if(task.plugins!==null && task.plugins.length>0 && content!==null && content!=='')
                 {
                     try

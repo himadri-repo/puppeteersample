@@ -32,6 +32,18 @@ function repeatSource(elementData) {
     return data;
 }
 
+function parseContent(content) {
+    //console.log(`Data : \n${content}`);
+    let contentItem = contentParser(content);
+    console.log(`Data : ${JSON.stringify(contentItem)}`);
+    if(content.indexOf('Seats Available, Please send offline request')>-1 ||
+        content.indexOf('On Request')>-1) 
+    {
+        contentItem=null;
+    }
+    return contentItem;
+}
+
 function contentParser(content) {
     let deal = {};
 
@@ -108,6 +120,25 @@ function contentParser(content) {
     }
 
     return deal;
+}
+
+function assessContent(rawContent, parsedContent, store, runid, callback) {
+    let key = null;
+
+    if(parsedContent.availability===-1) { //data not present
+        return parsedContent;
+    }
+
+    key = `${parsedContent.departure.circle}_${parsedContent.arrival.circle}`;
+    if(store!==undefined && store!==null && store[key]!==undefined && store[key]!==null && store[key] instanceof Array) {
+        parsedContent.runid = runid;
+        store[key].push(parsedContent);
+    }
+    if(callback) {
+        callback(store);
+    }
+
+    return parseContent;
 }
 
 function dataParser(content) {
@@ -237,7 +268,24 @@ function finalizeData(runid, datasourceUrl) {
     }
 }
 
+function circleCrawlingFinished(runid, store, circleKey) {
+    const datastore = require('./radharani/airiqdatastore');
+
+    try
+    {
+        //console.log('circleCrawlingFinished called');
+        if(circleKey===null || circleKey===undefined || circleKey==="") return -1;
+        if(store[circleKey]===null || store[circleKey]===undefined || !(store[circleKey] instanceof Array)) return -1;
+        console.log('going to call saveCircleBatchData');
+        let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey);
+    }
+    catch(e3) {
+        console.log(e3);
+    }
+}
+
 module.exports = {
+    circlecrawlfinished: circleCrawlingFinished,
     pages: [
         {
             id: 1,
@@ -424,18 +472,8 @@ module.exports = {
                                     read_type: 'inner-text',
                                     plugins: [
                                         {
-                                            parser: function(content) {
-                                                //console.log(`Data : \n${content}`);
-                                                let contentItem = contentParser(content);
-                                                console.log(`Data : ${JSON.stringify(contentItem)}`);
-                                                if(content.indexOf('Seats Available, Please send offline request')>-1 ||
-                                                    content.indexOf('On Request')>-1) 
-                                                {
-                                                    contentItem=null;
-                                                }
-                                                return contentItem;
-                                            },
-                                            assess: function() { },
+                                            parser: parseContent,
+                                            assess: assessContent,
                                             persistData: function() { }
                                         }
                                     ]
