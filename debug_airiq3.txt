@@ -1,0 +1,6 @@
+00:29:26.423 Cron started
+00:29:29.584 0 - Bangalore // Bagdogra
+00:29:32.163 0 - NA
+00:29:32.265 Operation completed
+00:29:32.265 Process completed.
+00:29:32.265 {"Bangalore_Bagdogra":[]}
