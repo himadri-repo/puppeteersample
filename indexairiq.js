@@ -804,6 +804,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
     try
     {
         //log('Start performTask => ', idx, task.selector, task.action);
+        await page.waitFor(200).catch(reason => log(`E122 => ${reason}`));
         if(task && task.action) {
             if(task.action==='click') {
                 try
@@ -871,11 +872,12 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
             else if(task.action==='read') {
                 let targetElement = element;
                 let content = [];
+                let storeData = getStore();
                 if(task.read_type==='inner-text') {
                     try
                     {
                         //log('9', task.selector);
-                        await page.waitFor(500).catch(reason => log(`E22 => ${reason}`));
+                        //await page.waitFor(500).catch(reason => log(`E22 => ${reason}`));
                         //let contentsElements = await page.$$(task.selector).catch((reason)=> log('Read content : ', reason));
                         let contentsElements = await page.$$(task.selector).catch((reason)=> log('Read content : ', reason)).catch(reason => log(`E23 => ${reason}`));
                         for(var i=0; i<contentsElements.length; i++) {
@@ -905,6 +907,27 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                         log(erd_html);
                     }
                 }
+                else if(task.read_type==='attributes') {
+                    storeData.attributes = [];
+                    //await page.waitFor(500).catch(reason => log(`E122 => ${reason}`));
+                    let attrs = task.attributes?task.attributes:[];
+                    let contentsElements = await page.$$(task.selector).catch((reason)=> log('Read content : ', reason)).catch(reason => log(`E123 => ${reason}`));
+                    for(var i=0; i<contentsElements.length; i++) {
+                        for(var i1=0; i1<attrs.length; i1++) {
+                            let attrName = attrs[i1];
+                            let attrValue = await (await contentsElements[i].getProperty(attrName).catch((reason)=> {
+                                log('Read attr value', reason);
+                            })).jsonValue().catch((reason) => {
+                                log('Read attr value json', reason);
+                            });
+
+                            if(attrValue!==undefined && attrValue!==null && attrValue!=='') {
+                                content.push({'name': attrName, 'value': attrValue});
+                                storeData.attributes.push({'name': attrName, 'value': attrValue});
+                            }
+                        }
+                    }
+                }
 
                 if(task.plugins!==null && task.plugins.length>0 && content!==null && content!=='')
                 {
@@ -917,7 +940,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                             // task.plugins.forEach((plugin, iidx) => {
                                 let parsedContent = null;
                                 if(plugin.parser!==null && typeof(plugin.parser)==='function') {
-                                    parsedContent = plugin.parser(contentItem);
+                                    parsedContent = plugin.parser(contentItem, i);
                                     if(parsedContent===null) {
                                         userInput.exit = true;
                                         userInput.inputControl = [];
@@ -926,7 +949,8 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                                 }
                                 if(plugin.assess!==null && typeof(plugin.assess)==='function') {
                                     //capturedData = plugin.assess(contentItem, parsedContent, capturedData);
-                                    plugin.assess(contentItem, parsedContent, getStore(), runid, function(store) {
+                                    //getStore()
+                                    plugin.assess(contentItem, parsedContent, storeData, runid, i, function(store) {
                                         if(store)
                                         {
                                             //capturedData = store;

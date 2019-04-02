@@ -35,7 +35,7 @@ function repeatSource(elementData) {
 function parseContent(content) {
     //console.log(`Data : \n${content}`);
     let contentItem = contentParser(content);
-    console.log(`Data : ${JSON.stringify(contentItem)}`);
+    //console.log(`Data : ${JSON.stringify(contentItem)}`);
     if(content.indexOf('Seats Available, Please send offline request')>-1 ||
         content.indexOf('On Request')>-1) 
     {
@@ -122,7 +122,7 @@ function contentParser(content) {
     return deal;
 }
 
-function assessContent(rawContent, parsedContent, store, runid, callback) {
+function assessContent(rawContent, parsedContent, store, runid, idx, callback) {
     let key = null;
 
     if(parsedContent.availability===-1) { //data not present
@@ -132,8 +132,15 @@ function assessContent(rawContent, parsedContent, store, runid, callback) {
     key = `${parsedContent.departure.circle}_${parsedContent.arrival.circle}`;
     if(store!==undefined && store!==null && store[key]!==undefined && store[key]!==null && store[key] instanceof Array) {
         parsedContent.runid = runid;
+        if(store.attributes!==undefined && store.attributes!==null && store.attributes.length)
+            parsedContent.recid = store.attributes[idx].value;
+        else
+            parsedContent.recid = -1;
+
         store[key].push(parsedContent);
     }
+
+    console.log(`Data : ${JSON.stringify(parsedContent)}`);
     if(callback) {
         callback(store);
     }
@@ -276,7 +283,7 @@ function circleCrawlingFinished(runid, store, circleKey) {
         //console.log('circleCrawlingFinished called');
         if(circleKey===null || circleKey===undefined || circleKey==="") return -1;
         if(store[circleKey]===null || store[circleKey]===undefined || !(store[circleKey] instanceof Array)) return -1;
-        console.log('going to call saveCircleBatchData');
+        //console.log('going to call saveCircleBatchData');
         let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey);
     }
     catch(e3) {
@@ -468,6 +475,29 @@ module.exports = {
                                     task_id: 4,
                                     task_name: 'read content',
                                     action: 'read',
+                                    selector: '.flit-detls tr>input[type=hidden i]',
+                                    read_type: 'attributes',
+                                    attributes: ['value'],
+                                    plugins: [
+                                        {
+                                            parser: function(content) {
+                                                //console.log(`attr value - ${JSON.stringify(content)}`);
+                                                return content;
+                                            },
+                                            assess: function(contentItem, parsedContent, store, runid, idx, callback) {
+                                                if(callback) {
+                                                    callback(store);
+                                                }
+                                                //return parsedContent;
+                                            },
+                                            persistData: function() { }
+                                        }
+                                    ]
+                                },
+                                {
+                                    task_id: 5,
+                                    task_name: 'read content',
+                                    action: 'read',
                                     selector: '.flit-detls',
                                     read_type: 'inner-text',
                                     plugins: [
@@ -479,7 +509,7 @@ module.exports = {
                                     ]
                                 },
                                 {
-                                    task_id: 5,
+                                    task_id: 6,
                                     task_name: 'click content',
                                     action: 'click',
                                     selector: 'input#check_out.form-control.hasDatepicker',

@@ -34,16 +34,6 @@ function getDBPool() {
 }
 
 async function saveData(result, runid, callback) {
-    // var con = mysql.createConnection({
-    //     host: "139.59.92.9",
-    //     user: "oxyusr",
-    //     password: "oxy@123",
-    //     database: "oxytra",
-    //     port: 3306
-    // });
-
-
-    //con.connect(function(err, data) {
     getDBPool().getConnection(async function(err, con) {
         try
         {
@@ -330,7 +320,7 @@ async function getAirline(conn, aircode='', callback) {
     });
 }
 
-async function getAirlines(conn, callback) {
+function getAirlines(conn, callback) {
     var sql = `select * from airline_tbl`;
 
     conn.query(sql, function (err, data) {
@@ -344,29 +334,32 @@ async function getAirlines(conn, callback) {
     });
 }
 
-async function saveCircleBatchData(runid, circleData, circleKey) {
+function saveCircleBatchData(runid, circleData, circleKey) {
     let impactedRecCount = 0;
-    await getDBPool().getConnection(async function(err, con) {
+    getDBPool().getConnection(function(err, con) {
         try
         {
             if(err) {
                 throw err;
             }
 
-            console.log('DB connected');
+            //console.log('DB connected');
 
             let airlines = [];
             let cities = [];
             getAirlines(con, function(airlineData) {
                 airlines = airlineData;
-                transformAirlineData(circleData, airlines);
-                console.log('Got airlines');
-                getCities(con, function(citiesData) {
-                    cities = citiesData;
-
-                    transformCircleData(circleData, cities);
-
-                    console.log(`Circle Data:\n${JSON.stringify(circleData)}`);
+                let missingAirlines = getMissingAirlines(airlines, circleData);
+                saveMissingAirlines(con, missingAirlines, function(updatedAirlines) {
+                    airlines = updatedAirlines;
+                    transformAirlineData(con, circleData, airlines);
+                    //console.log('Got airlines');
+                    getCities(con, async function(citiesData) {
+                        cities = citiesData;
+    
+                        transformCircleData(con, circleData, cities);
+                        //console.log(`Final.Data: ${JSON.stringify(circleData)}`);
+                    });
                 });
             });
         }
@@ -378,8 +371,55 @@ async function saveCircleBatchData(runid, circleData, circleKey) {
     return impactedRecCount;
 }
 
-function transformCircleData(circleData, cities) {
-    circleData.map((ticket, idx) => {
+function saveMissingAirlines(conn, missingAirlines, callback) {
+    let updatedAirlines = [];
+    if(missingAirlines===undefined || missingAirlines===null || missingAirlines.length===0) {
+        getAirlines(conn, function(updatedAirlinesData) {
+            updatedAirlines = updatedAirlinesData;
+            if(callback) {
+                callback(updatedAirlines);
+            }
+        });
+    }
+    else {
+        let recCount = 0;
+        for(var i=0; i<missingAirlines.length; i++) {
+            saveAirline(conn, missingAirlines[i], function(id) {
+                console.log(`Inserted record id ${id}`);
+                recCount++;
+                if(recCount===missingAirlines.length) {
+                    getAirlines(conn, function(updatedAirlinesData) {
+                        updatedAirlines = updatedAirlinesData;
+                        if(callback) {
+                            callback(updatedAirlines);
+                        }
+                    });
+                }
+            });
+        }
+    }
+}
+
+function getMissingAirlines(airlines, circleData) {
+    let missingData = [];
+    if(circleData===null || circleData===undefined) return missingData;
+
+    for(var i=0; i<circleData.length; i++) {
+        let airline = circleData[i].flight.toLowerCase();
+        let savedAirlineRecord = airlines.find((data, idx) => {
+            return data.airline.toLowerCase()===airline;
+        });
+        if(savedAirlineRecord===undefined || savedAirlineRecord===null) {
+            if(missingData.indexOf(airline)===-1)
+                missingData.push(airline);
+        }
+    }
+
+    return missingData;
+}
+
+async function transformCircleData(conn, circleData, cities) {
+    await circleData.map(async (ticket, idx) => {
         let deptCityName = ticket.departure.circle.toLowerCase();
         let arrvCityName = ticket.arrival.circle.toLowerCase();
         let deptCity = null;
@@ -395,12 +435,14 @@ function transformCircleData(circleData, cities) {
             ticket.departure.id = deptCity.id;
         }
         else {
+            //insert city and set the same id here.
             ticket.departure.id = -1;
+            ticket.departure.id = await saveCity(conn, ticket.departure.circle);
         }
 
         if(arrvCity===null) {
             arrvCity = cities.find((city, ndx)=> {
-                return arrvCityName.indexOf(city.toLowerCase())>-1;
+                return city.city.toLowerCase().indexOf(arrvCityName)>-1;
             });
         }
         
@@ -410,13 +452,14 @@ function transformCircleData(circleData, cities) {
         }
         else {
             ticket.arrival.id = -1;
+            ticket.arrival.id = await saveCity(conn, ticket.arrival.circle);
         }
     });
 
     return circleData;
 }
 
-function transformAirlineData(circleData, airlines) {
+function transformAirlineData(conn, circleData, airlines) {
     circleData.map((ticket, idx) => {
         let flight = ticket.flight.toLowerCase();
         let flightData = null;
@@ -434,8 +477,42 @@ function transformAirlineData(circleData, airlines) {
         }
     });
 
-    return circleData;
+    //return circleData;
 }
+
+async function saveCity(conn, city) {
+    return new Promise((resolve, reject) => {
+        let qry = `insert into city_tbl(city) values('${city}')`;
+
+        try
+        {
+            conn.query(qry, function(err, data) {
+                resolve(data.insertId);
+            });
+        }
+        catch(e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+}
+
+function saveAirline(conn, airline, callback) {
+    // return new Promise((resolve, reject) => {
+        let qry = `insert into airline_tbl(aircode, airline, image) values('${airline.substr(0,3).toUpperCase()}', '${airline}', 'faculty_1540217511.png')`;
+
+        try
+        {
+            conn.query(qry, function(err, data) {
+                callback(data.insertId);
+            });
+        }
+        catch(e) {
+            console.log(e);
+        }
+    // });
+}
+
 //jshint ignore:end
 
 module.exports = {saveData, finalization, saveCircleBatchData};
