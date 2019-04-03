@@ -879,6 +879,24 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                         //log('9', task.selector);
                         //await page.waitFor(500).catch(reason => log(`E22 => ${reason}`));
                         //let contentsElements = await page.$$(task.selector).catch((reason)=> log('Read content : ', reason));
+
+                        // Scroll one viewport at a time, pausing to let content load
+                        const bodyHandle = await page.$('body');
+                        const { height } = await bodyHandle.boundingBox();
+                        await bodyHandle.dispose();
+
+                        const viewportHeight = page.viewport().height;
+                        let viewportIncr = 0;
+                        while (viewportIncr + viewportHeight < height) {
+                            await page.evaluate(_viewportHeight => {
+                                window.scrollBy(0, _viewportHeight);
+                            }, viewportHeight);
+                            await page.waitFor(25);
+                            viewportIncr = viewportIncr + viewportHeight;
+                        }
+                        
+                        await page.waitFor(100);
+
                         let contentsElements = await page.$$(task.selector).catch((reason)=> log('Read content : ', reason)).catch(reason => log(`E23 => ${reason}`));
                         for(var i=0; i<contentsElements.length; i++) {
                             let msg = await (await contentsElements[i].getProperty('innerText').catch((reason)=> {
@@ -888,6 +906,16 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                             });
                             content.push(msg);
                         }
+                        
+                        await page.waitFor(50);
+
+                        // Scroll back to top
+                        await page.evaluate(_ => {
+                            window.scrollTo(0, 0);
+                        });
+
+                        // Some extra delay to let images load
+                        await page.waitFor(50);
                     }
                     catch(erd_txt) {
                         log('erd_txt');
@@ -941,6 +969,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                                 let parsedContent = null;
                                 if(plugin.parser!==null && typeof(plugin.parser)==='function') {
                                     parsedContent = plugin.parser(contentItem, i);
+                                    //log('Parsed Content: ', JSON.stringify(parsedContent));
                                     if(parsedContent===null) {
                                         userInput.exit = true;
                                         userInput.inputControl = [];
@@ -954,6 +983,11 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                                         if(store)
                                         {
                                             //capturedData = store;
+                                            if(parsedContent!==undefined && parsedContent!==null 
+                                                && parsedContent.flight!==null && parsedContent.flight!==undefined) 
+                                            {
+                                                log(`Data : ${JSON.stringify(parsedContent)}`);
+                                            }
                                         }
                                     });
                                 }
@@ -998,10 +1032,10 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 // }
 
 var excutionStarted = false;
-// cron.schedule("*/30 * * * *", function() {
-    log("Cron started");
-    // if(excutionStarted)
-    //     return false;
+// cron.schedule("*/60 * * * *", function() {
+//     log("Cron started");
+//     if(excutionStarted)
+//         return false;
 
     try
     {
@@ -1027,6 +1061,16 @@ var excutionStarted = false;
                 //log('Closing Browser');
                 //page.waitFor(500);
                 // browser.close();
+                //console.log(process._getActiveRequests());
+                //console.log(process._getActiveHandles());
+                // process.listeners.map((listn, idx) => {
+                //     console.log(listn);
+                // });
+
+                process.removeAllListeners("unhandledRejection");
+                process.removeAllListeners('exit');
+                process.removeAllListeners();
+                //process.listeners("unhandledRejection").
             }
             catch(e) {
                 log(e);
@@ -1035,6 +1079,7 @@ var excutionStarted = false;
                 //process.exit(0);
                 excutionStarted = false;
             }
+            return;
         }).catch((reason) => {
             log(reason);
             log(JSON.stringify(capturedData));

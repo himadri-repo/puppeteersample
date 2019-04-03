@@ -12,6 +12,7 @@ function getDBPool() {
     // pool = mysql.createPool({
     //     connectionLimit: 30,
     //     connectTimeout: 15000,
+    //     timeout: 60*1000,
     //     host: "139.59.92.9",
     //     user: "oxyusr",
     //     password: "oxy@123",
@@ -116,8 +117,8 @@ async function saveData(result, runid, callback) {
                         }
 
                         var saveResult = await saveTicketInformation(con, result, insertStatus, runid, function(insertresult) {
-                            //con.destroy();
-                            con.release();
+                            con.destroy();
+                            //con.release();
                             insertStatus = insertresult;
         
                             if(callback) {
@@ -198,7 +199,7 @@ async function saveTicket(conn, result, runid, callback) {
         }
         let insertStatus = {};
 
-        console.log((data.length>0?'Update':'Insert') + JSON.stringify(result));
+        //console.log((data.length>0?'Update':'Insert') + JSON.stringify(result));
         if(data.length>0) {
             //var updateSql = `update tickets_tbl set no_of_person=${result.availability}, max_no_of_person=${result.availability}, availibility= ${result.availability}, price=${result.price}, total=${result.price}+baggage+meal+markup+admin_markup-discount where source='${result.departure.id}' and destination='${result.arrival.id}' and departure_date_time='${deptDate}' and arrival_date_time='${arrvDate}' and airline='${result.flight_id}' and data_collected_from='neptunenext'`;
             var updateSql = `update tickets_tbl set no_of_person=${result.availability}, max_no_of_person=${result.availability}, availibility= ${result.availability}, available='${result.availability>0?'YES':'NO'}', price=${result.price}, total=${result.price}, last_sync_key='${runid}' where source='${result.departure.id}' and destination='${result.arrival.id}' and departure_date_time='${deptDate}' and arrival_date_time='${arrvDate}' and airline='${result.flight_id}' and data_collected_from='neptunenext'`;
@@ -251,7 +252,7 @@ function finalization(runid, callback) {
             if(err) {
                 console.log(err);
             }
-            var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO' where available='YES' and data_collected_from='neptunenext' and last_sync_key<>'${runid}'`;
+            var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO' where available='YES' and data_collected_from='airiq' and last_sync_key<>'${runid}'`;
             
             try {
                 conn.query(sql, function (err, data) {
@@ -361,7 +362,8 @@ function saveCircleBatchData(runid, circleData, circleKey) {
                             cities = updatedCities;
                             let circleDataList = transformCircleData(con, circleData, cities);
                             saveTicketsData(con, circleDataList, runid, function(status) {
-
+                                //con.release();
+                                con.destroy();
                             });
                         });
                     });
@@ -393,7 +395,7 @@ function saveTicketsData(conn, circleDataList, runid, callback) {
                     //to be updated
                     updateTicketData(conn, ticket, runid, function(status) {
                         //status should be update status value
-                        console.log(status);
+                        //console.log(status);
                     });
                 }
             });
@@ -521,7 +523,7 @@ function saveMissingCity(conn, missingCities, callback) {
         let recCount = 0;
         for(var i=0; i<missingCities.length; i++) {
             saveCity(conn, missingCities[i], function(id) {
-                console.log(`Inserted record id ${id}`);
+                //console.log(`Inserted record id ${id}`);
                 recCount++;
                 if(recCount===missingCities.length) {
                     getCities(conn, function(updatedCitiesData) {
@@ -550,7 +552,7 @@ function saveMissingAirlines(conn, missingAirlines, callback) {
         let recCount = 0;
         for(var i=0; i<missingAirlines.length; i++) {
             saveAirline(conn, missingAirlines[i], function(id) {
-                console.log(`Inserted record id ${id}`);
+                //console.log(`Inserted record id ${id}`);
                 recCount++;
                 if(recCount===missingAirlines.length) {
                     getAirlines(conn, function(updatedAirlinesData) {

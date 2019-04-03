@@ -16,7 +16,7 @@ function repeatSource(elementData) {
         data = elementData.match(strreg).map((val, idx) => val.replace('>','').replace('<','')).filter((val, idx) => {
             //console.log(`${idx} - ${val}`);
             //if(idx>0 && idx%2===0) {
-            //if(idx>0 && val.indexOf('Bangalore // Bagdogra')>-1) {
+            //if(idx>0 && val.indexOf('Bagdogra // Delhi')>-1) {
             if(idx>0) {
                 //console.log(`${idx} - ${val}`);
                 return val.replace('>','').replace('<','');
@@ -36,8 +36,10 @@ function parseContent(content) {
     //console.log(`Data : \n${content}`);
     let contentItem = contentParser(content);
     //console.log(`Data : ${JSON.stringify(contentItem)}`);
-    if(content.indexOf('Seats Available, Please send offline request')>-1 ||
-        content.indexOf('On Request')>-1) 
+    // if(content.indexOf('Seats Available, Please send offline request')>-1 ||
+    //     content.indexOf('On Request')>-1) 
+
+    if(content.indexOf('Please send offline request')>-1) 
     {
         contentItem=null;
     }
@@ -125,9 +127,11 @@ function contentParser(content) {
 function assessContent(rawContent, parsedContent, store, runid, idx, callback) {
     let key = null;
 
+
     if(parsedContent.availability===-1) { //data not present
         return parsedContent;
     }
+    //console.log(`Assess: ${JSON.stringify(parsedContent)}`);
 
     key = `${parsedContent.departure.circle}_${parsedContent.arrival.circle}`;
     if(store!==undefined && store!==null && store[key]!==undefined && store[key]!==null && store[key] instanceof Array) {
@@ -140,7 +144,7 @@ function assessContent(rawContent, parsedContent, store, runid, idx, callback) {
         store[key].push(parsedContent);
     }
 
-    console.log(`Data : ${JSON.stringify(parsedContent)}`);
+    //console.log(`Data : ${JSON.stringify(parsedContent)}`);
     if(callback) {
         callback(store);
     }
@@ -249,7 +253,8 @@ function assessor(content, result, store, runid, callback) {
 }
 
 function persistDataItem(result, runid, callback) {
-    const datastore = require('./radharani/datastore');
+    //const datastore = require('./radharani/datastore');
+    const datastore = require('./radharani/airiqdatastore');
 
     datastore.saveData(result, runid, function(data) {
         //console.log(`Proceed with next record ${JSON.stringify(data)}`);
@@ -258,7 +263,8 @@ function persistDataItem(result, runid, callback) {
 }
 
 function finalizeData(runid, datasourceUrl) {
-    const datastore = require('./radharani/datastore');
+    //const datastore = require('./radharani/datastore');
+    const datastore = require('./radharani/airiqdatastore');
     // const datasource = require(datasourceUrl);
 
     try
@@ -469,7 +475,7 @@ module.exports = {
                                     selector: 'a#SearchBtn.btn',
                                     value: '',
                                     action: 'click',
-                                    checkselector: '.flit-detls'
+                                    checkselector: 'div.flit-detls, #empty_lbl' /* .flit-detls */
                                 },
                                 {
                                     task_id: 4,
@@ -498,7 +504,7 @@ module.exports = {
                                     task_id: 5,
                                     task_name: 'read content',
                                     action: 'read',
-                                    selector: '.flit-detls',
+                                    selector: 'div.flit-detls, #empty_lbl', /*.flit-detls */
                                     read_type: 'inner-text',
                                     plugins: [
                                         {

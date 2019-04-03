@@ -261,6 +261,8 @@ function finalization(runid, callback) {
             if(err) {
                 console.log(err);
             }
+            if(conn===null || conn===undefined) return;
+            
             var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO' where available='YES' and data_collected_from='neptunenext' and last_sync_key<>'${runid}'`;
             
             try {
