@@ -252,7 +252,7 @@ function finalization(runid, callback) {
             if(err) {
                 console.log(err);
             }
-            var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO' where available='YES' and data_collected_from='airiq' and last_sync_key<>'${runid}'`;
+            var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST' where available='YES' and data_collected_from='airiq' and last_sync_key<>'${runid}'`;
             
             try {
                 conn.query(sql, function (err, data) {
