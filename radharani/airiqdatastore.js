@@ -9,26 +9,26 @@ function getDBPool() {
     if(pool) return pool;
 
     //Local DB
-    pool = mysql.createPool({
-        connectionLimit: 30,
-        connectTimeout: 15000,
-        host: "139.59.92.9",
-        user: "oxyusr",
-        password: "oxy@123",
-        database: "oxytra",
-        port: 3306
-    });
-
-    //Remote DB
     // pool = mysql.createPool({
     //     connectionLimit: 30,
     //     connectTimeout: 15000,
-    //     host: "www.oxytra.com",
+    //     host: "139.59.92.9",
     //     user: "oxyusr",
-    //     password: "oxy@321-#",
+    //     password: "oxy@123",
     //     database: "oxytra",
     //     port: 3306
     // });
+
+    //Remote DB
+    pool = mysql.createPool({
+        connectionLimit: 30,
+        connectTimeout: 15000,
+        host: "www.oxytra.com",
+        user: "oxyusr",
+        password: "oxy@321-#",
+        database: "oxytra",
+        port: 3306
+    });
 
     return pool;
 }
@@ -354,11 +354,16 @@ function saveCircleBatchData(runid, circleData, circleKey) {
                     airlines = updatedAirlines;
                     transformAirlineData(con, circleData, airlines);
                     //console.log('Got airlines');
-                    getCities(con, async function(citiesData) {
+                    getCities(con, function(citiesData) {
                         cities = citiesData;
-    
-                        transformCircleData(con, circleData, cities);
-                        //console.log(`Final.Data: ${JSON.stringify(circleData)}`);
+                        let missingCity = getMissingCities(con, cities, circleData)
+                        saveMissingCity(con, missingCity, function(updatedCities) {
+                            cities = updatedCities;
+                            let circleDataList = transformCircleData(con, circleData, cities);
+                            saveTicketsData(con, circleDataList, runid, function(status) {
+
+                            });
+                        });
                     });
                 });
             });
@@ -369,6 +374,166 @@ function saveCircleBatchData(runid, circleData, circleKey) {
     });
 
     return impactedRecCount;
+}
+
+function saveTicketsData(conn, circleDataList, runid, callback) {
+    try
+    {
+        for(var i=0; i<circleDataList.length; i++) {
+            let ticket = circleDataList[i];
+            getTicketData(conn, ticket, function(ticketInfo) {
+                if(ticketInfo!==null && ticketInfo.length===0) {
+                    //to be inserted
+                    insertTicketData(conn, ticket, runid, function(status) {
+                        //status should be inserted it etc.
+                        ticket.id = status.insertId;
+                    });
+                }
+                else if(ticketInfo!==null && ticketInfo.length>0) {
+                    //to be updated
+                    updateTicketData(conn, ticket, runid, function(status) {
+                        //status should be update status value
+                        console.log(status);
+                    });
+                }
+            });
+            //saveTicketData(conn, circleDataList[i])
+        }
+    }
+    catch(e) {
+        console.log(e);
+    }
+}
+
+function getTicketData(conn, ticket, callback) {
+    try
+    {
+        let deptDate = moment(new Date(ticket.departure.epoch_date)).format("YYYY-MM-DD HH:mm");
+        let qry = `select id from tickets_tbl where source=${ticket.departure.id} and destination=${ticket.arrival.id} and departure_date_time='${deptDate}' and ticket_no='TKT-${ticket.recid}'`;
+
+        conn.query(qry, function(err, data) {
+            if(err) {
+                data = null;
+            }
+            if(callback)
+                callback(data);
+        });
+    }
+    catch(e) {
+        console.log(e);
+    }
+}
+
+function updateTicketData(conn, ticket, runid, callback) {
+    let updateStatus = null;
+    let deptDate = moment(new Date(ticket.departure.epoch_date)).format("YYYY-MM-DD HH:mm");
+    let ticket_no = ticket.recid;
+    var updateSql = `update tickets_tbl set no_of_person=${ticket.availability}, max_no_of_person=${ticket.availability}, availibility= ${ticket.availability}, available='${ticket.availability>0?'YES':'NO'}', price=${ticket.price}, total=${ticket.price}, last_sync_key='${runid}' where source='${ticket.departure.id}' and destination='${ticket.arrival.id}' and departure_date_time='${deptDate}' and ticket_no='TKT-${ticket_no}' and airline='${ticket.flight_id}' and data_collected_from='airiq'`;
+
+    conn.query(updateSql, function (err, data) {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            updateStatus = data;
+        }
+
+        if(callback) {
+            callback(updateStatus);
+        }
+    });
+}
+
+function insertTicketData(conn, ticket, runid, callback) {
+    let insertStatus = null;
+    let deptDate = moment(new Date(ticket.departure.epoch_date)).format("YYYY-MM-DD HH:mm");
+    let arrvDate = moment(new Date(ticket.arrival.epoch_date)).format("YYYY-MM-DD HH:mm");
+    let emptyDate = moment(new Date(0,0,0,0,0,0)).format("YYYY-MM-DD HH:mm");
+    let ticket_no = ticket.recid;
+
+    var insertSql = `INSERT INTO tickets_tbl (source, destination, source1, destination1, trip_type, departure_date_time, arrival_date_time, flight_no, terminal, departure_date_time1, arrival_date_time1, flight_no1, terminal1, terminal2, terminal3, no_of_person, max_no_of_person, no_of_stops, stops_name, no_of_stops1, stops_name1, class, class1, airline, airline1, aircode, aircode1, pnr, ticket_no, price, baggage, meal, markup, admin_markup, discount, total, sale_type, refundable, availibility, user_id, remarks, approved, available, data_collected_from, last_sync_key) 
+    VALUES ('${ticket.departure.id}','${ticket.arrival.id}',0,0,'ONE','${deptDate}','${arrvDate}','${ticket.flight_number}','NA','${emptyDate}','${emptyDate}','','','','',${ticket.availability},${ticket.availability},0,'NA',0,'NA','${ticket.ticket_type.toUpperCase()}','','${ticket.flight_id}',0,'${ticket.flight}','','','TKT-${ticket_no}',${ticket.price},0,0,0,0,0,${ticket.price},'request','N',${ticket.availability},104,'',1,'${ticket.availability>0?'YES':'NO'}', 'airiq', '${runid}')`;
+    //console.log(insertSql);
+    conn.query(insertSql, function (err, data) {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            insertStatus = data;
+        }
+
+        if(callback) {
+            callback(insertStatus);
+        }
+    });
+}
+
+function getMissingCities(conn, cities, circleData) {
+    let missingData = [];
+    if(circleData===null || circleData===undefined) return missingData;
+
+    let processedCities = [];
+    for(var i=0; i<circleData.length; i++) {
+        //for departure city
+        let city = circleData[i].departure.circle.toLowerCase();
+
+        if(processedCities.indexOf(city)===-1) {
+            let savedCityRecord = cities.find((data, idx) => {
+                return data.city.toLowerCase().indexOf(city)===-1;
+            });
+            if(savedCityRecord===undefined || savedCityRecord===null) {
+                if(missingData.indexOf(circleData[i].departure.circle)===-1)
+                    missingData.push(circleData[i].departure.circle);
+            }
+            processedCities.push(city);
+        }
+
+        //for arrival city
+        city = circleData[i].arrival.circle.toLowerCase();
+        
+        if(processedCities.indexOf(city)===-1) {
+            savedCityRecord = cities.find((data, idx) => {
+                return data.city.toLowerCase().indexOf(city)===-1;
+                //return data.city.toLowerCase()===city;
+            });
+            if(savedCityRecord===undefined || savedCityRecord===null) {
+                if(missingData.indexOf(circleData[i].arrival.circle)===-1)
+                    missingData.push(circleData[i].arrival.circle);
+            }        
+            processedCities.push(city);
+        }
+    }
+
+    return missingData;
+}
+
+function saveMissingCity(conn, missingCities, callback) {
+    let updatedCities = [];
+    if(missingCities===undefined || missingCities===null || missingCities.length===0) {
+        getCities(conn, function(updatedCitiesData) {
+            updatedCities = updatedCitiesData;
+            if(callback) {
+                callback(updatedCities);
+            }
+        });
+    }
+    else {
+        let recCount = 0;
+        for(var i=0; i<missingCities.length; i++) {
+            saveCity(conn, missingCities[i], function(id) {
+                console.log(`Inserted record id ${id}`);
+                recCount++;
+                if(recCount===missingCities.length) {
+                    getCities(conn, function(updatedCitiesData) {
+                        updatedCities = updatedCitiesData;
+                        if(callback) {
+                            callback(updatedCities);
+                        }
+                    });
+                }
+            });
+        }
+    }
 }
 
 function saveMissingAirlines(conn, missingAirlines, callback) {
@@ -410,16 +575,16 @@ function getMissingAirlines(airlines, circleData) {
             return data.airline.toLowerCase()===airline;
         });
         if(savedAirlineRecord===undefined || savedAirlineRecord===null) {
-            if(missingData.indexOf(airline)===-1)
-                missingData.push(airline);
+            if(missingData.indexOf(circleData[i].flight)===-1)
+                missingData.push(circleData[i].flight);
         }
     }
 
     return missingData;
 }
 
-async function transformCircleData(conn, circleData, cities) {
-    await circleData.map(async (ticket, idx) => {
+function transformCircleData(conn, circleData, cities) {
+    circleData.map(async (ticket, idx) => {
         let deptCityName = ticket.departure.circle.toLowerCase();
         let arrvCityName = ticket.arrival.circle.toLowerCase();
         let deptCity = null;
@@ -431,13 +596,12 @@ async function transformCircleData(conn, circleData, cities) {
             });
         }
         if(deptCity!==null && deptCity!==undefined) {
-            ticket.departure.circle = `${deptCityName} (${deptCity.code})`;
+            ticket.departure.circle = `${ticket.departure.circle} (${deptCity.code})`;
             ticket.departure.id = deptCity.id;
         }
         else {
             //insert city and set the same id here.
             ticket.departure.id = -1;
-            ticket.departure.id = await saveCity(conn, ticket.departure.circle);
         }
 
         if(arrvCity===null) {
@@ -447,12 +611,11 @@ async function transformCircleData(conn, circleData, cities) {
         }
         
         if(arrvCity!==null && arrvCity!==undefined) {
-            ticket.arrival.circle = `${arrvCityName} (${arrvCity.code})`;
+            ticket.arrival.circle = `${ticket.arrival.circle} (${arrvCity.code})`;
             ticket.arrival.id = arrvCity.id;
         }
         else {
             ticket.arrival.id = -1;
-            ticket.arrival.id = await saveCity(conn, ticket.arrival.circle);
         }
     });
 
@@ -480,21 +643,22 @@ function transformAirlineData(conn, circleData, airlines) {
     //return circleData;
 }
 
-async function saveCity(conn, city) {
-    return new Promise((resolve, reject) => {
+function saveCity(conn, city, callback) {
+    //return new Promise((resolve, reject) => {
         let qry = `insert into city_tbl(city) values('${city}')`;
 
         try
         {
             conn.query(qry, function(err, data) {
-                resolve(data.insertId);
+                if(callback)
+                    callback(data.insertId);
             });
         }
         catch(e) {
             console.log(e);
-            reject(e);
+//            reject(e);
         }
-    });
+//    });
 }
 
 function saveAirline(conn, airline, callback) {
@@ -504,7 +668,8 @@ function saveAirline(conn, airline, callback) {
         try
         {
             conn.query(qry, function(err, data) {
-                callback(data.insertId);
+                if(callback) 
+                    callback(data.insertId);
             });
         }
         catch(e) {
