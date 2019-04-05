@@ -2,6 +2,8 @@
 const cron = require("node-cron");
 const express = require("express");
 const fs = require("fs");
+//require("babel-core/register");
+//require("babel-polyfill");
 
 const uuidv4 = require('uuid/v4');
 const moment = require('moment');
@@ -18,7 +20,9 @@ let response = e2fcrawler.postData({url: 'https://expressdev.ease2fly.com/api/de
 }});
 
 response.then(data => {
-    Logger.log("info", JSON.stringify(data.result));    
+    Logger.log("info", JSON.stringify(data.result));
+
+    Logger.log('info', JSON.stringify(e2fcrawler.finalData));
 }).catch(error => {
     Logger.log("error", error);
 });

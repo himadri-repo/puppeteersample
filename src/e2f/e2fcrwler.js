@@ -1,4 +1,5 @@
 //jshint esversion: 6
+//jshint ignore:start
 const cron = require("node-cron");
 const express = require("express");
 const fs = require("fs");
@@ -63,6 +64,7 @@ export class E2FCrawler {
         .then(response => {
             Logger.log("info", "Response received");
             this.data = response.json();
+            this.finalData = this.transformData(this.data);
             return response.json();
         })
         .catch(reason => {
@@ -70,4 +72,77 @@ export class E2FCrawler {
             throw reason;
         }); // parses JSON response into native Javascript objects 
     }
+
+    transformData(data) {
+        if(data===null || data===undefined || data.length===0) return;
+
+        let parsedDataSet = [];
+        let parsedRecord = {};
+
+        for(var i=0; i<data.length; i++) {
+            try
+            {
+                let dataItem = data[i];
+                parsedRecord = {
+                    flight: dataItem.airlns_name,
+                    flight_number: dataItem.flight_no,
+                    departure: {
+                        id: -1,
+                        circle: _getCircleName(dataItem.destn, 0).then(result => result).catch(reason => Logger.log('error', reason)),
+                        time: dataItem.travel_time,
+                        date: dataItem.travel_date,
+                        epoch_date: _getDate(dataItem.travel_date, dataItem.travel_time).then(result => result).catch(reason => Logger.log('error', reason))
+                    },
+                    arrival: {
+                        id: -1,
+                        circle: _getCircleName(dataItem.destn, 1).then(result => result).catch(reason => Logger.log('error', reason)),
+                        time: dataItem.arrival_time,
+                        date: dataItem.arrival_date,
+                        epoch_date: _getDate(dataItem.arrival_date, dataItem.arrival_time).then(result => result).catch(reason => Logger.log('error', reason))
+                    },
+
+                    ticket_type: 'Economy',
+                    availability: dataItem.seat,
+                    price: (dataItem.fare+dataItem.srv_tax+dataItem.gst),
+                    flight_id: 1,
+                    runid: '',
+                    recid: dataItem.id
+                };
+
+                parsedDataSet.push(parsedRecord);
+                Logger.log('info', 'Data', JSON.stringify(parsedRecord));
+            }
+            catch(e) {
+                Logger.log('error', e);
+            }
+        }
+
+        return parsedDataSet;
+    }
+
+    async _getCircleName(circle, index) {
+        let circleName = '';
+        if(circle!==null && circle!==undefined && circle.indexOf('to')>-1) {
+            let circles = circle.split('to');
+            if(circles.length>0) {
+                circleName = circles[index];
+            }
+        }
+
+        return circleName;
+    }
+
+    async _getDate(strDate, strTime) {
+        let dt = Date.now();
+        try{
+            dt = new Date(`${strDate} ${strTime}`);
+        }
+        catch(e) {
+            Logger.log('error', e);
+        }
+
+        return dt;
+    }
 }
+
+//jshint ignore:end
