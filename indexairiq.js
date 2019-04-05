@@ -113,9 +113,6 @@ async function navigatePage(pageName) {
                 var val = actionItem.userinputs[iidx];
                 var idx = iidx;
 
-                // autoScrollToHight(page, 0);
-                // page.waitFor(100);
-
                 //log(JSON.stringify(val) + ' - ' + idx);
                 if(val.action==='keyed') {
                     //log('Going to click');
@@ -1034,8 +1031,10 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 var excutionStarted = false;
 cron.schedule("*/60 * * * *", function() {
     log("Cron started");
-    if(excutionStarted)
+    if(excutionStarted) {
+        log('Previous process still running ...');
         return false;
+    }
 
     try
     {

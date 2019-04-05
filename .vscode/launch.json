@@ -2,15 +2,15 @@
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    // "program": "${workspaceFolder}\\index.js"
     "version": "0.2.0",
     "configurations": [
-        
         {
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceFolder}\\indexairiq.js"
+            "preLaunchTask": "build-e2f",
+            "outFiles": ["${workspaceFolder}/dist/e2f/e2fcrwler.js"],
+            "program": "${workspaceFolder}/dist/e2f/indexe2f.js"
         }
     ]
 }
