@@ -16,13 +16,13 @@ export class Logger {
     static log(type, message) {
         switch (type) {
             case "info":
-            Logger._write("info",message);
+            Logger._write(arguments);
                 break;
             case "warning":
-                Logger._write("warning",message);
+                Logger._write(arguments);
                 break;
             case "error":
-                Logger._write("error",message);
+                Logger._write(arguments);
                 break;
             default:
                 break;
@@ -32,8 +32,9 @@ export class Logger {
     static _write(type) {
         var time = moment().format("HH:mm:ss.SSS");
         //arguments.splice(0)
-        var args = Array.from(arguments);
-        //args.splice(0);
+        var args = Array.from(arguments[0]);
+        type = args[0];
+        args.splice(0,1);
     
         args.unshift(time);
         args.unshift(type.toUpperCase());
@@ -61,11 +62,11 @@ export class E2FCrawler {
             referrer: "no-referrer", // no-referrer, *client
             body: JSON.stringify(searchOption.data), // body data type must match "Content-Type" header
         })
-        .then(response => {
+        .then(async response => {
             Logger.log("info", "Response received");
-            this.data = response.json();
-            this.finalData = this.transformData(this.data);
-            return response.json();
+            this.data = await response.json();
+            this.finalData = await this.transformData(this.data);
+            return this.data;
         })
         .catch(reason => {
             Logger.log("error", reason);
@@ -73,11 +74,12 @@ export class E2FCrawler {
         }); // parses JSON response into native Javascript objects 
     }
 
-    transformData(data) {
-        if(data===null || data===undefined || data.length===0) return;
+    async transformData(data) {
+        if(data===null || data===undefined || !data.status || data.result.length===0) return;
 
         let parsedDataSet = [];
         let parsedRecord = {};
+        data = data.result;
 
         for(var i=0; i<data.length; i++) {
             try
@@ -88,17 +90,17 @@ export class E2FCrawler {
                     flight_number: dataItem.flight_no,
                     departure: {
                         id: -1,
-                        circle: _getCircleName(dataItem.destn, 0).then(result => result).catch(reason => Logger.log('error', reason)),
+                        circle: await this._getCircleName(dataItem.destn, 0).then(result => result).catch(reason => Logger.log('error', reason)),
                         time: dataItem.travel_time,
                         date: dataItem.travel_date,
-                        epoch_date: _getDate(dataItem.travel_date, dataItem.travel_time).then(result => result).catch(reason => Logger.log('error', reason))
+                        epoch_date: await this._getDate(dataItem.travel_date, dataItem.travel_time).then(result => result).catch(reason => Logger.log('error', reason))
                     },
                     arrival: {
                         id: -1,
-                        circle: _getCircleName(dataItem.destn, 1).then(result => result).catch(reason => Logger.log('error', reason)),
+                        circle: await this._getCircleName(dataItem.destn, 1).then(result => result).catch(reason => Logger.log('error', reason)),
                         time: dataItem.arrival_time,
                         date: dataItem.arrival_date,
-                        epoch_date: _getDate(dataItem.arrival_date, dataItem.arrival_time).then(result => result).catch(reason => Logger.log('error', reason))
+                        epoch_date: await this._getDate(dataItem.arrival_date, dataItem.arrival_time).then(result => result).catch(reason => Logger.log('error', reason))
                     },
 
                     ticket_type: 'Economy',
@@ -125,7 +127,7 @@ export class E2FCrawler {
         if(circle!==null && circle!==undefined && circle.indexOf('to')>-1) {
             let circles = circle.split('to');
             if(circles.length>0) {
-                circleName = circles[index];
+                circleName = circles[index].trim();
             }
         }
 
@@ -135,7 +137,7 @@ export class E2FCrawler {
     async _getDate(strDate, strTime) {
         let dt = Date.now();
         try{
-            dt = new Date(`${strDate} ${strTime}`);
+            dt = Date.parse(`${strDate} ${strTime}`);
         }
         catch(e) {
             Logger.log('error', e);

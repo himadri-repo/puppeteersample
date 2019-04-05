@@ -2,6 +2,7 @@
 const cron = require("node-cron");
 const express = require("express");
 const fs = require("fs");
+const datstore = require('../../radharani/e2fdatastore');
 //require("babel-core/register");
 //require("babel-polyfill");
 
@@ -23,6 +24,19 @@ response.then(data => {
     Logger.log("info", JSON.stringify(data.result));
 
     Logger.log('info', JSON.stringify(e2fcrawler.finalData));
+
+    let runid = `${uuidv4()}_${moment().format("DD-MMM-YYYY HH:mm:ss.SSS")}`;
+    datstore.saveCircleBatchData(runid, e2fcrawler.finalData, "", function(rrid) {
+        datstore.finalization(rrid, () => {
+            Logger.log('info', 'Finished');
+
+            process.removeAllListeners("unhandledRejection");
+            process.removeAllListeners('exit');
+            process.removeAllListeners();
+            return;
+        });
+        return;
+    });
 }).catch(error => {
     Logger.log("error", error);
 });
