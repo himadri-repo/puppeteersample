@@ -485,7 +485,7 @@ function updateTicketData(conn, ticket, runid, callback) {
     let updateStatus = null;
     let deptDate = moment(new Date(ticket.departure.epoch_date)).format("YYYY-MM-DD HH:mm");
     let ticket_no = ticket.recid;
-    var updateSql = `update tickets_tbl set no_of_person=${ticket.availability}, max_no_of_person=${ticket.availability}, availibility= ${ticket.availability}, available='${ticket.availability>0?'YES':'NO'}', price=${ticket.price}, total=${ticket.price}, last_sync_key='${runid}' where source='${ticket.departure.id}' and destination='${ticket.arrival.id}' and departure_date_time='${deptDate}' and ticket_no='TKT-${ticket_no}' and airline='${ticket.flight_id}' and data_collected_from='e2f'`;
+    var updateSql = `update tickets_tbl set no_of_person=${ticket.availability}, max_no_of_person=${ticket.availability}, availibility= ${ticket.availability}, available='${ticket.availability>0?'YES':'NO'}', price=${ticket.price}, total=${ticket.price}, last_sync_key='${runid}' where source='${ticket.departure.id}' and destination='${ticket.arrival.id}' and ticket_no='TKT-${ticket_no}' and airline='${ticket.flight_id}' and data_collected_from='e2f'`;
 
     return new Promise((resolve, reject) => {
         conn.query(updateSql, function (err, data) {
