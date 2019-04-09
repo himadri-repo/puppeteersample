@@ -29,6 +29,7 @@ const USERINPUT = {
 app = express();
 
 const TIMEOUT = 5000;
+const POSTBACK_TIMEOUT = 3000;
 
 var browser = null;
 var page = null;
@@ -52,6 +53,12 @@ function log() {
     console.log.apply(console, args);
 }
 
+async function takeSnapshot(filename) {
+    var time = moment().format("HH_mm_ss_SSS");
+    await page.screenshot({path: `${filename}-${time}.png`});
+}
+
+let pageLoaded = true;
 async function navigatePage(pageName) {
     try
     {
@@ -61,7 +68,7 @@ async function navigatePage(pageName) {
                 headless:true,
                 ignoreHTTPSErrors: true,
                 ignoreDefaultArgs: ['--enable-automation'],
-                args: ['--start-fullscreen']
+                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
                 //slowMo: 100
             }).catch((reason) => {
                 log(reason);
@@ -78,6 +85,7 @@ async function navigatePage(pageName) {
             log("Load -> " + interceptedRequest.url());
         });*/
         //const response = await page.goto("https://github.com/login");
+        await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1");
         let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
         //log(await page.cookies());
         //await page.waitForNavigation();
@@ -86,9 +94,35 @@ async function navigatePage(pageName) {
         pageConfig = metadata.pages.find(pg => {
             return response.url().indexOf(pg.name)>-1;
         });
+        
+        page.on('domcontentloaded',()=> {
+            //log('dom even fired');
+            pageLoaded = true;
+        });
 
         var actionItem = pageConfig.actions[0];
         
+        page.hackyWaitForFunction = (predicate, opts = {}) => {
+            const start = new Date()
+            const {timeout = 10000, polling = 10} = opts
+        
+            return new Promise((resolve, reject) => {
+              const check = async () => {
+                const result = await predicate();
+                //console.log(`result => ${result}`);
+                if (result) {
+                  resolve(result);
+                } else if (new Date() - start > timeout) {
+                  reject('Function timed out');
+                } else {
+                  setTimeout(check, polling);
+                }
+              }
+        
+              setTimeout(check, polling);
+            })
+          }
+
         /* puppeteer issues*/
         // const elementHandle = await page.$('body').catch((reason)=> log(reason));
         // elementHandle.constructor.prototype.boundingBox = async function() {
@@ -126,8 +160,30 @@ async function navigatePage(pageName) {
                     //log('Keyed');
                 }
                 else if(val.action==='click') { 
-
+                    pageLoaded = false;
                     await page.click(val.selector);
+                    //await page.waitFor(200);
+                    if(val.haspostback!==undefined && val.haspostback!==null && val.haspostback) {
+                        //log(`N01 : haspostback? ${val.selector}`);
+                        if(!pageLoaded) {
+                            //log(`N01 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
+                            
+                            await page.hackyWaitForFunction((isLoaded) => {
+                                let time = new Date().toLocaleTimeString();
+                                //console.log(`${time} N01 checking isLoaded ${pageLoaded}`);
+                                return pageLoaded;
+                            }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
+                                log(`N01 = ${reason} - ${pageLoaded}`); 
+                                await takeSnapshot('N01');
+                            });    
+
+                            // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
+                            //     log(`N01 = ${reason} - ${pageLoaded}`); 
+                            //     await takeSnapshot('N01');
+                            // });
+                        }
+                    }
+
                     if(val.checkselector!=='' && val.checkselector!==null) {
                         await page.waitForSelector(val.checkselector, {timeout: TIMEOUT});
                     }
@@ -426,7 +482,7 @@ function transformData(textValue, providedData) {
 async function performUserOperation(objPage, userInput, data, ndx, runid, callback) {
     try
     {
-        let delay = 300;
+        let delay = 200; //300
         userInput = userInput || USERINPUT;
         var onError = false;
         //log(`performUserOperation ${userInput.action} starting`);
@@ -609,8 +665,29 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                     if(!(inputControl instanceof Array)) {
                         // if(userInput.delaybefore>-1)
                         //     await page.waitFor(userInput.delaybefore).catch(reason => log(`E14 => ${reason}`));
-                        
+                        pageLoaded = false;
                         await page.click(userInput.selector).catch(reason => log(`E13 => ${reason}`));
+                        //await page.waitFor(200);
+                        if(userInput.haspostback!==undefined && userInput.haspostback!==null && userInput.haspostback) {
+                            //log(`N03 : haspostback? ${userInput.selector}`);
+                            if(!pageLoaded) {
+                                //log(`N03 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
+                                await page.hackyWaitForFunction((isLoaded) => {
+                                    let time = new Date().toLocaleTimeString();
+                                    //console.log(`${time} N03 checking isLoaded ${pageLoaded}`);
+                                    return pageLoaded;
+                                }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
+                                    log(`N03 = ${reason} - ${pageLoaded}`); 
+                                    await takeSnapshot('N03');
+                                });    
+
+                                // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
+                                //     log(`N03 = ${reason} - ${pageLoaded}`); 
+                                //     await takeSnapshot('N03');
+                                // });    
+                            }
+                        }
+    
                         //await page.waitFor(300);
 
                         // if(userInput.delayafter>-1)
@@ -686,7 +763,7 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                                         //log("Going to perform Task", i);
                                         let returnValue = await performTask(objPage, userInput, inputControl, targetElement, tsk, i, runid).catch(reason => log(`E20 => ${reason}`));
                                         //log("Task done", tsk, i);
-                                        await page.waitFor(400).catch(reason => log(`E21 => ${reason}`)); //delay to get UI refreshed with json data
+                                        await page.waitFor(200).catch(reason => log(`E21 => ${reason}`)); //delay to get UI refreshed with json data
                                         if(returnValue===-1 || (userInput.exit!==undefined && userInput.exit!==null && userInput.exit)) 
                                         {
                                             //userInput.exit = false;
@@ -830,8 +907,30 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                     // });
                     if(task!==null && task.selector!==null && task.selector!==undefined && task.selector!=="") {
                         //log('task.selector direct', task.selector);
+                        pageLoaded = false;
                         await page.click(task.selector).catch(reason=> log('task.selector', reason));
-                        await page.waitFor(600);
+                        //await page.waitFor(200);
+                        if(task.haspostback!==undefined && task.haspostback!==null && task.haspostback) {
+                            //log(`N02 : haspostback? ${task.selector}`);
+                            if(!pageLoaded) {
+                                //log(`N02 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
+                                await page.hackyWaitForFunction((isLoaded) => {
+                                    let time = new Date().toLocaleTimeString();
+                                    //console.log(`${time} N02 checking isLoaded ${pageLoaded}`);
+                                    return pageLoaded;
+                                }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
+                                    log(`N02 = ${reason} - ${pageLoaded}`); 
+                                    await takeSnapshot('N02');
+                                });    
+
+                                // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
+                                //     log(`N02 = ${reason} - ${pageLoaded}`); 
+                                //     await takeSnapshot('N02');
+                                // });
+                            }
+                        }
+
+                        //await page.waitFor(600);
                     }
                     else {
                         if(element.click) {
@@ -840,7 +939,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                                 await element.click().catch((reason)=> {
                                     log('click error', reason);
                                 });
-                                await page.waitFor(600);
+                                await page.waitFor(200); //300
                             }
                             catch(ee1) {
                                 log('element error', ee1);
@@ -1029,12 +1128,12 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 // }
 
 var excutionStarted = false;
-cron.schedule("*/15 * * * *", function() {
-    log("Cron started");
-    if(excutionStarted) {
-        log('Previous process still running ...');
-        return false;
-    }
+// cron.schedule("*/15 * * * *", function() {
+//     log("Cron started");
+//     if(excutionStarted) {
+//         log('Previous process still running ...');
+//         return false;
+//     }
 
     try
     {
@@ -1092,6 +1191,6 @@ cron.schedule("*/15 * * * *", function() {
         log(e);
         excutionStarted = false;
     }
-});
+// });
 
-app.listen("3131");
+// app.listen("3131");

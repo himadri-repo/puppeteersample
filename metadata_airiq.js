@@ -336,6 +336,7 @@ module.exports = {
                             type: 'button',
                             value: '',
                             action: 'click',
+                            haspostback: true,
                             checkselector: '#horizontalTab > ul > li'
                         }                        
                     ]
@@ -404,6 +405,7 @@ module.exports = {
                             type: 'hyperlink',
                             value: '',
                             action: 'click',
+                            haspostback: true,
                             delayafter: 400,
                             checkselector: 'input#check_out.form-control.hasDatepicker',
                             next: 3
@@ -475,6 +477,7 @@ module.exports = {
                                     selector: 'a#SearchBtn.btn',
                                     value: '',
                                     action: 'click',
+                                    haspostback: true,
                                     checkselector: 'div.flit-detls, #empty_lbl' /* .flit-detls */
                                 },
                                 {

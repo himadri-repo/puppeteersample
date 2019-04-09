@@ -46,12 +46,12 @@ function startProcess() {
 }
 
 var excutionStarted = false;
-// cron.schedule("*/10 * * * *", function() {
-//     Logger.log("info", "Cron started");
-//     if(excutionStarted) {
-//         Logger.log("info", 'Previous process still running ...');
-//         return false;
-//     }
+cron.schedule("*/10 * * * *", function() {
+    Logger.log("info", "Cron started");
+    if(excutionStarted) {
+        Logger.log("info", 'Previous process still running ...');
+        return false;
+    }
 
     try
     {
@@ -67,6 +67,6 @@ var excutionStarted = false;
     finally {
         excutionStarted = false;
     }
-// });
+});
 
-// app.listen("3232");
+app.listen("3232");

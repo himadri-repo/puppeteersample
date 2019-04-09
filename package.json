@@ -13,6 +13,7 @@
     "serve-airiq": "node dist/airiq/index.js",
     "start-airiq": "nodemon --exec babel-node src/airiq/index.js",
     "start-e2f": "npm run build-e2f && node dist/e2f/indexe2f.js",
+    "serve-e2f": "node dist/e2f/indexe2f.js",
     "airiq": "set NODE_ENV=production && nodemon --exec babel-node src/airiq/index.js",
     "airiq-dev": "set NODE_ENV=development && nodemon --exec babel-node src/airiq/index.js",
     "build": "babel src/nept --out-dir dist/nept",
