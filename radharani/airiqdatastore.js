@@ -9,27 +9,27 @@ function getDBPool() {
     if(pool) return pool;
 
     //Local DB
-    pool = mysql.createPool({
-        connectionLimit: 30,
-        connectTimeout: 15000,
-        timeout: 60*1000,
-        host: "139.59.92.9",
-        user: "oxyusr",
-        password: "oxy@123",
-        database: "oxytra",
-        port: 3306
-    });
-
-    //Remote DB
     // pool = mysql.createPool({
     //     connectionLimit: 30,
     //     connectTimeout: 15000,
-    //     host: "www.oxytra.com",
+    //     timeout: 60*1000,
+    //     host: "139.59.92.9",
     //     user: "oxyusr",
-    //     password: "oxy@321-#",
+    //     password: "oxy@123",
     //     database: "oxytra",
     //     port: 3306
     // });
+
+    //Remote DB
+    pool = mysql.createPool({
+        connectionLimit: 30,
+        connectTimeout: 15000,
+        host: "www.oxytra.com",
+        user: "oxyusr",
+        password: "oxy@321-#",
+        database: "oxytra",
+        port: 3306
+    });
 
     return pool;
 }
@@ -411,7 +411,7 @@ function getTicketData(conn, ticket, callback) {
     try
     {
         let deptDate = moment(new Date(ticket.departure.epoch_date)).format("YYYY-MM-DD HH:mm");
-        let qry = `select id from tickets_tbl where source=${ticket.departure.id} and destination=${ticket.arrival.id} and departure_date_time='${deptDate}' and ticket_no='TKT-${ticket.recid}'`;
+        let qry = `select id from tickets_tbl where source=${ticket.departure.id} and destination=${ticket.arrival.id} and ticket_no='TKT-${ticket.recid}'`;
 
         conn.query(qry, function(err, data) {
             if(err) {
@@ -454,7 +454,7 @@ function insertTicketData(conn, ticket, runid, callback) {
     let ticket_no = ticket.recid;
 
     var insertSql = `INSERT INTO tickets_tbl (source, destination, source1, destination1, trip_type, departure_date_time, arrival_date_time, flight_no, terminal, departure_date_time1, arrival_date_time1, flight_no1, terminal1, terminal2, terminal3, no_of_person, max_no_of_person, no_of_stops, stops_name, no_of_stops1, stops_name1, class, class1, airline, airline1, aircode, aircode1, pnr, ticket_no, price, baggage, meal, markup, admin_markup, discount, total, sale_type, refundable, availibility, user_id, remarks, approved, available, data_collected_from, last_sync_key) 
-    VALUES ('${ticket.departure.id}','${ticket.arrival.id}',0,0,'ONE','${deptDate}','${arrvDate}','${ticket.flight_number}','NA','${emptyDate}','${emptyDate}','','','','',${ticket.availability},${ticket.availability},0,'NA',0,'NA','${ticket.ticket_type.toUpperCase()}','','${ticket.flight_id}',0,'${ticket.flight}','','','TKT-${ticket_no}',${ticket.price},0,0,0,0,0,${ticket.price},'request','N',${ticket.availability},104,'',1,'${ticket.availability>0?'YES':'NO'}', 'airiq', '${runid}')`;
+    VALUES ('${ticket.departure.id}','${ticket.arrival.id}',0,0,'ONE','${deptDate}','${arrvDate}','${ticket.flight_number}','NA','${emptyDate}','${emptyDate}','','','','',${ticket.availability},${ticket.availability},0,'NA',0,'NA','${ticket.ticket_type.toUpperCase()}','','${ticket.flight_id}',0,'${ticket.flight}','','','TKT-${ticket_no}',${ticket.price},0,0,0,300,0,${ticket.price},'request','N',${ticket.availability},104,'',2,'${ticket.availability>0?'YES':'NO'}', 'airiq', '${runid}')`;
     //console.log(insertSql);
     conn.query(insertSql, function (err, data) {
         if (err) {

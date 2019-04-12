@@ -16,7 +16,7 @@ function repeatSource(elementData) {
         data = elementData.match(strreg).map((val, idx) => val.replace('>','').replace('<','')).filter((val, idx) => {
             //console.log(`${idx} - ${val}`);
             //if(idx>0 && idx%2===0) {
-            //if(idx>0 && val.indexOf('Bagdogra // Delhi')>-1) {
+            //if(idx>0 && val.indexOf('Guwahati // Kolkata')>-1) {
             if(idx>0) {
                 //console.log(`${idx} - ${val}`);
                 return val.replace('>','').replace('<','');
@@ -86,8 +86,8 @@ function contentParser(content) {
             let time = src_dest[1].trim();
 
             //console.log(`${date} - ${time}`);
-            deal.departure = {"circle": deal.departure.circle, "date": date, "time": time, epoch_date: Date.parse(`${date} ${time}:00.000+05:30`)};
-            deal.arrival = {"circle": deal.arrival.circle, "date": date, "time": time, epoch_date: Date.parse(`${date} ${time}:00.000+05:30`)};
+            deal.departure = {"circle": deal.departure.circle, "date": date, "time": time, epoch_date: Date.parse(`${date} ${time}:00.000`)}; //+05:30
+            deal.arrival = {"circle": deal.arrival.circle, "date": date, "time": time, epoch_date: Date.parse(`${date} ${time}:00.000`)}; //+05:30
         }    
         else {
             deal.departure = {"circle": deal.departure.circle, "date": '', "time": '', epoch_date: new Date()};
@@ -171,7 +171,7 @@ function dataParser(content) {
                 circle: departure[0],
                 time: departure[1],
                 date: src_dest[2],
-                epoch_date: Date.parse(`${src_dest[2]} ${departure[1]}:00.000+05:30`)
+                epoch_date: Date.parse(`${src_dest[2]} ${departure[1]}:00.000`) /* +05:30 */
             };
         }
 
@@ -181,7 +181,7 @@ function dataParser(content) {
                 circle: arrival[0],
                 time: arrival[1],
                 date: src_dest[4],
-                epoch_date: Date.parse(`${src_dest[4]} ${arrival[1]}:00.000+05:30`)
+                epoch_date: Date.parse(`${src_dest[4]} ${arrival[1]}:00.000`) /* +05:30 */
             };
         }
 
@@ -484,7 +484,7 @@ module.exports = {
                                     task_id: 4,
                                     task_name: 'read content',
                                     action: 'read',
-                                    selector: '.flit-detls tr>input[type=hidden i]',
+                                    selector: '.flit-detls tr>input[type=hidden i], #empty_lbl',
                                     read_type: 'attributes',
                                     attributes: ['value'],
                                     plugins: [

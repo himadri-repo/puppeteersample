@@ -69,7 +69,6 @@ async function navigatePage(pageName) {
                 ignoreHTTPSErrors: true,
                 ignoreDefaultArgs: ['--enable-automation'],
                 args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
-                //slowMo: 100
             }).catch((reason) => {
                 log(reason);
                 return;
@@ -175,6 +174,7 @@ async function navigatePage(pageName) {
                             }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
                                 log(`N01 = ${reason} - ${pageLoaded}`); 
                                 await takeSnapshot('N01');
+                                await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                             });    
 
                             // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
@@ -679,6 +679,7 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                                 }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
                                     log(`N03 = ${reason} - ${pageLoaded}`); 
                                     await takeSnapshot('N03');
+                                    await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                                 });    
 
                                 // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
@@ -921,6 +922,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                                 }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
                                     log(`N02 = ${reason} - ${pageLoaded}`); 
                                     await takeSnapshot('N02');
+                                    await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                                 });    
 
                                 // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
@@ -1128,12 +1130,12 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 // }
 
 var excutionStarted = false;
-// cron.schedule("*/15 * * * *", function() {
-//     log("Cron started");
-//     if(excutionStarted) {
-//         log('Previous process still running ...');
-//         return false;
-//     }
+cron.schedule("*/15 * * * *", function() {
+    log("Cron started");
+    if(excutionStarted) {
+        log('Previous process still running ...');
+        return false;
+    }
 
     try
     {
@@ -1155,7 +1157,7 @@ var excutionStarted = false;
             {
                 log('Process completed.');
 
-                log(JSON.stringify(capturedData));
+                //log(JSON.stringify(capturedData));
                 //log('Closing Browser');
                 //page.waitFor(500);
                 // browser.close();
@@ -1191,6 +1193,6 @@ var excutionStarted = false;
         log(e);
         excutionStarted = false;
     }
-// });
+});
 
-// app.listen("3131");
+app.listen("3131");
