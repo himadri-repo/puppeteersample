@@ -7,6 +7,12 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Launch airiq Program",
+            "program": "${workspaceFolder}/indexairiq.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch Program",
             "preLaunchTask": "build-e2f",
             "outFiles": ["${workspaceFolder}/dist/e2f/e2fcrwler.js"],

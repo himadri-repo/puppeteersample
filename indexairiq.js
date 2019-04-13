@@ -11,6 +11,41 @@ const puppeteer = require('puppeteer');
 const metadata = require('./metadata_airiq');
 const delay = require('delay');
 const moment = require('moment');
+const winston = require('winston');
+const {combine, timestamp, label, printf} = winston.format;
+const DailyRotateFile = require('winston-daily-rotate-file');
+
+var customLevels = {
+    levels: {
+      debug: 0,
+      info: 1,
+      warn: 2,
+      error: 3
+    },
+    colors: {
+      debug: 'blue',
+      info: 'green',
+      warn: 'yellow',
+      error: 'red'
+    }
+};
+
+const myFormat = printf(({ level, message, label, timestamp }) => {
+    return `${timestamp} [${label}] ${level}: ${message}`;
+});
+
+var timeFormatFn = function() {
+    'use strict';
+    return moment().format(cfg.timeFormat);
+};
+
+winston.configure({
+    defaultMeta: {service: 'indexairiq-crawler'},
+    format: combine(label({label: 'airiqcrawler'}), timestamp(), myFormat),
+    transports:[
+       new winston.transports.File({filename: `execution_log_${moment().format("D_M_YYYY")}.log`, })
+    ]
+});
 
 const USERINPUT = {
     id: 1,
@@ -28,8 +63,8 @@ const USERINPUT = {
 
 app = express();
 
-const TIMEOUT = 5000;
-const POSTBACK_TIMEOUT = 3000;
+const TIMEOUT = 8000;
+const POSTBACK_TIMEOUT = 4000;
 
 var browser = null;
 var page = null;
@@ -51,6 +86,7 @@ function log() {
 
     args.unshift(time);
     console.log.apply(console, args);
+    winston.info(args.join(' '));
 }
 
 async function takeSnapshot(filename) {
@@ -173,7 +209,7 @@ async function navigatePage(pageName) {
                                 return pageLoaded;
                             }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
                                 log(`N01 = ${reason} - ${pageLoaded}`); 
-                                await takeSnapshot('N01');
+                                //await takeSnapshot('N01');
                                 await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                             });    
 
@@ -678,7 +714,7 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                                     return pageLoaded;
                                 }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
                                     log(`N03 = ${reason} - ${pageLoaded}`); 
-                                    await takeSnapshot('N03');
+                                    //await takeSnapshot('N03');
                                     await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                                 });    
 
@@ -921,7 +957,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                                     return pageLoaded;
                                 }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
                                     log(`N02 = ${reason} - ${pageLoaded}`); 
-                                    await takeSnapshot('N02');
+                                    //await takeSnapshot('N02');
                                     await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                                 });    
 
@@ -951,8 +987,9 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 
                     if(task.checkselector!=='' && task.checkselector!==undefined && task.checkselector!==null) {
                         //let selectedItem = await page.$(task.checkselector).catch(reason=> log('checkselector not found', reason));
-                        let selectedItem = await page.waitForSelector(task.checkselector, {timeout: TIMEOUT}).catch((reason) => {
+                        let selectedItem = await page.waitForSelector(task.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
                             log(`eclick - child - ${reason}`);
+                            await takeSnapshot('eclick-child');
                         });
 
                         if(selectedItem===undefined || selectedItem===null) {
