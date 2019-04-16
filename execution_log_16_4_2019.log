@@ -1,0 +1,53 @@
+2019-04-16T03:35:44.575Z [airiqcrawler] info: 09:05:44.574 N01 = Function timed out - false
+2019-04-16T03:35:54.379Z [airiqcrawler] info: 09:05:54.379 0 - NA
+2019-04-16T03:37:53.418Z [airiqcrawler] info: 09:07:53.415 click error Error: Node is detached from document
+2019-04-16T03:37:54.484Z [airiqcrawler] info: 09:07:54.483 0 - NA
+2019-04-16T03:37:55.250Z [airiqcrawler] info: 09:07:55.250 Operation completed
+2019-04-16T03:37:55.251Z [airiqcrawler] info: 09:07:55.251 Process completed.
+2019-04-16T03:39:13.442Z [airiqcrawler] info: 09:09:13.441 N01 = Function timed out - false
+2019-04-16T03:39:18.394Z [airiqcrawler] info: 09:09:18.393 0 - NA
+2019-04-16T03:39:25.070Z [airiqcrawler] info: 09:09:25.070 0 - NA
+2019-04-16T03:39:25.681Z [airiqcrawler] info: 09:09:25.681 Operation completed
+2019-04-16T03:39:25.683Z [airiqcrawler] info: 09:09:25.683 Process completed.
+2019-04-16T03:40:29.518Z [airiqcrawler] info: 09:10:29.516 N01 = Function timed out - false
+2019-04-16T03:40:38.523Z [airiqcrawler] info: 09:10:38.523 err1
+2019-04-16T03:40:38.530Z [airiqcrawler] info: 09:10:38.524 Error: waiting for selector "#ContentPlaceHolder1_UpdatePanel1" failed: timeout 8000ms exceeded
+2019-04-16T03:40:38.530Z [airiqcrawler] info: 09:10:38.530 0 - NA
+2019-04-16T03:40:38.742Z [airiqcrawler] info: 09:10:38.741 0 - NA
+2019-04-16T03:40:39.507Z [airiqcrawler] info: 09:10:39.506 Operation completed
+2019-04-16T03:40:39.508Z [airiqcrawler] info: 09:10:39.508 Process completed.
+2019-04-16T03:42:24.204Z [airiqcrawler] info: 09:12:24.202 N01 = Function timed out - false
+2019-04-16T03:42:25.212Z [airiqcrawler] info: 09:12:25.212 0 - NA
+2019-04-16T03:42:31.958Z [airiqcrawler] info: 09:12:31.957 0 - NA
+2019-04-16T03:42:32.654Z [airiqcrawler] info: 09:12:32.653 Operation completed
+2019-04-16T03:42:32.655Z [airiqcrawler] info: 09:12:32.654 Process completed.
+2019-04-16T03:42:53.622Z [airiqcrawler] info: 09:12:53.621 0 - NA
+2019-04-16T03:43:00.335Z [airiqcrawler] info: 09:13:00.334 0 - NA
+2019-04-16T03:43:00.961Z [airiqcrawler] info: 09:13:00.961 Operation completed
+2019-04-16T03:43:00.962Z [airiqcrawler] info: 09:13:00.961 Process completed.
+2019-04-16T03:47:44.401Z [airiqcrawler] info: 09:17:44.400 N01 = Function timed out - false
+2019-04-16T03:47:45.419Z [airiqcrawler] info: 09:17:45.418 0 - NA
+2019-04-16T03:47:52.298Z [airiqcrawler] info: 09:17:52.297 0 - NA
+2019-04-16T03:47:52.974Z [airiqcrawler] info: 09:17:52.974 Operation completed
+2019-04-16T03:47:52.975Z [airiqcrawler] info: 09:17:52.974 Process completed.
+2019-04-16T03:50:32.998Z [airiqcrawler] info: 09:20:32.997 N01 = Function timed out - false
+2019-04-16T03:50:34.005Z [airiqcrawler] info: 09:20:34.005 0 - NA
+2019-04-16T03:52:16.033Z [airiqcrawler] info: 09:22:16.031 N01 = Function timed out - false
+2019-04-16T03:52:17.383Z [airiqcrawler] info: 09:22:17.382 0 - NA
+2019-04-16T03:52:32.153Z [airiqcrawler] info: 09:22:32.153 0 - NA
+2019-04-16T03:52:32.872Z [airiqcrawler] info: 09:22:32.871 Operation completed
+2019-04-16T03:52:32.873Z [airiqcrawler] info: 09:22:32.873 Process completed.
+2019-04-16T03:56:50.697Z [airiqcrawler] info: 09:26:50.696 N01 = Function timed out - false
+2019-04-16T03:56:51.706Z [airiqcrawler] info: 09:26:51.706 0 - NA
+2019-04-16T03:57:00.082Z [airiqcrawler] info: 09:27:00.081 0 - NA
+2019-04-16T03:57:00.754Z [airiqcrawler] info: 09:27:00.754 Operation completed
+2019-04-16T03:57:00.755Z [airiqcrawler] info: 09:27:00.754 Process completed.
+2019-04-16T04:00:55.166Z [airiqcrawler] info: 09:30:55.164 N01 = Function timed out - false
+2019-04-16T04:00:57.615Z [airiqcrawler] info: 09:30:57.615 0 - NA
+2019-04-16T04:01:03.071Z [airiqcrawler] info: 09:31:03.071 N02 = Function timed out - false
+2019-04-16T04:01:10.162Z [airiqcrawler] info: 09:31:10.162 N02 = Function timed out - false
+2019-04-16T04:01:17.341Z [airiqcrawler] info: 09:31:17.341 N02 = Function timed out - false
+2019-04-16T04:02:08.040Z [airiqcrawler] info: 09:32:08.038 N01 = Function timed out - false
+2019-04-16T04:02:09.077Z [airiqcrawler] info: 09:32:09.076 0 - NA
+2019-04-16T04:02:22.211Z [airiqcrawler] info: 09:32:22.210 N02 = Function timed out - false
+2019-04-16T04:02:43.576Z [airiqcrawler] info: 09:32:43.576 N02 = Function timed out - false
