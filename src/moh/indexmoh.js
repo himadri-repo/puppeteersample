@@ -117,7 +117,7 @@ async function navigatePage(pageName) {
         });
         
         page.on('domcontentloaded',()=> {
-            //log('dom even fired');
+            log('dom even fired');
             pageLoaded = true;
         });
 
@@ -128,20 +128,25 @@ async function navigatePage(pageName) {
             const {timeout = 10000, polling = 10} = opts
         
             return new Promise((resolve, reject) => {
-              const check = async () => {
-                const result = await predicate();
-                //console.log(`result => ${result}`);
-                if (result) {
-                  resolve(result);
-                } else if (new Date() - start > timeout) {
-                  reject('Function timed out');
-                } else {
-                  setTimeout(check, polling);
+                const check = async () => {
+                    try
+                    {
+                        const result = await predicate();
+                        //console.log(`result => ${result}`);
+                        if (result) {
+                            resolve(result);
+                        } else if (new Date() - start > timeout) {
+                            resolve('Timeout over');
+                        } else {
+                            setTimeout(check, polling);
+                        }
+                    }
+                    catch(e) {
+                        reject(e);
+                    }
                 }
-              }
-        
-              setTimeout(check, polling);
-            })
+                setTimeout(check, polling);
+            });
         }
 
         await page.waitFor(3000).catch((reason) => { log(reason) });
@@ -661,13 +666,6 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                 userInput.inputControl = inputControl;
 
                 if(inputControl!=null) {
-                    //log("Going to start operation", inputControl);
-                    // if(inputControl.click)
-                    //     inputControl.click();
-                    // else
-                    // {
-                    //     log(inputControl);
-                    // }
                     if(!(inputControl instanceof Array)) {
                         // if(userInput.delaybefore>-1)
                         //     await page.waitFor(userInput.delaybefore).catch(reason => log(`E14 => ${reason}`));
@@ -921,13 +919,15 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 
                     if(task.haspostback!==undefined && task.haspostback!==null && task.haspostback) {
                         //log(`N02 : haspostback? ${task.selector}`);
+                        let delay = task.postbackdelay || POSTBACK_TIMEOUT;
+                        //log(`Delay = ${delay}`);
                         if(!pageLoaded) {
                             //log(`N02 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
                             await page.hackyWaitForFunction((isLoaded) => {
                                 let time = new Date().toLocaleTimeString();
                                 //console.log(`${time} N02 checking isLoaded ${pageLoaded}`);
                                 return pageLoaded;
-                            }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
+                            }, {polling: 50, timeout: delay}, pageLoaded).catch(async (reason) => { 
                                 log(`N02 = ${reason} - ${pageLoaded}`); 
                                 //await takeSnapshot('N02');
                                 await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
@@ -970,15 +970,15 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                         const { height } = await bodyHandle.boundingBox();
                         await bodyHandle.dispose();
 
-                        const viewportHeight = page.viewport().height;
-                        let viewportIncr = 0;
-                        while (viewportIncr + viewportHeight < height) {
-                            await page.evaluate(_viewportHeight => {
-                                window.scrollBy(0, _viewportHeight);
-                            }, viewportHeight);
-                            await page.waitFor(25);
-                            viewportIncr = viewportIncr + viewportHeight;
-                        }
+                        // const viewportHeight = page.viewport().height;
+                        // let viewportIncr = 0;
+                        // while (viewportIncr + viewportHeight < height) {
+                        //     await page.evaluate(_viewportHeight => {
+                        //         window.scrollBy(0, _viewportHeight);
+                        //     }, viewportHeight);
+                        //     await page.waitFor(25);
+                        //     viewportIncr = viewportIncr + viewportHeight;
+                        // }
                         
                         await page.waitFor(100);
 
@@ -995,9 +995,9 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                         await page.waitFor(50);
 
                         // Scroll back to top
-                        await page.evaluate(_ => {
-                            window.scrollTo(0, 0);
-                        });
+                        // await page.evaluate(_ => {
+                        //     window.scrollTo(0, 0);
+                        // });
 
                         // Some extra delay to let images load
                         await page.waitFor(50);

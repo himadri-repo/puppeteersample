@@ -32,10 +32,22 @@ function repeatSource(elementData) {
     return data;
 }
 
+var source = "";
+var destination = "";
+
+function parseAirlinesData(content) {
+    let airline = content.match(/\s\b[A-Z]\w+\b/gm);
+
+    if(airline!==null && airline.length>1) {
+        source = airline[0].trim();
+        destination = airline[1].trim();
+    }
+}
+
 function parseContent(content) {
     //console.log(`Data : \n${content}`);
     let contentItem = contentParser(content);
-    //console.log(`Data : ${JSON.stringify(contentItem)}`);
+    console.log(`Data : ${JSON.stringify(contentItem)}`);
     // if(content.indexOf('Seats Available, Please send offline request')>-1 ||
     //     content.indexOf('On Request')>-1) 
 
@@ -48,80 +60,73 @@ function parseContent(content) {
 
 function contentParser(content) {
     let deal = {};
+    let deals = [];
 
     try
     {
         //get class value
-        let src_dest = content.match(/\((.*?)\)/gm);
-        if(src_dest!==null && src_dest!==undefined && src_dest.length>0) {
-            let classValue = `Class (${src_dest[0].replace('(','').replace(')','')})`;
-            deal.flight = classValue;
-            deal.flight_number = 'AIQ-000';
-            deal.ticket_type = 'Economy';
-        }
-        else {
-            deal.flight = '';
-            deal.flight_number = 'AIQ-000';
-            deal.ticket_type = 'Economy';
-        }
+        let src_dest = content.match(/^.*\b(\d{2}\/\d{2}\/\d{4})\b.*$/gm);
+        for(var i=0; i<src_dest.length; i++) {
+            let row = src_dest[i];
+            let src_date = '';
+            let src_time = '';
+            let dst_date = '';
+            let dst_time = '';
+            
+            //console.log(`Row ${i} => ${row}`);
+            let row_parts = row.split('\t');
+            for(var j=0; j<row_parts.length; j++) {
+                let fieldValue = row_parts[j].trim();
+                
+                deal.ticket_type = 'Economy';
+                //deal.departure = deal.departure || {circle: destination};
+                //dal.arrival = deal.arrival || {circle: source};
 
-        //capture circle value;
-        src_dest = content.match(/(([a-zA-Z].*)\s\/\/\s([a-zA-Z].*))/gm);
-        if(src_dest!==null && src_dest!==undefined && src_dest.length>0) {
-            let circle = src_dest[0].split('//');
-            if(circle.length>1) {
-                deal.departure = {"circle": circle[0].trim()};
-                deal.arrival = {"circle": circle[1].trim()};
+                if(fieldValue!==null && fieldValue!=="") {
+                    //console.log(`\tField ${j} => ${fieldValue}`);
+
+                    switch (j) {
+                        case 0: //date
+                            let dateParts = fieldValue.split('/');
+                            src_date = dateParts[1]+'/'+dateParts[0]+'/'+dateParts[2];
+                            dst_date = fieldValue;
+                            break;
+                        case 1: //amount
+                            deal.price = parseFloat(fieldValue);
+                            break;
+                        case 3: //airline
+                            deal.flight = fieldValue;
+                            break;
+                        case 4: //flight no
+                            deal.flight_number = fieldValue;
+                            break;
+                        case 5: //dept.time
+                            src_time = fieldValue;
+                            break;
+                        case 6: //arrv.time
+                            dst_time = fieldValue;
+                            break;
+                        case 7: //qty
+                            deal.availability = parseInt(fieldValue);
+                            break;
+                        default:
+                            break;
+                    }                    
+                }
             }
-        }
-        else {
-            deal.departure = {"circle": ''};
-            deal.arrival = {"circle": ''};
-        }
+            deal.departure = {'circle': source, 'date': src_date, 'time': src_time, 'epoch_date': Date.parse(`${src_date} ${src_time}:00.000`)};
+            deal.arrival = {'circle': source, 'date': src_date, 'time': dst_time, 'epoch_date': Date.parse(`${src_date} ${dst_time}:00.000`)};
 
-        //Date time
-        src_dest = content.match(/([0-9]{2})\s([a-zA-Z]{3})\s([0-9]{4})|([0-9]{0,2}:[0-9]{0,2})/gm);
-        if(src_dest!==null && src_dest!==undefined && src_dest.length>0) {
-            let date = src_dest[0].trim(); //src_dest[0].replace(' ','/');
-            let time = src_dest[1].trim();
+            console.log(`Data => ${JSON.stringify(deal)}`);
 
-            //console.log(`${date} - ${time}`);
-            deal.departure = {"circle": deal.departure.circle, "date": date, "time": time, epoch_date: Date.parse(`${date} ${time}:00.000`)}; //+05:30
-            deal.arrival = {"circle": deal.arrival.circle, "date": date, "time": time, epoch_date: Date.parse(`${date} ${time}:00.000`)}; //+05:30
-        }    
-        else {
-            deal.departure = {"circle": deal.departure.circle, "date": '', "time": '', epoch_date: new Date()};
-            deal.arrival = {"circle": deal.arrival.circle, "date": '', "time": '', epoch_date: new Date()};
-        }
-
-        //Availability
-        src_dest = content.match(/^(\d+?([0-9]{0,2}))$/gm);
-        if(src_dest!==null && src_dest!==undefined && src_dest.length>0) {
-            let qty = parseInt(src_dest[0].trim());
-
-            deal.availability = qty;
-        }
-        else {
-            deal.availability = -1;
-        }
-
-        //Price
-        src_dest = content.match(/((AQP)\d+)/gm);
-        if(src_dest!==null && src_dest!==undefined && src_dest.length>0) {
-            //console.log(src_dest[0].replace('AQP','').trim());
-            let price = parseFloat(src_dest[0].replace('AQP','').trim());
-
-            deal.price = price;
-        }
-        else {
-            deal.price = -1;
+            deals.push(deal);
         }
     }
     catch(e) {
         console.log(e);
     }
 
-    return deal;
+    return deals;
 }
 
 function assessContent(rawContent, parsedContent, store, runid, idx, callback) {
@@ -371,6 +376,7 @@ module.exports = {
                                     selector: '',
                                     read_type: 'inner-text',
                                     haspostback: true,
+                                    postbackdelay: 1500,
                                     plugins: [
                                         {
                                             parser: function(content) {
@@ -387,13 +393,25 @@ module.exports = {
                                     task_id: 2,
                                     task_name: 'read content',
                                     action: 'read',
+                                    selector: '#ContentPlaceHolder1_lblSectorHeading', /*.flit-detls */
+                                    read_type: 'inner-text',
+                                    plugins: [
+                                        {
+                                            parser: parseAirlinesData,
+                                            assess: function(parsedContent) {},
+                                            persistData: function() { }
+                                        }
+                                    ]
+                                },                                
+                                {
+                                    task_id: 3,
+                                    task_name: 'read content',
+                                    action: 'read',
                                     selector: '#content1 > div > table',
                                     read_type: 'inner-text',
                                     plugins: [
                                         {
-                                            parser: function(content) {
-                                                //console.log(`Month-1: ${content}`);
-                                            },
+                                            parser: parseContent,
                                             assess: function(parsedData) {
                                                 //console.log(JSON.stringify(parsedData));
                                             },
