@@ -20,6 +20,18 @@ function getDBPool() {
     //     port: 3306
     // });
 
+    // pool = mysql.createPool({
+    //     connectionLimit : 1000,
+    //     connectTimeout  : 60 * 60 * 1000,
+    //     acquireTimeout  : 60 * 60 * 1000,
+    //     timeout         : 60 * 60 * 1000,        
+    //     host: "139.59.92.9",
+    //     user: "oxyusr",
+    //     password: "oxy@123",
+    //     database: "oxytra",
+    //     port: 3306
+    // });
+
     //Remote DB
     pool = mysql.createPool({
         connectionLimit: 30,
@@ -481,7 +493,8 @@ function getMissingCities(conn, cities, circleData) {
 
         if(processedCities.indexOf(city)===-1) {
             let savedCityRecord = cities.find((data, idx) => {
-                return data.city.toLowerCase().indexOf(city)===-1;
+                //return data.city.toLowerCase().indexOf(city)===-1;
+                return data.city.toLowerCase().indexOf(city)>-1;
             });
             if(savedCityRecord===undefined || savedCityRecord===null) {
                 if(missingData.indexOf(circleData[i].departure.circle)===-1)
@@ -495,7 +508,8 @@ function getMissingCities(conn, cities, circleData) {
         
         if(processedCities.indexOf(city)===-1) {
             savedCityRecord = cities.find((data, idx) => {
-                return data.city.toLowerCase().indexOf(city)===-1;
+                //return data.city.toLowerCase().indexOf(city)===-1;
+                return data.city.toLowerCase().indexOf(city)>-1;
                 //return data.city.toLowerCase()===city;
             });
             if(savedCityRecord===undefined || savedCityRecord===null) {
@@ -647,7 +661,8 @@ function transformAirlineData(conn, circleData, airlines) {
 
 function saveCity(conn, city, callback) {
     //return new Promise((resolve, reject) => {
-        let qry = `insert into city_tbl(city) values('${city}')`;
+        //let qry = `insert into city_tbl(city) values('${city}')`;
+        let qry = `insert into city_tbl(city, code) values('${city}', '')`;
 
         try
         {

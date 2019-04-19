@@ -7,10 +7,15 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Launch mair Program",
+            "program": "${workspaceFolder}/src/mair/indexmair.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch moh Program",
             "program": "${workspaceFolder}/src/moh/indexmoh.js"
         },
-
         {
             "type": "node",
             "request": "launch",

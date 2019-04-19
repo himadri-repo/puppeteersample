@@ -259,7 +259,7 @@ function finalization(runid, callback) {
             if(err) {
                 console.log(err);
             }
-            var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST' where available='YES' and data_collected_from='moh' and last_sync_key<>'${runid}'`;
+            var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST' where available='YES' and data_collected_from='mair' and last_sync_key<>'${runid}'`;
             
             try {
                 conn.query(sql, function (err, data) {
@@ -420,7 +420,7 @@ function getTicketData(conn, ticket, callback) {
         let deptDate = moment(new Date(ticket.departure.epoch_date)).format("YYYY-MM-DD HH:mm");
         let arrvDate = moment(new Date(ticket.arrival.epoch_date)).format("YYYY-MM-DD HH:mm");
         //let qry = `select id from tickets_tbl where source=${ticket.departure.id} and destination=${ticket.arrival.id} and ticket_no='TKT-${ticket.recid}'`;
-        let qry = `select id from tickets_tbl where source='${ticket.departure.id}' and destination='${ticket.arrival.id}' and departure_date_time='${deptDate}' and departure_date_time='${arrvDate}' and data_collected_from ='moh'`;
+        let qry = `select id from tickets_tbl where source='${ticket.departure.id}' and destination='${ticket.arrival.id}' and departure_date_time='${deptDate}' and departure_date_time='${arrvDate}' and data_collected_from ='mair'`;
 
         conn.query(qry, function(err, data) {
             if(err) {
@@ -441,7 +441,7 @@ function updateTicketData(conn, ticket, runid, callback) {
     let arrvDate = moment(new Date(ticket.arrival.epoch_date)).format("YYYY-MM-DD HH:mm");
     let ticket_no = ticket.recid;
     //var updateSql = `update tickets_tbl set no_of_person=${ticket.availability}, max_no_of_person=${ticket.availability}, availibility= ${ticket.availability}, available='${ticket.availability>0?'YES':'NO'}', price=${ticket.price}, total=${ticket.price}, last_sync_key='${runid}' where source='${ticket.departure.id}' and destination='${ticket.arrival.id}' and ticket_no='TKT-${ticket_no}' and data_collected_from ='airiq'`;
-    var updateSql = `update tickets_tbl set no_of_person=${ticket.availability}, max_no_of_person=${ticket.availability}, availibility= ${ticket.availability}, available='${ticket.availability>0?'YES':'NO'}', price=${ticket.price}, total=${ticket.price}, last_sync_key='${runid}' where source='${ticket.departure.id}' and destination='${ticket.arrival.id}' and departure_date_time='${deptDate}' and departure_date_time='${arrvDate}' and data_collected_from ='moh'`;
+    var updateSql = `update tickets_tbl set no_of_person=${ticket.availability}, max_no_of_person=${ticket.availability}, availibility= ${ticket.availability}, available='${ticket.availability>0?'YES':'NO'}', price=${ticket.price}, total=${ticket.price}, last_sync_key='${runid}' where source='${ticket.departure.id}' and destination='${ticket.arrival.id}' and departure_date_time='${deptDate}' and departure_date_time='${arrvDate}' and data_collected_from ='mair'`;
 
     conn.query(updateSql, function (err, data) {
         if (err) {
@@ -465,7 +465,7 @@ function insertTicketData(conn, ticket, runid, callback) {
     let ticket_no = ticket.recid;
 
     var insertSql = `INSERT INTO tickets_tbl (source, destination, source1, destination1, trip_type, departure_date_time, arrival_date_time, flight_no, terminal, departure_date_time1, arrival_date_time1, flight_no1, terminal1, terminal2, terminal3, no_of_person, max_no_of_person, no_of_stops, stops_name, no_of_stops1, stops_name1, class, class1, airline, airline1, aircode, aircode1, pnr, ticket_no, price, baggage, meal, markup, admin_markup, discount, total, sale_type, refundable, availibility, user_id, remarks, approved, available, data_collected_from, last_sync_key) 
-    VALUES ('${ticket.departure.id}','${ticket.arrival.id}',0,0,'ONE','${deptDate}','${arrvDate}','${ticket.flight_number}','NA','${emptyDate}','${emptyDate}','','','','',${ticket.availability},${ticket.availability},0,'NA',0,'NA','${ticket.ticket_type.toUpperCase()}','','${ticket.flight_id}',0,'${ticket.flight}','','','TKT-',${ticket.price},0,0,0,300,0,${ticket.price},'request','N',${ticket.availability},104,'',1,'${ticket.availability>0?'YES':'NO'}', 'moh', '${runid}')`;
+    VALUES ('${ticket.departure.id}','${ticket.arrival.id}',0,0,'ONE','${deptDate}','${arrvDate}','${ticket.flight_number}','NA','${emptyDate}','${emptyDate}','','','','',${ticket.availability},${ticket.availability},0,'NA',0,'NA','${ticket.ticket_type.toUpperCase()}','','${ticket.flight_id}',0,'${ticket.flight}','','','TKT-',${ticket.price},0,0,0,300,0,${ticket.price},'request','N',${ticket.availability},104,'',1,'${ticket.availability>0?'YES':'NO'}', 'mair', '${runid}')`;
     //console.log(insertSql);
     conn.query(insertSql, function (err, data) {
         if (err) {
@@ -662,7 +662,6 @@ function transformAirlineData(conn, circleData, airlines) {
 
 function saveCity(conn, city, callback) {
     //return new Promise((resolve, reject) => {
-        //let qry = `insert into city_tbl(city) values('${city}')`;
         let qry = `insert into city_tbl(city, code) values('${city}', '')`;
 
         try

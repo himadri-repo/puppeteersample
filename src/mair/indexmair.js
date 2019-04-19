@@ -8,7 +8,7 @@ const fs = require("fs");
 
 const uuidv4 = require('uuid/v4');
 const puppeteer = require('puppeteer');
-const metadata = require('./metadata_moh');
+const metadata = require('./metadata_mair');
 const delay = require('delay');
 const moment = require('moment');
 const winston = require('winston');
@@ -429,8 +429,6 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                             for(var indx=0; indx<keys.length; indx++) {
                                 let keyName = keys[indx].trim();
                                 let impactedRows = metadata.circlecrawlfinished(runid, getStore(), keyName);
-
-                                //log(keyName, impactedRows);
                             }
                             log(`Next operation ${i} starting`);
                         }
@@ -1149,7 +1147,8 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
         let runid = `${uuidv4()}_${moment().format("DD-MMM-YYYY HH:mm:ss.SSS")}`;
         //let crawlingUri = "https://www.neptunenext.com/agent/general/index";
         //let crawlingUri = "https://airiq.in/Admin/Search.aspx";
-        let crawlingUri = "http://www.makeourholiday.com/AgentLogin.aspx";
+        //let crawlingUri = "http://www.makeourholiday.com/AgentLogin.aspx";
+        let crawlingUri = "http://www.mittalair.com/AgentLogin.aspx";
         
         ProcessActivity(crawlingUri, runid).then(()=> {
             //what to do after the promise being called

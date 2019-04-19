@@ -47,7 +47,7 @@ function parseAirlinesData(content) {
 function parseContent(content) {
     //console.log(`Data : \n${content}`);
     let contentItem = contentParser(content);
-    console.log(`Data : ${JSON.stringify(contentItem)}`);
+    //console.log(`Data : ${JSON.stringify(contentItem)}`);
     // if(content.indexOf('Seats Available, Please send offline request')>-1 ||
     //     content.indexOf('On Request')>-1) 
 
@@ -90,7 +90,7 @@ function contentParser(content) {
                         case 0: //date
                             let dateParts = fieldValue.split('/');
                             src_date = dateParts[1]+'/'+dateParts[0]+'/'+dateParts[2];
-                            dst_date = dateParts[1]+'/'+dateParts[0]+'/'+dateParts[2];
+                            dst_date = fieldValue;
                             break;
                         case 1: //amount
                             deal.price = parseFloat(fieldValue);
@@ -272,7 +272,8 @@ function assessor(content, result, store, runid, callback) {
 
 function persistDataItem(result, runid, callback) {
     //const datastore = require('./radharani/datastore');
-    const datastore = require('../radharani/mohdatastore');
+    //const datastore = require('../radharani/mohdatastore');
+    const datastore = require('../../radharani/mairdatastore');
 
     datastore.saveData(result, runid, function(data) {
         //console.log(`Proceed with next record ${JSON.stringify(data)}`);
@@ -282,7 +283,9 @@ function persistDataItem(result, runid, callback) {
 
 function finalizeData(runid, datasourceUrl) {
     //const datastore = require('./radharani/datastore');
-    const datastore = require('../../radharani/mohdatastore');
+    //const datastore = require('../radharani/airiqdatastore');
+    const datastore = require('../../radharani/mairdatastore');
+
     // const datasource = require(datasourceUrl);
 
     try
@@ -300,7 +303,8 @@ function finalizeData(runid, datasourceUrl) {
 }
 
 function circleCrawlingFinished(runid, store, circleKey) {
-    const datastore = require('../../radharani/mohdatastore');
+    //const datastore = require('../../radharani/mohdatastore');
+    const datastore = require('../../radharani/mairdatastore');
 
     try
     {
@@ -333,7 +337,7 @@ module.exports = {
                             selector: '#SiteBody_UserId',
                             checkcontent: '',
                             type: 'textbox',
-                            value: '9800412356',
+                            value: '+8768360458',
                             action: 'keyed',
                             checkselector: ''
                         },
