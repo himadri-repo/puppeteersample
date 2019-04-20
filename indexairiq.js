@@ -361,10 +361,10 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                                 
                                 //this is the place we need to use repeat functionality
                                 if(repeatsourceType===null) {
-                                    await performUserOperation(page, userInput, i, runid).catch(reason => log(`E5 => ${reason}`));
+                                    await performUserOperation(page, userInput, null, i, runid).catch(reason => log(`E5 => ${reason}`));
                                 }
                                 else if(repeatsourceType==='number') {
-                                    await performUserOperation(page, userInput, i, runid).catch(reason => log(`E6 => ${reason}`));
+                                    await performUserOperation(page, userInput, null, i, runid).catch(reason => log(`E6 => ${reason}`));
                                 }
                                 else if(repeatsourceType==='array') {
                                     try
@@ -429,13 +429,23 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                             //there is no user input. Kind of code cleaning process.
                             try
                             {
+                                let storeObj = getStore();
+                                let totalRowsFetched = 0;
+                                let keys = Object.keys(storeObj);
+                                for(var sdx=0; sdx<keys.length; sdx++) {
+                                    let keyName = keys[sdx].trim();
+                                    totalRowsFetched += storeObj[keyName].length;
+                                }
+                                log(`Total records processed : ${totalRowsFetched}`);
+                                
                                 let action = pageConfig.actions[0];
-                                if(action.type==='code' && action.methodname!==undefined && action.methodname!==null) {
+                                if(totalRowsFetched>0 && action.type==='code' && action.methodname!==undefined && action.methodname!==null) {
                                     let methodName = action.methodname;
+                                    log(`Processing : ${methodName} method`);
 
                                     if(methodName!==undefined && methodName!==null) {
                                         await action[methodName].call(action, runid);
-                                        //log(`${methodName} finished`);
+                                        log(`${methodName} finished`);
                                     }
                                 }
                             }
@@ -1193,16 +1203,6 @@ cron.schedule("*/15 * * * *", function() {
             try
             {
                 log('Process completed.');
-
-                //log(JSON.stringify(capturedData));
-                //log('Closing Browser');
-                //page.waitFor(500);
-                // browser.close();
-                //console.log(process._getActiveRequests());
-                //console.log(process._getActiveHandles());
-                // process.listeners.map((listn, idx) => {
-                //     console.log(listn);
-                // });
 
                 process.removeAllListeners("unhandledRejection");
                 process.removeAllListeners('exit');

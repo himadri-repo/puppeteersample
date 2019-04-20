@@ -314,7 +314,7 @@ module.exports = {
                             selector: '#user_txt',
                             checkcontent: '',
                             type: 'textbox',
-                            value: '9800412356',
+                            value: '9749066818',
                             action: 'keyed',
                             checkselector: ''
                         },
@@ -324,7 +324,7 @@ module.exports = {
                             selector: '#pwd_txt',
                             checkcontent: '',
                             type: 'textbox',
-                            value: 'sumit@12356',
+                            value: '9749066818',
                             action: 'keyed',
                             checkselector: ''
                         },

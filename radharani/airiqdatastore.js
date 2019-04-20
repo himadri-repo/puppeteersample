@@ -21,7 +21,7 @@ function getDBPool() {
     // });
 
     // pool = mysql.createPool({
-    //     connectionLimit : 1000,
+    //     connectionLimit : 30,
     //     connectTimeout  : 60 * 60 * 1000,
     //     acquireTimeout  : 60 * 60 * 1000,
     //     timeout         : 60 * 60 * 1000,        
@@ -129,8 +129,8 @@ async function saveData(result, runid, callback) {
                         }
 
                         var saveResult = await saveTicketInformation(con, result, insertStatus, runid, function(insertresult) {
-                            con.destroy();
-                            //con.release();
+                            //con.destroy();
+                            con.release();
                             insertStatus = insertresult;
         
                             if(callback) {
@@ -374,8 +374,8 @@ function saveCircleBatchData(runid, circleData, circleKey) {
                             cities = updatedCities;
                             let circleDataList = transformCircleData(con, circleData, cities);
                             saveTicketsData(con, circleDataList, runid, function(status) {
-                                //con.release();
-                                con.destroy();
+                                con.release();
+                                //con.destroy();
                             });
                         });
                     });
