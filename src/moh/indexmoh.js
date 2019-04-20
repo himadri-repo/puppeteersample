@@ -25,10 +25,10 @@ var timeFormatFn = function() {
 };
 
 winston.configure({
-    defaultMeta: {service: 'indexairiq-crawler'},
-    format: combine(label({label: 'airiqcrawler'}), timestamp(), myFormat),
+    defaultMeta: {service: 'indexmoh-crawler'},
+    format: combine(label({label: 'mohcrawler'}), timestamp(), myFormat),
     transports:[
-       new winston.transports.File({filename: `execution_log_${moment().format("D_M_YYYY")}.log`, })
+       new winston.transports.File({filename: `moh_execution_log_${moment().format("D_M_YYYY")}.log`, })
     ]
 });
 
@@ -336,7 +336,9 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                                 
                                 //this is the place we need to use repeat functionality
                                 if(repeatsourceType===null) {
+                                    log(`Perform user operation ${i} - ${userInput.action}`);
                                     await performUserOperation(page, userInput, null, i, runid).catch(reason => log(`E5 => ${reason}`));
+                                    log(`Perform user operation ${i} - ${userInput.action} Done`);
                                 }
                                 else if(repeatsourceType==='number') {
                                     await performUserOperation(page, userInput, null, i, runid).catch(reason => log(`E6 => ${reason}`));
@@ -404,13 +406,21 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                             //there is no user input. Kind of code cleaning process.
                             try
                             {
+                                let storeObj = getStore();
+                                let totalRowsFetched = 0;
+                                let keys = Object.keys(storeObj);
+                                for(var sdx=0; sdx<keys.length; sdx++) {
+                                    let keyName = keys[sdx].trim();
+                                    totalRowsFetched += storeObj[keyName].length;
+                                }
+                                log(`Total records processed : ${totalRowsFetched}`);
                                 let action = pageConfig.actions[0];
-                                if(action.type==='code' && action.methodname!==undefined && action.methodname!==null) {
+                                if(totalRowsFetched>0 && action.type==='code' && action.methodname!==undefined && action.methodname!==null) {
                                     let methodName = action.methodname;
-
+                                    log(`Processing : ${methodName} method`);
                                     if(methodName!==undefined && methodName!==null) {
                                         await action[methodName].call(action, runid);
-                                        //log(`${methodName} finished`);
+                                        log(`${methodName} finished`);
                                     }
                                 }
                             }
@@ -428,9 +438,9 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                             let keys = Object.keys(getStore());
                             for(var indx=0; indx<keys.length; indx++) {
                                 let keyName = keys[indx].trim();
-                                let impactedRows = metadata.circlecrawlfinished(runid, getStore(), keyName);
+                                let impactedRows = await metadata.circlecrawlfinished(runid, getStore(), keyName);
 
-                                //log(keyName, impactedRows);
+                                log(keyName, `Count => ${getStore()[keyName].length}`);
                             }
                             log(`Next operation ${i} starting`);
                         }
@@ -1127,13 +1137,13 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 //     });
 // }
 
-// var excutionStarted = false;
-// cron.schedule("*/15 * * * *", function() {
-//     log("Cron started");
-//     if(excutionStarted) {
-//         log('Previous process still running ...');
-//         return false;
-//     }
+var excutionStarted = false;
+cron.schedule("*/5 * * * *", function() {
+    log("Cron started");
+    if(excutionStarted) {
+        log('Previous process still running ...');
+        return false;
+    }
 
     try
     {
@@ -1193,6 +1203,6 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
         log(e);
         excutionStarted = false;
     }
-// });
+});
 
-// app.listen("3131");
+app.listen("3133");

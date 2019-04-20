@@ -1,4 +1,5 @@
 //jshint esversion: 6
+//jshint ignore:start
 var colors = require('colors');
 const moment = require('moment');
 
@@ -281,29 +282,28 @@ function persistDataItem(result, runid, callback) {
     });
 }
 
-function finalizeData(runid, datasourceUrl) {
+async function finalizeData(runid, datasourceUrl) {
     //const datastore = require('./radharani/datastore');
-    //const datastore = require('../radharani/airiqdatastore');
+    //const datastore = require('../../radharani/mohdatastore');
     const datastore = require('../../radharani/mairdatastore');
-
     // const datasource = require(datasourceUrl);
 
     try
     {
-        datastore.finalization(runid);
+        let data = await datastore.finalization(runid);
 
         // datastore.finalization(runid, function(data) {
         //     console.log(`Proceed with next record ${JSON.stringify(data)}`);
         //     //callback(data);
         // });
+        //console.log(`${data}`);
     }
     catch(e3) {
         console.log(e3);
     }
 }
 
-function circleCrawlingFinished(runid, store, circleKey) {
-    //const datastore = require('../../radharani/mohdatastore');
+async function circleCrawlingFinished(runid, store, circleKey) {
     const datastore = require('../../radharani/mairdatastore');
 
     try
@@ -313,7 +313,8 @@ function circleCrawlingFinished(runid, store, circleKey) {
         if(store[circleKey]===null || store[circleKey]===undefined || !(store[circleKey] instanceof Array)) return -1;
         //console.log('going to call saveCircleBatchData');
         console.log(`${circleKey} -> Count => ${store[circleKey].length}`);
-        let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey);
+        let returnValue = await datastore.saveCircleBatchData(runid, store[circleKey], circleKey);
+        console.log(`Return : JSON.stringify(returnValue)`);
     }
     catch(e3) {
         console.log(e3);
@@ -394,7 +395,7 @@ module.exports = {
                                     selector: '',
                                     read_type: 'inner-text',
                                     haspostback: true,
-                                    postbackdelay: 1500,
+                                    postbackdelay: 2500,
                                     plugins: [
                                         {
                                             parser: function(content) {
@@ -462,3 +463,5 @@ module.exports = {
         }
     ]
 };
+
+//jshint ignore:end
