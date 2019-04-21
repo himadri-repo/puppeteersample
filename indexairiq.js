@@ -63,7 +63,7 @@ const USERINPUT = {
 
 app = express();
 
-const TIMEOUT = 8000;
+const TIMEOUT = 7000;
 const POSTBACK_TIMEOUT = 4000;
 
 var browser = null;
@@ -746,7 +746,10 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                         if(userInput.checkselector!=='' && userInput.checkselector!==null) {
                             try
                             {
-                                await page.waitForSelector(userInput.checkselector, {timeout: TIMEOUT}).catch(reason => log(`E16 => ${reason}`));
+                                await page.waitForSelector(userInput.checkselector, {timeout: TIMEOUT}).catch(reason => {
+                                    log(`E16 => ${reason}`)
+                                    await takeSnapshot('E16');
+                                });
                             }
                             catch(e2) {
                                 log('e2');
@@ -1180,7 +1183,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 // }
 
 var excutionStarted = false;
-cron.schedule("*/15 * * * *", function() {
+cron.schedule("*/5 * * * *", function() {
     log("Cron started");
     if(excutionStarted) {
         log('Previous process still running ...');

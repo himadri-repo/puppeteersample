@@ -25,10 +25,18 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Launch Program E2F",
             "preLaunchTask": "build-e2f",
             "outFiles": ["${workspaceFolder}/dist/e2f/e2fcrwler.js"],
             "program": "${workspaceFolder}/dist/e2f/indexe2f.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program Doshi",
+            "preLaunchTask": "build-doshi",
+            "outFiles": ["${workspaceFolder}/dist/doshi/doshicrwler.js"],
+            "program": "${workspaceFolder}/dist/doshi/indexdoshi.js"
         }
     ]
 }

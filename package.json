@@ -14,11 +14,14 @@
     "start-airiq": "nodemon --exec babel-node src/airiq/index.js",
     "start-e2f": "npm run build-e2f && node dist/e2f/indexe2f.js",
     "serve-e2f": "node dist/e2f/indexe2f.js",
+    "start-doshi": "npm run build-doshi && node dist/doshi/indexdoshi.js",
+    "serve-doshi": "node dist/doshi/indexdoshi.js",
     "airiq": "set NODE_ENV=production && nodemon --exec babel-node src/airiq/index.js",
     "airiq-dev": "set NODE_ENV=development && nodemon --exec babel-node src/airiq/index.js",
     "build": "babel src/nept --out-dir dist/nept",
     "build-nept": "babel src/nept --out-dir dist/nept",
-    "build-e2f": "babel src/e2f -d dist/e2f -s inline"
+    "build-e2f": "babel src/e2f -d dist/e2f -s inline",
+    "build-doshi": "babel src/doshi -d dist/doshi -s inline"
   },
   "author": "",
   "license": "ISC",
@@ -32,6 +35,7 @@
     "fs": "0.0.1-security",
     "isomorphic-fetch": "^2.2.1",
     "moment": "^2.24.0",
+    "moment-timezone": "^0.5.25",
     "mysql": "^2.16.0",
     "node-cron": "^2.0.3",
     "puppeteer": "^1.4.0",
