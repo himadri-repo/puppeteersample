@@ -43,7 +43,7 @@ winston.configure({
     defaultMeta: {service: 'indexairiq-crawler'},
     format: combine(label({label: 'airiqcrawler'}), timestamp(), myFormat),
     transports:[
-       new winston.transports.File({filename: `execution_log_${moment().format("D_M_YYYY")}.log`, })
+       new winston.transports.File({filename: `airiq_execution_log_${moment().format("D_M_YYYY")}.log`, })
     ]
 });
 
@@ -996,11 +996,14 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                     }
 
                     if(task.checkselector!=='' && task.checkselector!==undefined && task.checkselector!==null) {
-                        //let selectedItem = await page.$(task.checkselector).catch(reason=> log('checkselector not found', reason));
                         let selectedItem = await page.waitForSelector(task.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
                             log(`eclick - child - ${reason}`);
                             await takeSnapshot('eclick-child');
                         });
+                        if(selectedItem===null || selectedItem===undefined) {
+                            selectedItem = await page.$(task.checkselector).catch(reason=> log('checkselector not found', reason));
+                        }
+                        //let selectedItem = await page.$(task.checkselector).catch(reason=> log('checkselector not found', reason));
 
                         if(selectedItem===undefined || selectedItem===null) {
                             userInput.exit = true;
