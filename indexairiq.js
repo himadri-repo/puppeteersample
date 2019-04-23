@@ -63,7 +63,7 @@ const USERINPUT = {
 
 app = express();
 
-const TIMEOUT = 7000;
+const TIMEOUT = 6000;
 const POSTBACK_TIMEOUT = 4000;
 
 var browser = null;
@@ -120,8 +120,11 @@ async function navigatePage(pageName) {
             log("Load -> " + interceptedRequest.url());
         });*/
         //const response = await page.goto("https://github.com/login");
-        await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1");
-        let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
+        //await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1");
+        await page.setUserAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36");
+
+        //let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
+        let response = await page.goto(pageName, {waitUntil:'domcontentloaded', timeout:30000}); //wait for 10 secs as timeout
         //log(await page.cookies());
         //await page.waitForNavigation();
         //log('after navigation done');
@@ -135,9 +138,29 @@ async function navigatePage(pageName) {
             pageLoaded = true;
         });
 
+        page.on('load',()=> {
+            //log('dom even fired');
+            pageLoaded = true;
+        });
+
         var actionItem = pageConfig.actions[0];
-        
-        page.hackyWaitForFunction = (predicate, opts = {}) => {
+
+        //block image loading
+        await page.setCacheEnabled(true);
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            let url = req.url().toLowerCase();
+            if(req.resourceType() === 'image' || req.resourceType() === 'font' || url.indexOf('fonts')>-1
+             || url.indexOf('animate')>-1 || url.indexOf('des')>-1 || url.indexOf('tabs')>-1){
+                req.abort();
+            }
+            else {
+                //log(`Req.Type : ${req.resourceType()} - ${req.url()}`);
+                req.continue();
+            }
+        });
+
+        page.hackyWaitForFunction = (predicate, opts = {}, isLoadedCtrl=false, chkControl=null) => {
             const start = new Date()
             const {timeout = 10000, polling = 10} = opts
         
@@ -147,7 +170,7 @@ async function navigatePage(pageName) {
                 //console.log(`result => ${result}`);
                 if (result) {
                   resolve(result);
-                } else if (new Date() - start > timeout) {
+                } else if ((new Date() - start) > timeout) {
                   reject('Function timed out');
                 } else {
                   setTimeout(check, polling);
@@ -195,6 +218,7 @@ async function navigatePage(pageName) {
                     //log('Keyed');
                 }
                 else if(val.action==='click') { 
+                    let chkControl = null;
                     pageLoaded = false;
                     await page.click(val.selector);
                     //await page.waitFor(200);
@@ -203,26 +227,37 @@ async function navigatePage(pageName) {
                         if(!pageLoaded) {
                             //log(`N01 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
                             
-                            await page.hackyWaitForFunction((isLoaded) => {
-                                let time = new Date().toLocaleTimeString();
+                            await page.hackyWaitForFunction(async (isLoaded) => {
+                                //let time = new Date().toLocaleTimeString();
                                 //console.log(`${time} N01 checking isLoaded ${pageLoaded}`);
+                                //let chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
+                                // let chkControl = await page.$eval(val.checkselector, e => e.outerHTML).catch((reason)=> a=1);
+                                // return (pageLoaded || (chkControl!==null && chkControl!==undefined));
                                 return pageLoaded;
-                            }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
+                            }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded, val.checkselector).catch(async (reason) => { 
                                 log(`N01 = ${reason} - ${pageLoaded}`); 
                                 //await takeSnapshot('N01');
-                                await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
+                                chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
+                                if(chkControl===null || chkControl===undefined)
+                                    await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                             });    
-
-                            // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
-                            //     log(`N01 = ${reason} - ${pageLoaded}`); 
-                            //     await takeSnapshot('N01');
-                            // });
+                        }
+                    }
+                    
+                    if((chkControl===null || chkControl===undefined) && val.checkselector!=='' && val.checkselector!==undefined && val.checkselector!==null) {
+                        
+                        let selectedItem = await page.waitForSelector(val.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
+                            log(`2.eclick - child - ${reason}`);
+                            await takeSnapshot('2_eclick-child');
+                        });
+                        if(selectedItem===null || selectedItem===undefined) {
+                            selectedItem = await page.$(task.checkselector).catch(reason=> log('2_checkselector not found', reason));
                         }
                     }
 
-                    if(val.checkselector!=='' && val.checkselector!==null) {
-                        await page.waitForSelector(val.checkselector, {timeout: TIMEOUT});
-                    }
+                    // if(val.checkselector!=='' && val.checkselector!==null) {
+                    //     await page.waitForSelector(val.checkselector, {timeout: TIMEOUT});
+                    // }
                 }
             }
             catch(err) {
@@ -709,6 +744,7 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                     //     log(inputControl);
                     // }
                     if(!(inputControl instanceof Array)) {
+                        let chkControl = null;
                         // if(userInput.delaybefore>-1)
                         //     await page.waitFor(userInput.delaybefore).catch(reason => log(`E14 => ${reason}`));
                         pageLoaded = false;
@@ -718,14 +754,19 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                             //log(`N03 : haspostback? ${userInput.selector}`);
                             if(!pageLoaded) {
                                 //log(`N03 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
-                                await page.hackyWaitForFunction((isLoaded) => {
-                                    let time = new Date().toLocaleTimeString();
+                                await page.hackyWaitForFunction(async (isLoaded) => {
+                                    //let time = new Date().toLocaleTimeString();
                                     //console.log(`${time} N03 checking isLoaded ${pageLoaded}`);
+                                    //let chkControl = await page.$(userInput.checkselector).catch((reason)=> log(reason));
+                                    //let chkControl = await page.$eval(userInput.checkselector, e => e.outerHTML).catch((reason)=> a=1);
+                                    //return (pageLoaded || (chkControl!==null && chkControl!==undefined));
                                     return pageLoaded;
-                                }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
+                                }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded, userInput.checkselector).catch(async (reason) => { 
                                     log(`N03 = ${reason} - ${pageLoaded}`); 
                                     //await takeSnapshot('N03');
-                                    await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
+                                    chkControl = await page.$(userInput.checkselector).catch((reason)=> log(reason));
+                                    if(chkControl===null || chkControl===undefined)
+                                        await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                                 });    
 
                                 // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
@@ -734,21 +775,17 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                                 // });    
                             }
                         }
-    
-                        //await page.waitFor(300);
-
-                        // if(userInput.delayafter>-1)
-                        //     delay = userInput.delayafter;
-                        // await page.waitFor(delay).catch(reason => log(`E15 => ${reason}`));
-
-                        //page.waitForNavigation({ waitUntil: 'networkidle2' });
-
-                        if(userInput.checkselector!=='' && userInput.checkselector!==null) {
+                        
+                        if((chkControl===null || chkControl===undefined) && userInput.checkselector!=='' && userInput.checkselector!==null) {
                             try
                             {
-                                await page.waitForSelector(userInput.checkselector, {timeout: TIMEOUT}).catch(reason => {
+                                await page.waitForSelector(userInput.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
                                     log(`E16 => ${reason}`)
-                                    await takeSnapshot('E16');
+                                    let chkSelector = await page.$(userInput.checkselector).catch((reason)=> log(`E16-DoubleCheck - ${reason}`));
+                                    if(chkSelector===null || chkSelector===undefined)
+                                    {
+                                        await takeSnapshot('E16-DoubleCheck');
+                                    }
                                 });
                             }
                             catch(e2) {
@@ -935,26 +972,11 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                 {
                     //log(typeof(element));
                     let selector = task.selector || element._remoteObject.description;
-                    //log(`performTask Section : ${selector}`);
-                    //log(element);
-
-                    // if(selector!==null && selector!=='') {
-                    //     await page.click(task.selector);
-                    //     await page.waitFor(200);
-                    // }
-                    
-                    //var value = await element.getProperty('value');
-                    // var textValue = await element.getProperty('text');
-                    // if(textValue!=null)
-                    //     log(`${idx} - Link text => ${textValue._remoteObject.value.trim()}`);
-                    // else
-                    //     log(`${idx} - Link text => EMPTY`);
-
-
                     //Right code
                     // await page.evaluate(() => {
                     //     document.querySelector(selector).scrollIntoView();
                     // });
+                    let chkControl = null;
                     if(task!==null && task.selector!==null && task.selector!==undefined && task.selector!=="") {
                         //log('task.selector direct', task.selector);
                         pageLoaded = false;
@@ -964,24 +986,25 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                             //log(`N02 : haspostback? ${task.selector}`);
                             if(!pageLoaded) {
                                 //log(`N02 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
-                                await page.hackyWaitForFunction((isLoaded) => {
-                                    let time = new Date().toLocaleTimeString();
-                                    //console.log(`${time} N02 checking isLoaded ${pageLoaded}`);
+                                let previousLoadValue = pageLoaded;
+                                await page.hackyWaitForFunction(async (isLoaded) => {
+                                    // if(previousLoadValue!==pageLoaded) {
+                                    //     let time = new Date().toLocaleTimeString();
+                                    //     console.log(`${time} N02 checking isLoaded ${pageLoaded}`);
+                                    // }
+                                    //chkControl = await page.$(task.checkselector).catch((reason)=> log(reason));
+                                    //chkControl = await page.$eval(task.checkselector, e => e.outerHTML).catch((reason)=> a=1);
+                                    //return (pageLoaded || (chkControl!==null && chkControl!==undefined));
                                     return pageLoaded;
-                                }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
+                                }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded, task.checkselector).catch(async (reason) => { 
                                     log(`N02 = ${reason} - ${pageLoaded}`); 
                                     //await takeSnapshot('N02');
+                                    // chkControl = await page.$(task.checkselector).catch((reason)=> log(reason));
+                                    // if(chkControl===null || chkControl===undefined)
                                     await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
-                                });    
-
-                                // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
-                                //     log(`N02 = ${reason} - ${pageLoaded}`); 
-                                //     await takeSnapshot('N02');
-                                // });
+                                });
                             }
                         }
-
-                        //await page.waitFor(600);
                     }
                     else {
                         if(element.click) {
@@ -998,7 +1021,8 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                         }
                     }
 
-                    if(task.checkselector!=='' && task.checkselector!==undefined && task.checkselector!==null) {
+                    if((chkControl===null || chkControl===undefined) && task.checkselector!=='' && task.checkselector!==undefined && task.checkselector!==null) {
+                        
                         let selectedItem = await page.waitForSelector(task.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
                             log(`eclick - child - ${reason}`);
                             await takeSnapshot('eclick-child');
@@ -1032,21 +1056,30 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                         //let contentsElements = await page.$$(task.selector).catch((reason)=> log('Read content : ', reason));
 
                         // Scroll one viewport at a time, pausing to let content load
+                        //right code for scrolling
+                        
                         const bodyHandle = await page.$('body');
                         const { height } = await bodyHandle.boundingBox();
                         await bodyHandle.dispose();
 
-                        const viewportHeight = page.viewport().height;
-                        let viewportIncr = 0;
-                        while (viewportIncr + viewportHeight < height) {
-                            await page.evaluate(_viewportHeight => {
-                                window.scrollBy(0, _viewportHeight);
-                            }, viewportHeight);
-                            await page.waitFor(25);
-                            viewportIncr = viewportIncr + viewportHeight;
-                        }
+                        //wrong code
+                        await page.evaluate(_height => {
+                            window.scrollTo(0, _height);
+                        }, height);
+
+                        //right code
+                        // const viewportHeight = page.viewport().height;
+                        // let viewportIncr = 0;
+                        // while (viewportIncr + viewportHeight < height) {
+                        //     await page.evaluate(_viewportHeight => {
+                        //         window.scrollBy(0, _viewportHeight);
+                        //     }, viewportHeight);
+                        //     await page.waitFor(25);
+                        //     viewportIncr = viewportIncr + viewportHeight;
+                        // }
                         
-                        await page.waitFor(100);
+                        //await page.waitFor(100);
+                        await page.waitFor(50);
 
                         let contentsElements = await page.$$(task.selector).catch((reason)=> log('Read content : ', reason)).catch(reason => log(`E23 => ${reason}`));
                         for(var i=0; i<contentsElements.length; i++) {
@@ -1060,6 +1093,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                         
                         await page.waitFor(50);
 
+                        //right code for scrolling
                         // Scroll back to top
                         await page.evaluate(_ => {
                             window.scrollTo(0, 0);

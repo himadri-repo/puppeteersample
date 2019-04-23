@@ -50,7 +50,7 @@ async function startProcess() {
 }
 
 var excutionStarted = false;
-cron.schedule("*/5 * * * *", function() {
+cron.schedule("*/20 * * * *", function() {
     Logger.log("info", "Cron started");
     if(excutionStarted) {
         Logger.log("info", 'Previous process still running ...');

@@ -16,7 +16,7 @@ function repeatSource(elementData) {
         data = elementData.match(strreg).map((val, idx) => val.replace('>','').replace('<','')).filter((val, idx) => {
             //console.log(`${idx} - ${val}`);
             //if(idx>0 && idx%2===0) {
-            //if(idx>0 && val.indexOf('Guwahati // Kolkata')>-1) {
+            //if(idx>0 && val.indexOf('Bagdogra // Kolkata')>-1) {
             if(idx>0) {
                 //console.log(`${idx} - ${val}`);
                 return val.replace('>','').replace('<','');
