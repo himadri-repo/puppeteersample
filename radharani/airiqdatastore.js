@@ -347,7 +347,58 @@ function getAirlines(conn, callback) {
     });
 }
 
-function saveCircleBatchData(runid, circleData, circleKey) {
+function updateExhaustedCircleInventory(runid, deptid, arrvid, callback) {
+    getDBPool().getConnection(function(err, conn) {
+        try
+        {
+            if(err) {
+                console.log(err);
+            }
+            var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', 
+                last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST' where available='YES' and data_collected_from='airiq' 
+                and source=${deptid} and destination=${arrvid} and last_sync_key<>'${runid}'`;
+            
+            try {
+                conn.query(sql, function (err, data) {
+                    if (err || data===null || data===undefined) {
+                        console.log(err);
+                    }
+                    conn.release();
+
+                    //console.log(JSON.stringify(data));
+                    if(callback) {
+                        callback(data);
+                    }
+                });
+            }
+            catch(e1) {
+                console.log(e1);
+            }
+        }
+        catch(ex) {
+            console.log(ex);
+        }
+    });
+}
+
+function updateExhaustedCircle(conn, runid, deptid, arrvid, callback) {
+    // return new Promise((resolve, reject) => {
+        let qry = `update tickets_tbl (aircode, airline, image) values('${airline.substr(0,3).toUpperCase()}', '${airline}', 'flight.png')`;
+
+        try
+        {
+            conn.query(qry, function(err, data) {
+                if(callback) 
+                    callback(data.insertId);
+            });
+        }
+        catch(e) {
+            console.log(e);
+        }
+    // });
+}
+
+function saveCircleBatchData(runid, circleData, circleKey, callback) {
     let impactedRecCount = 0;
     getDBPool().getConnection(function(err, con) {
         try
@@ -375,6 +426,9 @@ function saveCircleBatchData(runid, circleData, circleKey) {
                             let circleDataList = transformCircleData(con, circleData, cities);
                             saveTicketsData(con, circleDataList, runid, function(status) {
                                 con.release();
+                                if(callback) {
+                                    callback(circleDataList);
+                                }
                                 //con.destroy();
                             });
                         });
@@ -412,6 +466,9 @@ function saveTicketsData(conn, circleDataList, runid, callback) {
                 }
             });
             //saveTicketData(conn, circleDataList[i])
+        }
+        if(callback) {
+            callback(circleDataList);
         }
     }
     catch(e) {
@@ -697,4 +754,4 @@ function saveAirline(conn, airline, callback) {
 
 //jshint ignore:end
 
-module.exports = {saveData, finalization, saveCircleBatchData};
+module.exports = {saveData, finalization, saveCircleBatchData, updateExhaustedCircleInventory};

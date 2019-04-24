@@ -281,7 +281,7 @@ function finalizeData(runid, datasourceUrl) {
     }
 }
 
-function circleCrawlingFinished(runid, store, circleKey) {
+function circleCrawlingFinished(runid, store, circleKey, callback) {
     const datastore = require('./radharani/airiqdatastore');
 
     try
@@ -290,7 +290,27 @@ function circleCrawlingFinished(runid, store, circleKey) {
         if(circleKey===null || circleKey===undefined || circleKey==="") return -1;
         if(store[circleKey]===null || store[circleKey]===undefined || !(store[circleKey] instanceof Array)) return -1;
         //console.log('going to call saveCircleBatchData');
-        let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey);
+        if(store[circleKey].length>0) {
+            let targetRunId = runid;
+            let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey, function(circleData) {
+                if(targetRunId!==null && targetRunId!==undefined && circleData.length>0) {
+                    let deptId = circleData[0].departure.id;
+                    let arrvId = circleData[0].arrival.id;
+                    let records = circleData.length;
+                    //let cdata = circleData;
+                    //updatedRecs = store[circleKey];
+                    let clearEmptyStock = datastore.updateExhaustedCircleInventory(runid, deptId, arrvId, function(status) {
+                        if(status!==null && status!==undefined) {
+                            let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
+                            console.log();
+                            if(callback) {
+                                callback(msg);
+                            }
+                        }
+                    });
+                }
+            });
+        }
     }
     catch(e3) {
         console.log(e3);
@@ -599,8 +619,8 @@ module.exports = {
                     ]
                 }
             ]
-        },
-        {
+        }
+        /*{
             id: 4,
             name: 'finalization',
             actions: [
@@ -617,6 +637,6 @@ module.exports = {
                     ]
                 }
             ]            
-        }
+        }*/
     ]
 };

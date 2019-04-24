@@ -64,7 +64,8 @@ const USERINPUT = {
 app = express();
 
 const TIMEOUT = 6000;
-const POSTBACK_TIMEOUT = 4000;
+const POSTBACK_TIMEOUT = 10000;
+const POLLINGDELAY = 100;
 
 var browser = null;
 var page = null;
@@ -234,7 +235,7 @@ async function navigatePage(pageName) {
                                 // let chkControl = await page.$eval(val.checkselector, e => e.outerHTML).catch((reason)=> a=1);
                                 // return (pageLoaded || (chkControl!==null && chkControl!==undefined));
                                 return pageLoaded;
-                            }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded, val.checkselector).catch(async (reason) => { 
+                            }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, val.checkselector).catch(async (reason) => { 
                                 log(`N01 = ${reason} - ${pageLoaded}`); 
                                 //await takeSnapshot('N01');
                                 chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
@@ -491,7 +492,9 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                         i++;
                         //going for next circle
                         //log('moving to next circle');
-                        let impactedRows = metadata.circlecrawlfinished(runid, getStore(), key);
+                        let impactedRows = metadata.circlecrawlfinished(runid, getStore(), key, function(status) {
+                            log(`Finaliation of ${key} - ${status}`);
+                        });
                         //log(`Next operation ${i} starting`);
                     }
                 }
@@ -761,7 +764,7 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                                     //let chkControl = await page.$eval(userInput.checkselector, e => e.outerHTML).catch((reason)=> a=1);
                                     //return (pageLoaded || (chkControl!==null && chkControl!==undefined));
                                     return pageLoaded;
-                                }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded, userInput.checkselector).catch(async (reason) => { 
+                                }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, userInput.checkselector).catch(async (reason) => { 
                                     log(`N03 = ${reason} - ${pageLoaded}`); 
                                     //await takeSnapshot('N03');
                                     chkControl = await page.$(userInput.checkselector).catch((reason)=> log(reason));
@@ -996,7 +999,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                                     //chkControl = await page.$eval(task.checkselector, e => e.outerHTML).catch((reason)=> a=1);
                                     //return (pageLoaded || (chkControl!==null && chkControl!==undefined));
                                     return pageLoaded;
-                                }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded, task.checkselector).catch(async (reason) => { 
+                                }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, task.checkselector).catch(async (reason) => { 
                                     log(`N02 = ${reason} - ${pageLoaded}`); 
                                     //await takeSnapshot('N02');
                                     // chkControl = await page.$(task.checkselector).catch((reason)=> log(reason));
