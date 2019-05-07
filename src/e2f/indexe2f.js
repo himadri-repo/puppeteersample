@@ -14,14 +14,36 @@ import {Logger, E2FCrawler} from './e2fcrwler';
 
 let app = express();
 
-function startProcess() {
-    Logger.log('info', "Starting process ...");
+function login() {
+    Logger.log('info', "Logging in ...");
 
     let e2fcrawler = new E2FCrawler({url: '', output: 'json'});
+    let response = e2fcrawler.postData({url: 'https://expressdev.ease2fly.com/api/auth/login', data: {
+        email:"info@oxytra.com",
+        pwd:"Sumit@12356"
+    }});
+
+    response.then(data => {
+        Logger.log("info", JSON.stringify(data.result));
+        Logger.log('info', JSON.stringify(e2fcrawler.finalData));
+
+        let token = data.result.token;
+        startProcess(token);
+        //let runid = `${uuidv4()}_${moment().format("DD-MMM-YYYY HH:mm:ss.SSS")}`;
+    })
+    .catch(error => {
+        Logger.log("error", error);
+    });
+}
+
+function startProcess(token) {
+    Logger.log('info', "Starting process ...");
+
+    let e2fcrawler = new E2FCrawler({url: '', output: 'json', token: token});
     let response = e2fcrawler.postData({url: 'https://expressdev.ease2fly.com/api/destinations/get-destinations-list', data: {
         usrId: 109,
         usrType: "N"
-    }});
+    }, token: token});
 
     response.then(data => {
         Logger.log("info", JSON.stringify(data.result));
@@ -59,7 +81,8 @@ cron.schedule("*/20 * * * *", function() {
         process.on('unhandledRejection', (reason, promise) => {
             Logger.log('info','Unhandled Rejection at:', reason);
         });
-        startProcess();
+        //startProcess();
+        login();
     }
     catch(e) {
         Logger.log('error', e);

@@ -44,24 +44,27 @@ export class Logger {
 
 export class E2FCrawler {
     constructor(options) {
-        this.options = options || {url: '', output: 'json'};
+        this.options = options || {url: '', output: 'json', token: ''};
     }
 
-    postData(searchOption={url: '', data: {usrId: 109, usrType: 'N'}}) {
+    postData(searchOption={url: '', data: {usrId: 109, usrType: 'N'}, token: ''}) {
         // Default options are marked with *
-        return fetch(searchOption.url, {
+        let json_post = {
             method: "POST", // *GET, POST, PUT, DELETE, etc.
             mode: "cors", // no-cors, cors, *same-origin
             cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
             credentials: "same-origin", // include, *same-origin, omit
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.options.token}`,
                 // "Content-Type": "application/x-www-form-urlencoded",
             },
             redirect: "follow", // manual, *follow, error
             referrer: "no-referrer", // no-referrer, *client
             body: JSON.stringify(searchOption.data), // body data type must match "Content-Type" header
-        })
+        };
+
+        return fetch(searchOption.url, json_post)
         .then(async response => {
             Logger.log("info", "Response received");
             this.data = await response.json();
