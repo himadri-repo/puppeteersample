@@ -10,6 +10,12 @@
             "problemMatcher": []
         },
         {
+            "label": "build-mpt",
+            "type": "npm",
+            "script": "build-mpt",
+            "problemMatcher": []
+        },
+        {
             "label": "build-doshi",
             "type": "npm",
             "script": "build-doshi",

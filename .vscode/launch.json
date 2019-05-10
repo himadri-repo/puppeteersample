@@ -33,6 +33,14 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Launch Program MPT",
+            "preLaunchTask": "build-mpt",
+            "outFiles": ["${workspaceFolder}/dist/mpt/mptcrwler.js"],
+            "program": "${workspaceFolder}/dist/mpt/indexmpt.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch Program Doshi",
             "preLaunchTask": "build-doshi",
             "outFiles": ["${workspaceFolder}/dist/doshi/doshicrwler.js"],
