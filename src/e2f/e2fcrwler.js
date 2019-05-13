@@ -88,33 +88,35 @@ export class E2FCrawler {
             try
             {
                 let dataItem = data[i];
-                parsedRecord = {
-                    flight: dataItem.airlns_name,
-                    flight_number: dataItem.flight_no,
-                    departure: {
-                        id: -1,
-                        circle: await this._getCircleName(dataItem.destn, 0).then(result => result).catch(reason => Logger.log('error', reason)),
-                        time: dataItem.travel_time,
-                        date: dataItem.travel_date,
-                        epoch_date: await this._getDate(dataItem.travel_date, dataItem.travel_time).then(result => result).catch(reason => Logger.log('error', reason))
-                    },
-                    arrival: {
-                        id: -1,
-                        circle: await this._getCircleName(dataItem.destn, 1).then(result => result).catch(reason => Logger.log('error', reason)),
-                        time: dataItem.arrival_time,
-                        date: dataItem.arrival_date,
-                        epoch_date: await this._getDate(dataItem.arrival_date, dataItem.arrival_time).then(result => result).catch(reason => Logger.log('error', reason))
-                    },
+                if(dataItem.seat>0) {
+                    parsedRecord = {
+                        flight: dataItem.airlns_name,
+                        flight_number: dataItem.flight_no,
+                        departure: {
+                            id: -1,
+                            circle: await this._getCircleName(dataItem.destn, 0).then(result => result).catch(reason => Logger.log('error', reason)),
+                            time: dataItem.travel_time,
+                            date: dataItem.travel_date,
+                            epoch_date: await this._getDate(dataItem.travel_date, dataItem.travel_time).then(result => result).catch(reason => Logger.log('error', reason))
+                        },
+                        arrival: {
+                            id: -1,
+                            circle: await this._getCircleName(dataItem.destn, 1).then(result => result).catch(reason => Logger.log('error', reason)),
+                            time: dataItem.arrival_time,
+                            date: dataItem.arrival_date,
+                            epoch_date: await this._getDate(dataItem.arrival_date, dataItem.arrival_time).then(result => result).catch(reason => Logger.log('error', reason))
+                        },
 
-                    ticket_type: 'Economy',
-                    availability: dataItem.seat,
-                    price: (dataItem.fare+dataItem.srv_tax+dataItem.gst),
-                    flight_id: 1,
-                    runid: '',
-                    recid: dataItem.id
-                };
+                        ticket_type: 'Economy',
+                        availability: dataItem.seat,
+                        price: (dataItem.fare+dataItem.srv_tax+dataItem.gst),
+                        flight_id: 1,
+                        runid: '',
+                        recid: dataItem.id
+                    };
 
-                parsedDataSet.push(parsedRecord);
+                    parsedDataSet.push(parsedRecord);
+                }
                 Logger.log('info', 'Data', JSON.stringify(parsedRecord));
             }
             catch(e) {
