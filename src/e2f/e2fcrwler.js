@@ -13,7 +13,7 @@ const fetch = require('isomorphic-fetch');
 // import "isomorphic-fetch";
 
 export class Logger {
-    static log(type, message) {
+    static log(type, message) { 
         switch (type) {
             case "info":
             Logger._write(arguments);
