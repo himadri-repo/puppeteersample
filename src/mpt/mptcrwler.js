@@ -94,7 +94,7 @@ export class MPTCrawler {
             {
                 let dataItem = data[i];
                 parsedRecord = {
-                    flight: dataItem.airline_name,
+                    flight: dataItem.airline.name,
                     flight_number: dataItem.flight_number,
                     departure: {
                         id: -1,
