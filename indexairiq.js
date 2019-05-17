@@ -852,7 +852,7 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                                             //targetElement = await objPage.$(tsk.selector).catch((reason)=> log(reason));
                                             targetElement = await page.$(tsk.selector).catch((reason)=> log(`tgt-elm - ${reason}`)).catch(reason => log(`E19 => ${reason}`));
                                         }
-                                        log("Going to perform Task", i, tsk.selector);
+                                        //log("Going to perform Task", i, tsk.selector);
                                         let returnValue = await performTask(objPage, userInput, inputControl, targetElement, tsk, i, runid).catch(reason => log(`E20 => ${reason}`));
                                         //log("Task done", tsk, i);
                                         await page.waitFor(200).catch(reason => log(`E21 => ${reason}`)); //delay to get UI refreshed with json data
@@ -969,7 +969,7 @@ async function setProprtyItem(page, selector, property, value) {
 async function performTask(objPage, userInput, inputControl, element, task, idx, runid) {
     try
     {
-        log('Start performTask => ', idx, task.selector, task.action);
+        //log('Start performTask => ', idx, task.selector, task.action);
         await page.waitFor(200).catch(reason => log(`E122 => ${reason}`));
         if(task && task.action) {
             if(task.action==='click') {
@@ -1222,12 +1222,12 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 // }
 
 var excutionStarted = false;
-cron.schedule("*/5 * * * *", function() {
-    log("Cron started");
-    if(excutionStarted) {
-        log('Previous process still running ...');
-        return false;
-    }
+// cron.schedule("*/5 * * * *", function() {
+//     log("Cron started");
+//     if(excutionStarted) {
+//         log('Previous process still running ...');
+//         return false;
+//     }
 
     try
     {
@@ -1275,6 +1275,6 @@ cron.schedule("*/5 * * * *", function() {
         log(e);
         excutionStarted = false;
     }
-});
+// });
 
-app.listen("3131");
+// app.listen("3131");
