@@ -45,6 +45,14 @@
             "preLaunchTask": "build-doshi",
             "outFiles": ["${workspaceFolder}/dist/doshi/doshicrwler.js"],
             "program": "${workspaceFolder}/dist/doshi/indexdoshi.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program GOIBIBO",
+            "preLaunchTask": "build-goibibo",
+            "outFiles": ["${workspaceFolder}/dist/goibibo/goibibocrwler.js"],
+            "program": "${workspaceFolder}/dist/goibibo/indexgoibibo.js"
         }
     ]
 }

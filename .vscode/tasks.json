@@ -20,6 +20,12 @@
             "type": "npm",
             "script": "build-doshi",
             "problemMatcher": []
+        },
+        {
+            "label": "build-goibibo",
+            "type": "npm",
+            "script": "build-goibibo",
+            "problemMatcher": []
         }
     ]
 }

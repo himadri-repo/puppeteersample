@@ -16,6 +16,8 @@
     "serve-e2f": "node dist/e2f/indexe2f.js",
     "start-mpt": "npm run build-mpt && node dist/mpt/indexmpt.js",
     "serve-mpt": "node dist/mpt/indexmpt.js",
+    "start-goibibo": "npm run build-goibibo && node dist/goibibo/indexgoibibo.js",
+    "serve-goibibo": "node dist/goibibo/indexgoibibo.js",
     "start-doshi": "npm run build-doshi && node dist/doshi/indexdoshi.js",
     "serve-doshi": "node dist/doshi/indexdoshi.js",
     "airiq": "set NODE_ENV=production && nodemon --exec babel-node src/airiq/index.js",
@@ -24,7 +26,8 @@
     "build-nept": "babel src/nept --out-dir dist/nept",
     "build-e2f": "babel src/e2f -d dist/e2f -s inline",
     "build-doshi": "babel src/doshi -d dist/doshi -s inline",
-    "build-mpt": "babel src/mpt -d dist/mpt -s inline"
+    "build-mpt": "babel src/mpt -d dist/mpt -s inline",
+    "build-goibibo": "babel src/goibibo -d dist/goibibo -s inline"
   },
   "author": "",
   "license": "ISC",
