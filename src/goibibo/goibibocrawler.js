@@ -221,7 +221,7 @@ export class GOIBIBOCrawler {
         let days = 1;
         while(currentDate<=endDate) {
             let date = moment(currentDate).format('YYYYMMDD');
-            url = `${GOIBIBO_URL}app_id=${app_id}&app_key=${app_key}&format=json&source=${source}&destination=${destination}&dateofdeparture=${date}&seatingclass=E&adult=1&children=1&infant=1&counter=100`;
+            url = `${GOIBIBO_URL}app_id=${app_id}&app_key=${app_key}&format=json&source=${source}&destination=${destination}&dateofdeparture=${date}&seatingclass=E&adult=1&children=0&infant=0&counter=100`;
 
             console.log(`Index : ${days}`);
             let ticket_data = {};

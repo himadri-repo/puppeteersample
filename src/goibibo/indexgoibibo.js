@@ -9,6 +9,8 @@ const datastore = require('../../radharani/goibibodatastore');
 const uuidv4 = require('uuid/v4');
 const moment = require('moment');
 
+const SCAN_DAYS = 45;
+
 import {Logger, GOIBIBOCrawler} from './goibibocrawler';
 //import { loggers } from 'winston';
 
@@ -16,7 +18,7 @@ let app = express();
 
 let app_key = '012f84558a572cb4ccc4b4c84a15d523';
 let app_id = 'f8803086';
-let url = `http://developer.goibibo.com/api/search/?app_id=f8803086&app_key=012f84558a572cb4ccc4b4c84a15d523&format=json&source=CCU&destination=DEL&dateofdeparture=20190520&seatingclass=E&adults=1&children=1&infants=1&counter=100`;
+let url = `http://developer.goibibo.com/api/search/?app_id=f8803086&app_key=012f84558a572cb4ccc4b4c84a15d523&format=json&source=CCU&destination=DEL&dateofdeparture=20190520&seatingclass=E&adults=1&children=0&infants=0&counter=100`;
 
 async function startProcess() {
     Logger.log('info', "Starting process ...");
@@ -33,13 +35,20 @@ async function startProcess() {
             let circleData = circleCrawlableData[index];
             let dt = new Date();
             let dt1 = new Date();
-            dt1.setDate(dt1.getDate()+45);
+            dt1.setDate(dt1.getDate()+SCAN_DAYS);
+            await datastore.cleanCircleLiveTicketData(circleData, {startdate: dt, enddate: dt1, app_id: app_id, app_key: app_key, harddelete: false}).catch(reason => {
+                //console.log(`Error1 : ${reason}`);
+                Logger.log('Error 1', reason);
+            });
+
             let circleData4FullPeriod = await goibibocrawler.processCircleData(circleData, {startdate: dt, enddate: dt1, app_id: app_id, app_key: app_key}).catch(reason => {
-                console.log(reason);
+                //console.log(`Error2 : ${reason}`);
+                Logger.log('Error 2', reason);
             });
 
             if(circleData4FullPeriod!==null && circleData4FullPeriod!==undefined && circleData4FullPeriod.length>0) {
                 //now time to insert into DB live_tickets_tbl;
+                Logger.log(`One circle completed ${circleData.source_city_id} - ${circleData.destination_city_id}`);
             }
         }
     }
@@ -72,12 +81,12 @@ async function startProcess() {
 }
 
 var excutionStarted = false;
-// cron.schedule("*/10 * * * *", function() {
-//     Logger.log("info", "Cron started");
-//     if(excutionStarted) {
-//         Logger.log("info", 'Previous process still running ...');
-//         return false;
-//     }
+cron.schedule("*/10 * * * *", function() {
+    Logger.log("info", "Cron started");
+    if(excutionStarted) {
+        Logger.log("info", 'Previous process still running ...');
+        return false;
+    }
 
     try
     {
@@ -96,6 +105,6 @@ var excutionStarted = false;
     finally {
         excutionStarted = false;
     }
-// });
+});
 
-// app.listen("3238");
+app.listen("3238");

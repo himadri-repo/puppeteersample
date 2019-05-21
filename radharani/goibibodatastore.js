@@ -11,16 +11,16 @@ function getDBPool() {
     if(pool) return pool;
 
     //Local DB
-    pool = mysql.createPool({
-        connectionLimit: 30,
-        connectTimeout: 15000,
-        timeout: 60*1000,
-        host: "localhost",
-        user: "root",
-        password: "@dm!n@280175",
-        database: "oxytra",
-        port: 3306
-    });
+    // pool = mysql.createPool({
+    //     connectionLimit: 30,
+    //     connectTimeout: 15000,
+    //     timeout: 60*1000,
+    //     host: "localhost",
+    //     user: "root",
+    //     password: "@dm!n@280175",
+    //     database: "oxytra",
+    //     port: 3306
+    // });
 
     //MeritTree DB
     // pool = mysql.createPool({
@@ -35,15 +35,15 @@ function getDBPool() {
     // });
 
     //Remote DB
-    // pool = mysql.createPool({
-    //     connectionLimit: 30,
-    //     connectTimeout: 15000,
-    //     host: "www.oxytra.com",
-    //     user: "oxyusr",
-    //     password: "oxy@321-#",
-    //     database: "oxytra",
-    //     port: 3306
-    // });
+    pool = mysql.createPool({
+        connectionLimit: 30,
+        connectTimeout: 15000,
+        host: "www.oxytra.com",
+        user: "oxyusr",
+        password: "oxy@321-#",
+        database: "oxytra",
+        port: 3306
+    });
 
     return pool;
 }
@@ -771,11 +771,12 @@ function getCirclesWithDeptDates() {
     try
     {
         // let deptDate = moment(new Date(ticket.departure.epoch_date)).format("YYYY-MM-DD HH:mm");
+        // tkt.source=5 and tkt.destination=4 and 
         let qry = `select distinct ct1.id as source_city_id, ct1.city as source_city_name, ct1.code as source_city_code, 
             ct2.id as destination_city_id, ct2.city as destination_city_name, ct2.code as destination_city_code
         from tickets_tbl tkt inner join city_tbl ct1 on tkt.source=ct1.id
         inner join city_tbl ct2 on tkt.destination=ct2.id
-        where tkt.source=5 and tkt.destination=4 and tkt.approved in (0,1)`;
+        where tkt.approved in (0,1)`;
         
         // let qry = `select id from tickets_tbl where source=${ticket.departure.id} and destination=${ticket.arrival.id} and ticket_no='TKT-${ticket.recid}'`;
 
@@ -886,7 +887,7 @@ function save_live_ticket(ticket) {
                     if(data!==null && data!==undefined && data.length>0) {
                         try
                         {
-                            var updateSql = `update live_tickets_tbl set no_of_seats=${ticket.no_of_seats}, adultbasefare=${ticket.adultbasefare}, childbasefare=${ticket.childbasefare}, infantbasefare=${ticket.infantbasefare}, adult_tax_fees=${ticket.adult_tax_fees}, child_tax_fees=${ticket.child_tax_fees}, infant_tax_fees=${ticket.infant_tax_fees} where runid='${ticket.runid}'`;
+                            var updateSql = `update live_tickets_tbl set source=${ticket.source}, destination=${ticket.destination}, departure_terminal='${ticket.departure_terminal}', arrival_terminal='${ticket.arrival_terminal}', no_of_seats=${ticket.no_of_seats}, adultbasefare=${ticket.adultbasefare}, childbasefare=${ticket.childbasefare}, infantbasefare=${ticket.infantbasefare}, adult_tax_fees=${ticket.adult_tax_fees}, child_tax_fees=${ticket.child_tax_fees}, infant_tax_fees=${ticket.infant_tax_fees}, updated_by=-1, updated_on=now() where runid='${ticket.runid}'`;
 
                             conn.query(updateSql, function (err, data) {
                                 if (err) {
@@ -949,6 +950,65 @@ function save_live_ticket(ticket) {
         }
     });
 }
+
+function cleanCircleLiveTicketData(circleData, options) {
+    try
+    {
+        return new Promise((resolve, reject) => {
+            try
+            {
+                let src = circleData.source_city_id;
+                let dest = circleData.destination_city_id;
+                let start_date = moment(options.startdate).format("YYYY-MM-DD 00:00:00");
+                let end_date = moment(options.enddate).format("YYYY-MM-DD 23:59:59");
+                let harddelete = options.harddelete;
+
+                if(!harddelete) {
+                    qry = `update live_tickets_tbl tkt 
+                    set tkt.active=1, tkt.updated_by=-1, tkt.updated_on=now()
+                    where tkt.source=${src} and tkt.destination=${dest} 
+                    and (DATE_FORMAT(tkt.departure_date_time, '%Y-%m-%d %H:%i:%s') >= '${start_date}' 
+                    and DATE_FORMAT(tkt.departure_date_time, '%Y-%m-%d %H:%i:%s') <= '${end_date}')`;
+                }
+                else {
+                    qry = `delete from live_tickets_tbl
+                    where source=${src} and destination=${dest} 
+                    and (DATE_FORMAT(departure_date_time, '%Y-%m-%d %H:%i:%s') >= '${start_date}' 
+                    and DATE_FORMAT(departure_date_time, '%Y-%m-%d %H:%i:%s') <= '${end_date}')`;
+                }
+
+                getDBPool().getConnection(function(err1, conn) {
+                    if(!err1) {
+                        conn.query(qry, function(err, data) {
+                            try
+                            {
+                                if(err) {
+                                    data = null;
+                                    conn.release();
+                                    reject(err);
+                                }
+                                else
+                                {
+                                    conn.release();
+                                    resolve(data);
+                                }
+                            }
+                            catch(ex2) {
+                                console.log(ex2);
+                            }
+                        });
+                    }
+                });
+            }
+            catch(ex1) {
+                console.log(ex1);
+            }
+        });
+    }
+    catch(ex) {
+        console.log(ex);
+    }
+}
 //jshint ignore:end
 
-module.exports = {saveData, finalization, saveCircleBatchData, getCirclesWithDeptDates, getAirlineMasterData, save_live_ticket};
+module.exports = {saveData, finalization, saveCircleBatchData, getCirclesWithDeptDates, getAirlineMasterData, save_live_ticket, cleanCircleLiveTicketData};
