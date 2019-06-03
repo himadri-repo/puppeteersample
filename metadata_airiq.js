@@ -95,7 +95,10 @@ function contentParser(content) {
         }
 
         //Availability
-        src_dest = content.match(/^(\d+?([0-9]{0,2}))$/gm);
+        // src_dest = content.match(/^(\d+?([0-9]{0,2}))$/gm);
+        // ^(\d+?([0-9]{0,2}))([+]{0,1})\s+$
+        src_dest = content.match(/^(\d+?([0-9]{0,2}))([+]{0,1})\s+$/gm);
+        
         if(src_dest!==null && src_dest!==undefined && src_dest.length>0) {
             let qty = parseInt(src_dest[0].trim());
 
@@ -510,6 +513,7 @@ module.exports = {
                                     plugins: [
                                         {
                                             parser: function(content) {
+                                                //.flit-detls tr .tble_item1_txt>input[type=hidden i]
                                                 //console.log(`attr value - ${JSON.stringify(content)}`);
                                                 return content;
                                             },
