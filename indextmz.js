@@ -336,7 +336,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                         if(repeatsourceType==='array' || repeatsourceType==='number') {
                             repeatsourceData = repeatsource;
                         }
-                        else if(repeatsourceType==='function') {
+                        else if(repeatsourceType==='function' && repeatsourceContent!==null && repeatsourceContent!==undefined) {
                             //log('getting repeatSourceData');
                             repeatsourceData = repeatsource(repeatsourceContent); //it should return array
                             //log('got repeatSourceData');
