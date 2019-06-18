@@ -1,0 +1,198 @@
+2019-06-14T06:03:26.420Z [airiqcrawler] info: 11:33:26.415 0 - NA
+2019-06-14T06:03:54.958Z [airiqcrawler] info: 11:33:54.957 END :: 0 - NA
+2019-06-14T06:04:08.829Z [airiqcrawler] info: 11:34:08.827 0 - Ahmedabad / Mumbai
+2019-06-14T06:24:04.299Z [airiqcrawler] info: 11:54:04.297 N03 = Function timed out - false
+2019-06-14T06:24:29.966Z [airiqcrawler] info: 11:54:29.966 E16 => Error: waiting for selector "ctl00_mainbody_GV_Report1" failed: timeout 6000ms exceeded
+2019-06-14T06:26:14.536Z [airiqcrawler] info: 11:56:14.535 E18 => Error: waiting for selector "div.flit-detls, #empty_lbl" failed: timeout 6000ms exceeded
+2019-06-14T06:32:43.865Z [airiqcrawler] info: 12:02:43.861 0 - NA
+2019-06-14T06:32:48.392Z [airiqcrawler] info: 12:02:48.391 END :: 0 - NA
+2019-06-14T06:32:56.074Z [airiqcrawler] info: 12:02:56.073 0 - Ahmedabad / Mumbai
+2019-06-14T06:33:26.916Z [airiqcrawler] info: 12:03:26.915 N03 = Function timed out - false
+2019-06-14T06:33:44.233Z [airiqcrawler] info: 12:03:44.232 E16 => Error: waiting for selector "ctl00_mainbody_GV_Report1" failed: timeout 6000ms exceeded
+2019-06-14T06:36:49.178Z [airiqcrawler] info: 12:06:49.175 0 - NA
+2019-06-14T06:36:59.774Z [airiqcrawler] info: 12:06:59.768 END :: 0 - NA
+2019-06-14T06:37:05.295Z [airiqcrawler] info: 12:07:05.293 0 - Ahmedabad / Mumbai
+2019-06-14T06:38:00.088Z [airiqcrawler] info: 12:08:00.082 N03 = Function timed out - false
+2019-06-14T06:38:07.100Z [airiqcrawler] info: 12:08:07.099 E16 => Error: waiting for selector "ctl00_mainbody_GV_Report1" failed: timeout 6000ms exceeded
+2019-06-14T06:42:35.737Z [airiqcrawler] info: 12:12:35.736 END :: 0 - Ahmedabad / Mumbai
+2019-06-14T06:42:59.383Z [airiqcrawler] info: 12:12:59.374 1 - Ahmedabad / Chennai
+2019-06-14T06:44:46.064Z [airiqcrawler] info: 12:14:46.063 N03 = Function timed out - false
+2019-06-14T06:44:53.072Z [airiqcrawler] info: 12:14:53.071 E16 => Error: waiting for selector "ctl00_mainbody_GV_Report1" failed: timeout 6000ms exceeded
+2019-06-14T06:46:51.135Z [airiqcrawler] info: 12:16:51.134 E18 => Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': '${control}' is not a valid selector.
+    at predicate (eval at waitForPredicatePageFunction (:2:21), <anonymous>:6:20)
+    at eval (eval at waitForPredicatePageFunction (:2:21), <anonymous>:25:7)
+    at pollMutation (<anonymous>:16:31)
+    at waitForPredicatePageFunction (<anonymous>:8:18)
+2019-06-14T06:47:14.382Z [airiqcrawler] info: 12:17:14.381 tgt-elm - Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': '${control}' is not a valid selector.
+    at <anonymous>:1:33
+2019-06-14T06:48:35.898Z [airiqcrawler] info: 12:18:35.895 Read content :  Error: Evaluation failed: DOMException: Failed to execute 'querySelectorAll' on 'Document': '${control}' is not a valid selector.
+    at <anonymous>:1:33
+2019-06-14T06:52:40.043Z [airiqcrawler] info: 12:22:40.038 0 - NA
+2019-06-14T06:52:41.026Z [airiqcrawler] info: 12:22:41.025 END :: 0 - NA
+2019-06-14T06:52:41.057Z [airiqcrawler] info: 12:22:41.056 0 - Ahmedabad / Mumbai
+2019-06-14T06:52:54.004Z [airiqcrawler] info: 12:22:54.003 N03 = Function timed out - false
+2019-06-14T06:52:54.012Z [airiqcrawler] info: 12:22:54.008 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T06:52:55.848Z [airiqcrawler] info: 12:22:55.847 END :: 0 - Ahmedabad / Mumbai
+2019-06-14T06:52:55.850Z [airiqcrawler] info: 12:22:55.849 1 - Ahmedabad / Chennai
+2019-06-14T06:53:08.515Z [airiqcrawler] info: 12:23:08.514 N03 = Function timed out - false
+2019-06-14T06:53:08.520Z [airiqcrawler] info: 12:23:08.519 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T06:53:09.758Z [airiqcrawler] info: 12:23:09.756 E18 => Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': '${control}' is not a valid selector.
+    at predicate (eval at waitForPredicatePageFunction (:2:21), <anonymous>:6:20)
+    at eval (eval at waitForPredicatePageFunction (:2:21), <anonymous>:25:7)
+    at pollMutation (<anonymous>:16:31)
+    at waitForPredicatePageFunction (<anonymous>:8:18)
+2019-06-14T06:53:09.764Z [airiqcrawler] info: 12:23:09.763 tgt-elm - Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': '${control}' is not a valid selector.
+    at <anonymous>:1:33
+2019-06-14T06:58:20.568Z [airiqcrawler] info: 12:28:20.563 0 - NA
+2019-06-14T06:58:21.621Z [airiqcrawler] info: 12:28:21.620 END :: 0 - NA
+2019-06-14T06:58:21.652Z [airiqcrawler] info: 12:28:21.652 0 - Ahmedabad / Mumbai
+2019-06-14T06:58:34.507Z [airiqcrawler] info: 12:28:34.506 N03 = Function timed out - false
+2019-06-14T06:58:34.518Z [airiqcrawler] info: 12:28:34.513 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T06:58:36.352Z [airiqcrawler] info: 12:28:36.352 END :: 0 - Ahmedabad / Mumbai
+2019-06-14T06:58:36.353Z [airiqcrawler] info: 12:28:36.353 1 - Ahmedabad / Chennai
+2019-06-14T06:58:48.980Z [airiqcrawler] info: 12:28:48.979 N03 = Function timed out - false
+2019-06-14T06:58:48.985Z [airiqcrawler] info: 12:28:48.983 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:12:00.148Z [airiqcrawler] info: 12:42:00.143 0 - NA
+2019-06-14T07:12:01.324Z [airiqcrawler] info: 12:42:01.323 END :: 0 - NA
+2019-06-14T07:12:01.368Z [airiqcrawler] info: 12:42:01.366 0 - Ahmedabad / Mumbai
+2019-06-14T07:12:14.604Z [airiqcrawler] info: 12:42:14.603 N03 = Function timed out - false
+2019-06-14T07:12:14.612Z [airiqcrawler] info: 12:42:14.609 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:12:16.449Z [airiqcrawler] info: 12:42:16.449 END :: 0 - Ahmedabad / Mumbai
+2019-06-14T07:12:16.451Z [airiqcrawler] info: 12:42:16.450 1 - Ahmedabad / Chennai
+2019-06-14T07:12:29.100Z [airiqcrawler] info: 12:42:29.099 N03 = Function timed out - false
+2019-06-14T07:12:29.105Z [airiqcrawler] info: 12:42:29.104 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:13:27.414Z [airiqcrawler] info: 12:43:27.409 0 - NA
+2019-06-14T07:13:28.409Z [airiqcrawler] info: 12:43:28.408 END :: 0 - NA
+2019-06-14T07:13:28.444Z [airiqcrawler] info: 12:43:28.443 0 - Ahmedabad / Mumbai
+2019-06-14T07:13:41.539Z [airiqcrawler] info: 12:43:41.530 N03 = Function timed out - false
+2019-06-14T07:13:41.571Z [airiqcrawler] info: 12:43:41.563 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:13:43.413Z [airiqcrawler] info: 12:43:43.412 END :: 0 - Ahmedabad / Mumbai
+2019-06-14T07:13:43.414Z [airiqcrawler] info: 12:43:43.414 1 - Ahmedabad / Chennai
+2019-06-14T07:13:56.522Z [airiqcrawler] info: 12:43:56.521 N03 = Function timed out - false
+2019-06-14T07:13:56.527Z [airiqcrawler] info: 12:43:56.526 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:21:57.709Z [airiqcrawler] info: 12:51:57.706 0 - NA
+2019-06-14T07:21:58.926Z [airiqcrawler] info: 12:51:58.925 END :: 0 - NA
+2019-06-14T07:21:59.003Z [airiqcrawler] info: 12:51:59.002 0 - Ahmedabad / Mumbai
+2019-06-14T07:22:11.931Z [airiqcrawler] info: 12:52:11.930 N03 = Function timed out - false
+2019-06-14T07:22:11.940Z [airiqcrawler] info: 12:52:11.937 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:22:13.778Z [airiqcrawler] info: 12:52:13.778 END :: 0 - Ahmedabad / Mumbai
+2019-06-14T07:22:13.780Z [airiqcrawler] info: 12:52:13.779 1 - Ahmedabad / Chennai
+2019-06-14T07:22:26.425Z [airiqcrawler] info: 12:52:26.424 N03 = Function timed out - false
+2019-06-14T07:22:26.430Z [airiqcrawler] info: 12:52:26.429 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:22:28.264Z [airiqcrawler] info: 12:52:28.263 END :: 1 - Ahmedabad / Chennai
+2019-06-14T07:22:28.265Z [airiqcrawler] info: 12:52:28.265 2 - Bangalore / Mumbai
+2019-06-14T07:22:40.907Z [airiqcrawler] info: 12:52:40.906 N03 = Function timed out - false
+2019-06-14T07:22:40.913Z [airiqcrawler] info: 12:52:40.911 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:22:42.745Z [airiqcrawler] info: 12:52:42.745 END :: 2 - Bangalore / Mumbai
+2019-06-14T07:22:42.747Z [airiqcrawler] info: 12:52:42.746 3 - Mumbai / Bangalore
+2019-06-14T07:22:55.371Z [airiqcrawler] info: 12:52:55.370 N03 = Function timed out - false
+2019-06-14T07:22:55.376Z [airiqcrawler] info: 12:52:55.375 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:22:57.209Z [airiqcrawler] info: 12:52:57.208 END :: 3 - Mumbai / Bangalore
+2019-06-14T07:22:57.210Z [airiqcrawler] info: 12:52:57.210 4 - Mumbai / Delhi
+2019-06-14T07:23:09.792Z [airiqcrawler] info: 12:53:09.791 N03 = Function timed out - false
+2019-06-14T07:23:09.798Z [airiqcrawler] info: 12:53:09.796 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:23:11.637Z [airiqcrawler] info: 12:53:11.636 END :: 4 - Mumbai / Delhi
+2019-06-14T07:23:11.639Z [airiqcrawler] info: 12:53:11.638 5 - Mumbai / Chennai
+2019-06-14T07:24:16.302Z [airiqcrawler] info: 12:54:16.295 0 - NA
+2019-06-14T07:24:22.296Z [airiqcrawler] info: 12:54:22.295 END :: 0 - NA
+2019-06-14T07:24:22.327Z [airiqcrawler] info: 12:54:22.327 0 - Ahmedabad / Mumbai
+2019-06-14T07:24:40.851Z [airiqcrawler] info: 12:54:40.851 N03 = Function timed out - false
+2019-06-14T07:24:40.860Z [airiqcrawler] info: 12:54:40.856 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:26:47.348Z [airiqcrawler] info: 12:56:47.344 0 - NA
+2019-06-14T07:27:18.460Z [airiqcrawler] info: 12:57:18.459 END :: 0 - NA
+2019-06-14T07:27:18.488Z [airiqcrawler] info: 12:57:18.487 0 - Ahmedabad / Mumbai
+2019-06-14T07:27:37.468Z [airiqcrawler] info: 12:57:37.467 N03 = Function timed out - false
+2019-06-14T07:27:37.478Z [airiqcrawler] info: 12:57:37.473 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:31:19.289Z [airiqcrawler] info: 13:01:19.288 END :: 0 - Ahmedabad / Mumbai
+2019-06-14T07:31:19.291Z [airiqcrawler] info: 13:01:19.290 1 - Ahmedabad / Chennai
+2019-06-14T07:31:40.502Z [airiqcrawler] info: 13:01:40.501 N03 = Function timed out - false
+2019-06-14T07:31:40.507Z [airiqcrawler] info: 13:01:40.506 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:32:49.276Z [airiqcrawler] info: 13:02:49.274 ex1
+2019-06-14T07:32:49.278Z [airiqcrawler] info: 13:02:49.277 ReferenceError: contentItem is not defined
+2019-06-14T07:34:29.461Z [airiqcrawler] info: 13:04:29.454 0 - NA
+2019-06-14T07:34:37.305Z [airiqcrawler] info: 13:04:37.304 END :: 0 - NA
+2019-06-14T07:34:37.349Z [airiqcrawler] info: 13:04:37.349 0 - Ahmedabad / Mumbai
+2019-06-14T07:35:11.051Z [airiqcrawler] info: 13:05:11.050 N03 = Function timed out - false
+2019-06-14T07:35:11.059Z [airiqcrawler] info: 13:05:11.056 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:40:06.614Z [airiqcrawler] info: 13:10:06.613 END :: 0 - Ahmedabad / Mumbai
+2019-06-14T07:40:06.615Z [airiqcrawler] info: 13:10:06.614 1 - Ahmedabad / Chennai
+2019-06-14T07:40:57.833Z [airiqcrawler] info: 13:10:57.832 N03 = Function timed out - false
+2019-06-14T07:40:57.838Z [airiqcrawler] info: 13:10:57.837 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:41:28.785Z [airiqcrawler] info: 13:11:28.782 ex1
+2019-06-14T07:41:28.794Z [airiqcrawler] info: 13:11:28.792 ReferenceError: contentItem is not defined
+2019-06-14T07:52:19.477Z [airiqcrawler] info: 13:22:19.472 0 - NA
+2019-06-14T07:52:22.674Z [airiqcrawler] info: 13:22:22.674 END :: 0 - NA
+2019-06-14T07:52:22.708Z [airiqcrawler] info: 13:22:22.708 0 - Ahmedabad / Mumbai
+2019-06-14T07:52:51.697Z [airiqcrawler] info: 13:22:51.696 N03 = Function timed out - false
+2019-06-14T07:52:51.705Z [airiqcrawler] info: 13:22:51.702 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:58:54.774Z [airiqcrawler] info: 13:28:54.767 END :: 0 - Ahmedabad / Mumbai
+2019-06-14T07:58:54.780Z [airiqcrawler] info: 13:28:54.779 1 - Ahmedabad / Chennai
+2019-06-14T07:59:10.230Z [airiqcrawler] info: 13:29:10.229 N03 = Function timed out - false
+2019-06-14T07:59:10.239Z [airiqcrawler] info: 13:29:10.234 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T07:59:57.972Z [airiqcrawler] info: 13:29:57.971 ex1
+2019-06-14T07:59:57.974Z [airiqcrawler] info: 13:29:57.973 ReferenceError: contentItem is not defined
+2019-06-14T08:04:08.964Z [airiqcrawler] info: 13:34:08.959 0 - NA
+2019-06-14T08:04:09.915Z [airiqcrawler] info: 13:34:09.914 END :: 0 - NA
+2019-06-14T08:04:09.945Z [airiqcrawler] info: 13:34:09.944 0 - Ahmedabad / Mumbai
+2019-06-14T08:04:22.790Z [airiqcrawler] info: 13:34:22.789 N03 = Function timed out - false
+2019-06-14T08:04:22.797Z [airiqcrawler] info: 13:34:22.794 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T08:04:28.644Z [airiqcrawler] info: 13:34:28.643 END :: 0 - Ahmedabad / Mumbai
+2019-06-14T08:04:28.645Z [airiqcrawler] info: 13:34:28.645 1 - Ahmedabad / Chennai
+2019-06-14T08:04:41.306Z [airiqcrawler] info: 13:34:41.305 N03 = Function timed out - false
+2019-06-14T08:04:41.311Z [airiqcrawler] info: 13:34:41.310 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T10:46:12.044Z [airiqcrawler] info: 16:16:12.040 0 - NA
+2019-06-14T10:46:13.268Z [airiqcrawler] info: 16:16:13.267 END :: 0 - NA
+2019-06-14T10:46:13.304Z [airiqcrawler] info: 16:16:13.303 0 - Ahmedabad / Mumbai
+2019-06-14T10:46:26.214Z [airiqcrawler] info: 16:16:26.213 N03 = Function timed out - false
+2019-06-14T10:46:26.222Z [airiqcrawler] info: 16:16:26.219 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T10:46:32.064Z [airiqcrawler] info: 16:16:32.063 END :: 0 - Ahmedabad / Mumbai
+2019-06-14T10:46:32.065Z [airiqcrawler] info: 16:16:32.064 1 - Ahmedabad / Chennai
+2019-06-14T10:46:44.705Z [airiqcrawler] info: 16:16:44.705 N03 = Function timed out - false
+2019-06-14T10:46:44.711Z [airiqcrawler] info: 16:16:44.709 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T11:21:48.069Z [airiqcrawler] info: 16:51:48.063 0 - NA
+2019-06-14T11:21:49.105Z [airiqcrawler] info: 16:51:49.103 END :: 0 - NA
+2019-06-14T11:21:49.144Z [airiqcrawler] info: 16:51:49.143 0 - Ahmedabad / Mumbai
+2019-06-14T11:22:02.325Z [airiqcrawler] info: 16:52:02.324 N03 = Function timed out - false
+2019-06-14T11:22:02.335Z [airiqcrawler] info: 16:52:02.331 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T11:22:04.235Z [airiqcrawler] info: 16:52:04.234 END :: 0 - Ahmedabad / Mumbai
+2019-06-14T11:22:04.236Z [airiqcrawler] info: 16:52:04.236 1 - Ahmedabad / Chennai
+2019-06-14T11:22:17.296Z [airiqcrawler] info: 16:52:17.295 N03 = Function timed out - false
+2019-06-14T11:22:17.305Z [airiqcrawler] info: 16:52:17.304 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T11:27:44.823Z [airiqcrawler] info: 16:57:44.818 0 - NA
+2019-06-14T11:27:46.061Z [airiqcrawler] info: 16:57:46.060 END :: 0 - NA
+2019-06-14T11:27:46.099Z [airiqcrawler] info: 16:57:46.098 0 - Ahmedabad / Mumbai
+2019-06-14T11:27:59.750Z [airiqcrawler] info: 16:57:59.749 N03 = Function timed out - false
+2019-06-14T11:27:59.760Z [airiqcrawler] info: 16:57:59.755 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T11:28:01.606Z [airiqcrawler] info: 16:58:01.605 END :: 0 - Ahmedabad / Mumbai
+2019-06-14T11:28:01.608Z [airiqcrawler] info: 16:58:01.607 1 - Ahmedabad / Chennai
+2019-06-14T11:28:14.455Z [airiqcrawler] info: 16:58:14.454 N03 = Function timed out - false
+2019-06-14T11:28:14.460Z [airiqcrawler] info: 16:58:14.459 Error: Evaluation failed: DOMException: Failed to execute 'querySelector' on 'Document': The provided selector is empty.
+    at <anonymous>:1:33
+2019-06-14T11:29:27.853Z [airiqcrawler] info: 16:59:27.851 Data : {"ticket_type":"Economy","flight_number":"G8 -912","departure":{"circle":"","date":"16 Jun 2019","time":"10:35 PM","epoch_date":null},"arrival":{"circle":"","date":"16 Jun 2019","time":"01:00 AM","epoch_date":null},"availability":1,"price":4885,"flight":"G8"}

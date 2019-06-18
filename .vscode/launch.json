@@ -53,6 +53,12 @@
             "preLaunchTask": "build-goibibo",
             "outFiles": ["${workspaceFolder}/dist/goibibo/goibibocrwler.js"],
             "program": "${workspaceFolder}/dist/goibibo/indexgoibibo.js"
-        }
-    ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch TMZ Program",
+            "program": "${workspaceFolder}/indextmz.js"
+        },
+   ]
 }
