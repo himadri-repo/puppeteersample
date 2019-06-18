@@ -497,6 +497,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                         i++;
                         //going for next circle
                         //log('moving to next circle');
+                        log(`${key} crawl process finished. Now saving circle data into table.`);
                         let impactedRows = metadata.circlecrawlfinished(runid, getStore(), key, function(status) {
                             log(`Finaliation of ${key} - ${status}`);
                         });

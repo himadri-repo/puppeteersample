@@ -200,7 +200,13 @@ function assessContent(rawContent, parsedContent, store, runid, idx, callback) {
         else
             parsedContent.recid = -1;
 
-        store[key].push(parsedContent);
+        let iidx = store[key].findIndex((obj, ndx) => {
+            return obj.recid === parsedContent.recid;
+        });
+
+        if(iidx===-1) {
+            store[key].push(parsedContent);
+        }
     }
 
     //console.log(`Data : ${JSON.stringify(parsedContent)}`);
