@@ -158,12 +158,12 @@ async function navigatePage(pageName) {
         });
         
         page.on('domcontentloaded',()=> {
-            //log('dom even fired');
+            log('dom [domcontentloaded] even fired');
             pageLoaded = true;
         });
 
         page.on('load',()=> {
-            //log('dom even fired');
+            log('dom [load] even fired');
             pageLoaded = true;
         });
 
@@ -378,11 +378,14 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
 
                         let src_dest = repeatsourceDataValue.match(/\w+/gi);
                         let key = '';
+                        let options = {};
                         if(src_dest!==null && src_dest.length>1) {
                             key = (src_dest[0].trim() + '_' + src_dest[1].trim());
                             let storeData = getStore();
                             storeData[key]=[];
-                            storeData.currentKey = {'source': src_dest[0].trim(), 'destination': src_dest[1].trim(), 'key': key};
+                            storeData.attributes = [];
+                            //storeData.currentKey = {'source': src_dest[0].trim(), 'destination': src_dest[1].trim(), 'key': key};
+                            options = {'source': src_dest[0].trim(), 'destination': src_dest[1].trim(), 'key': key};
                         }
 
                         log(`${i} - ${repeatsourceDataValue}`);
@@ -398,18 +401,19 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                             while(iidx<pageConfig.actions[0].userinputs.length) {
                                 var userInput =  pageConfig.actions[0].userinputs[iidx];
                                 
+                                //log(`${repeatsourceDataValue} | Userinputs -> ${iidx} | ${repeatsourceType} | ${userInput.action}`);
                                 //this is the place we need to use repeat functionality
                                 if(repeatsourceType===null) {
-                                    await performUserOperation(page, userInput, null, i, runid).catch(reason => log(`E5 => ${reason}`));
+                                    await performUserOperation(page, userInput, null, i, runid, options).catch(reason => log(`E5 => ${reason}`));
                                 }
                                 else if(repeatsourceType==='number') {
-                                    await performUserOperation(page, userInput, null, i, runid).catch(reason => log(`E6 => ${reason}`));
+                                    await performUserOperation(page, userInput, null, i, runid, options).catch(reason => log(`E6 => ${reason}`));
                                 }
                                 else if(repeatsourceType==='array') {
                                     try
                                     {
                                         //log(`Perform user operation ${i} - ${userInput.action}`);
-                                        await performUserOperation(page, userInput, repeatsourceData[i], i, runid).catch(reason => log(`E7 => ${reason}`));
+                                        await performUserOperation(page, userInput, repeatsourceData[i], i, runid, options).catch(reason => log(`E7 => ${reason}`));
                                         // await performUserOperation(page, userInput, repeatsourceData[i], function(input, sourcedata) {
                                         //     log(`Error happened at index ${i}`);
                                         //     i--; break;
@@ -498,8 +502,12 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                         //going for next circle
                         //log('moving to next circle');
                         log(`${key} crawl process finished. Now saving circle data into table.`);
-                        let impactedRows = metadata.circlecrawlfinished(runid, getStore(), key, function(status) {
+                        let impactedRows = await metadata.circlecrawlfinished(runid, getStore(), key, function(status) {
                             log(`Finaliation of ${key} - ${status}`);
+                        }).then(val => {
+                            log(`Tickets Data: ${JSON.stringify(val)}`);
+                        }).catch(reason => {
+                            log(`Error: ${reason}`);
                         });
                         //log(`Next operation ${i} starting`);
                     }
@@ -569,12 +577,14 @@ function transformData(textValue, providedData) {
     return value;
 }
 
-async function performUserOperation(objPage, userInput, data, ndx, runid, callback) {
+async function performUserOperation(objPage, userInput, data, ndx, runid, option, callback) {
     try
     {
         let delay = 200; //300
         userInput = userInput || USERINPUT;
         var onError = false;
+        //{'source': src_dest[0].trim(), 'destination': src_dest[1].trim(), 'key': key};
+        var option = option || {'source': '', 'destination': '', 'key': ''};
         //log(`performUserOperation ${userInput.action} starting`);
         await page.waitFor(delay);
 
@@ -774,7 +784,8 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                                 }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, userInput.checkselector).catch(async (reason) => { 
                                     log(`N03 = ${reason} - ${pageLoaded}`); 
                                     //await takeSnapshot('N03');
-                                    chkControl = await page.$(userInput.checkselector).catch((reason)=> log(reason));
+                                    if(userInput && userInput.checkselector!==null && userInput.checkselector!==undefined && userInput.checkselector!=='')
+                                        chkControl = await page.$(userInput.checkselector).catch((reason)=> log(reason));
                                     if(chkControl===null || chkControl===undefined)
                                         await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                                 });    
@@ -823,7 +834,8 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                             for(var idx=0; idx<inputControl.length; idx++) {
                                 //let ctrl = inputControl[idx];
                                 let ctrl = await getControl(userInput, idx, inputControl).catch(reason => log(`E17 => ${reason}`));
-                                //log(`Perform ${userInput.tasks.length} tasks`, `On ${inputControl.length} controls`, ctrl);
+                                // log(`Perform ${userInput.tasks.length} tasks`, `On ${inputControl._remoteObject.description} (${inputControl._remoteObject.objectId}) controls`, ctrl);
+                                //log(`Perform ${userInput.tasks.length} tasks`, `On ${ctrl._remoteObject.description} (${ctrl._remoteObject.objectId}) controls`, inputControl.length);
                                 if(userInput.tasks!==null && userInput.tasks.length>0) {
                                     //userInput.tasks.forEach((tsk, i) => {
                                     //log("Array inputControl", idx, ctrl);
@@ -831,6 +843,7 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                                     onError = false;
                                     for(var i=0; i<userInput.tasks.length; i++) {
                                         let tsk = userInput.tasks[i];
+                                        //log(`Task => ${tsk.task_id} | ${tsk.task_name}`);
                                         //let targetElement = ctrl;
                                         let targetElement = await getControl(userInput, idx, inputControl).catch(reason => log(`E17.1 => ${reason}`));
                                         if(tsk.selector!==undefined && tsk.selector!==null && tsk.selector!=="" 
@@ -859,7 +872,7 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                                             targetElement = await page.$(tsk.selector).catch((reason)=> log(`tgt-elm - ${reason}`)).catch(reason => log(`E19 => ${reason}`));
                                         }
                                         //log("Going to perform Task", i, tsk.selector);
-                                        let returnValue = await performTask(objPage, userInput, inputControl, targetElement, tsk, i, runid).catch(reason => log(`E20 => ${reason}`));
+                                        let returnValue = await performTask(objPage, userInput, inputControl, targetElement, tsk, i, runid, option).catch(reason => log(`E20 => ${reason}`));
                                         //log("Task done", tsk, i);
                                         await page.waitFor(200).catch(reason => log(`E21 => ${reason}`)); //delay to get UI refreshed with json data
                                         if(returnValue===-1 || (userInput.exit!==undefined && userInput.exit!==null && userInput.exit)) 
@@ -977,10 +990,11 @@ async function setProprtyItem(page, selector, property, value) {
 
 /*end of helper */
 
-async function performTask(objPage, userInput, inputControl, element, task, idx, runid) {
+async function performTask(objPage, userInput, inputControl, element, task, idx, runid, option) {
     try
     {
         //log('Start performTask => ', idx, task.selector, task.action);
+        var option = option || {'source': '', 'destination': '', 'key': ''};
         await page.waitFor(200).catch(reason => log(`E122 => ${reason}`));
         if(task && task.action) {
             if(task.action==='click') {
@@ -1141,6 +1155,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                     //await page.waitFor(500).catch(reason => log(`E122 => ${reason}`));
                     let attrs = task.attributes?task.attributes:[];
                     let contentsElements = await page.$$(task.selector).catch((reason)=> log('Read content : ', reason)).catch(reason => log(`E123 => ${reason}`));
+                    log('Reading attributes');
                     for(var i=0; i<contentsElements.length; i++) {
                         for(var i1=0; i1<attrs.length; i1++) {
                             let attrName = attrs[i1];
@@ -1153,9 +1168,11 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                             if(attrValue!==undefined && attrValue!==null && attrValue!=='') {
                                 content.push({'name': attrName, 'value': attrValue});
                                 storeData.attributes.push({'name': attrName, 'value': attrValue});
+                                log(`Key => ${option.key} - Attribute: ${attrName} - value: ${attrValue}`);
                             }
                         }
                     }
+                    log('End :: Reading attributes');
                 }
 
                 if(task.plugins!==null && task.plugins.length>0 && content!==null && content!=='')
@@ -1169,8 +1186,8 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                             // task.plugins.forEach((plugin, iidx) => {
                                 let parsedContent = null;
                                 if(plugin.parser!==null && typeof(plugin.parser)==='function') {
-                                    parsedContent = plugin.parser(contentItem, i, storeData, runid);
-                                    //log('Parsed Content: ', JSON.stringify(parsedContent));
+                                    parsedContent = plugin.parser(contentItem, i, storeData, runid, option);
+                                    // log('Parsed Content: ', JSON.stringify(parsedContent));
                                     if(parsedContent===null) {
                                         userInput.exit = true;
                                         userInput.inputControl = [];
@@ -1180,7 +1197,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                                 if(plugin.assess!==null && typeof(plugin.assess)==='function') {
                                     //capturedData = plugin.assess(contentItem, parsedContent, capturedData);
                                     //getStore()
-                                    plugin.assess(contentItem, parsedContent, storeData, runid, i, function(store) {
+                                    plugin.assess(contentItem, parsedContent, storeData, runid, i, option, function(store) {
                                         if(store)
                                         {
                                             //capturedData = store;

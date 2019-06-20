@@ -460,6 +460,7 @@ function saveTicketsData(conn, circleDataList, runid, callback) {
                     insertTicketData(conn, ticket, runid, function(status) {
                         //status should be inserted it etc.
                         ticket.id = status.insertId;
+                        console.log(`Data After Insert: ${JSON.stringify(ticket)}`);
                     });
                 }
                 else if(ticketInfo!==null && ticketInfo.length>0) {
@@ -467,6 +468,7 @@ function saveTicketsData(conn, circleDataList, runid, callback) {
                     updateTicketData(conn, ticket, runid, function(status) {
                         //status should be update status value
                         //console.log(status);
+                        console.log(`Data After Update: ${JSON.stringify(ticket)}`);
                     });
                 }
             });

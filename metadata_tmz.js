@@ -23,9 +23,10 @@ function repeatSource(elementData) {
     return data;
 }
 
-function parseContent(content, idx, store, runid,) {
+function parseContent(content, idx, store, runid, option) {
     //console.log(`Data : \n${content}`);
-    let contentItem = contentParser(content, store, runid);
+    var option = option || {'source': '', 'destination': '', 'key': ''};
+    let contentItem = contentParser(content, store, runid, option);
     //console.log(`Data : ${JSON.stringify(contentItem)}`);
     // if(content.indexOf('Seats Available, Please send offline request')>-1 ||
     //     content.indexOf('On Request')>-1) 
@@ -37,7 +38,7 @@ function parseContent(content, idx, store, runid,) {
     return contentItem;
 }
 
-function contentParser(content, store, runid) {
+function contentParser(content, store, runid, option) {
     let deal = {};
 
     try
@@ -91,8 +92,8 @@ function contentParser(content, store, runid) {
         }
         deal.flight_number = flight_number;
         deal.ticket_type = 'Economy';
-        deal.departure = {'circle': store.currentKey.source, 'date': disp_date, 'time': start_time, 'epoch_date': Date.parse(`${disp_date} ${start_time}`)};
-        deal.arrival = {'circle': store.currentKey.destination, 'date': disp_date, 'time': end_time, 'epoch_date': Date.parse(`${disp_date} ${end_time}`)};
+        deal.departure = {'circle': option.source, 'date': disp_date, 'time': start_time, 'epoch_date': Date.parse(`${disp_date} ${start_time}`)};
+        deal.arrival = {'circle': option.destination, 'date': disp_date, 'time': end_time, 'epoch_date': Date.parse(`${disp_date} ${end_time}`)};
         deal.availability = qty;
         deal.price = rate;
     }
@@ -184,9 +185,10 @@ function contentParserold(content) {
     return deal;
 }
 
-function assessContent(rawContent, parsedContent, store, runid, idx, callback) {
+function assessContent(rawContent, parsedContent, store, runid, idx, option, callback) {
     let key = null;
 
+    var option = option || {'source': '', 'destination': '', 'key': ''};
     if(parsedContent.availability===-1) { //data not present
         return parsedContent;
     }
@@ -195,10 +197,12 @@ function assessContent(rawContent, parsedContent, store, runid, idx, callback) {
     key = `${parsedContent.departure.circle}_${parsedContent.arrival.circle}`;
     if(store!==undefined && store!==null && store[key]!==undefined && store[key]!==null && store[key] instanceof Array) {
         parsedContent.runid = runid;
-        if(store.attributes!==undefined && store.attributes!==null && store.attributes.length)
+        if(store.attributes!==undefined && store.attributes!==null && store.attributes.length>idx)
             parsedContent.recid = parseInt(store.attributes[idx].value);
-        else
+        else {
             parsedContent.recid = -1;
+            console.log(`Attributes: ${idx} - ${JSON.stringify(store.attributes)}`);
+        }
 
         let iidx = store[key].findIndex((obj, ndx) => {
             return obj.recid === parsedContent.recid;
@@ -351,37 +355,60 @@ function finalizeData(runid, datasourceUrl) {
 function circleCrawlingFinished(runid, store, circleKey, callback) {
     const datastore = require('./radharani/tmzdatastore');
 
-    try
-    {
-        //console.log('circleCrawlingFinished called');
-        if(circleKey===null || circleKey===undefined || circleKey==="") return -1;
-        if(store[circleKey]===null || store[circleKey]===undefined || !(store[circleKey] instanceof Array)) return -1;
-        //console.log('going to call saveCircleBatchData');
-        if(store[circleKey].length>0) {
-            let targetRunId = runid;
-            let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey, function(circleData) {
-                if(targetRunId!==null && targetRunId!==undefined && circleData.length>0) {
-                    let deptId = circleData[0].departure.id;
-                    let arrvId = circleData[0].arrival.id;
-                    let records = circleData.length;
-                    //let cdata = circleData;
-                    //updatedRecs = store[circleKey];
-                    let clearEmptyStock = datastore.updateExhaustedCircleInventory(runid, deptId, arrvId, function(status) {
-                        if(status!==null && status!==undefined) {
-                            let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
-                            console.log();
-                            if(callback) {
-                                callback(msg);
+    return new Promise((resolve, reject) => {
+        try
+        {
+            //console.log('circleCrawlingFinished called');
+            if(circleKey===null || circleKey===undefined || circleKey==="") {
+                reject('Invalid circle key passed');
+                //return -1;
+            }
+
+            if(store[circleKey]===null || store[circleKey]===undefined || !(store[circleKey] instanceof Array)) {
+                reject('Invalid circle data passed');
+                //return -1;
+            }
+
+            //console.log('going to call saveCircleBatchData');
+            if(circleKey && store && store[circleKey] && store[circleKey].length>0) {
+                let targetRunId = runid;
+                let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey, function(circleData) {
+                    if(targetRunId!==null && targetRunId!==undefined && circleData.length>0) {
+                        let deptId = circleData[0].departure.id;
+                        let arrvId = circleData[0].arrival.id;
+                        let records = circleData.length;
+                        //let cdata = circleData;
+                        //updatedRecs = store[circleKey];
+                        let clearEmptyStock = datastore.updateExhaustedCircleInventory(runid, deptId, arrvId, function(status) {
+                            if(status!==null && status!==undefined) {
+                                let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
+                                // console.log();
+                                if(callback) {
+                                    callback(msg);
+                                }
+
+                                resolve(circleData);
                             }
-                        }
-                    });
-                }
-            });
+                            else {
+                                reject("After exhausted circle inventory, return status invalid");
+                            }
+                        });
+                    }
+                    else {
+                        reject("Circle data couldn't be saved");
+                    }
+                });
+            }
+            else {
+                reject("Circle data shouldn't be empty");
+            }
         }
-    }
-    catch(e3) {
-        console.log(e3);
-    }
+        catch(e3) {
+            console.log(e3);
+
+            reject(e3);
+        }
+    });
 }
 
 module.exports = {
@@ -501,7 +528,7 @@ module.exports = {
                             type: '',
                             value: '',
                             action: 'click',
-                            haspostback: false,
+                            haspostback: true,
                             delayafter: 400,
                             checkselector: '',
                             next: 5
@@ -545,7 +572,7 @@ module.exports = {
                                                 //console.log(`attr value - ${JSON.stringify(content)}`);
                                                 return content;
                                             },
-                                            assess: function(contentItem, parsedContent, store, runid, idx, callback) {
+                                            assess: function(contentItem, parsedContent, store, runid, idx, option, callback) {
                                                 if(callback) {
                                                     callback(store);
                                                 }
@@ -670,67 +697,68 @@ module.exports = {
                                         return resolve(999);
                                     }
                                     else {
-                                        return resolve(5);
+                                        return resolve(999); //end
+                                        //return resolve(5);
                                     }
                                 });
                             }
                         },
-                        {
-                            id: 5,
-                            controlid: '',
-                            selector: '#ui-datepicker-div > div > a.ui-datepicker-next.ui-corner-all',
-                            isarray: false,
-                            checkcontent: '',
-                            type: '',
-                            value: ``,
-                            action: 'click',
-                            checkselector: '',
-                            next: function(userInput) {
-                                //checkselector: '#ui-datepicker-div > table > tbody > tr > td.event'
-                                return new Promise((resolve, reject) => {
-                                    //console.log(`User input has controls : ${userInput.inputControl.length}`);
-                                    //if(userInput.inputControl.length>0) {
-                                    if((userInput.exit!==undefined && userInput.exit!==null && userInput.exit) || userInput.retrycount>3) {
-                                        userInput.exit = false;
-                                        userInput.retrycount = 0;
-                                        return resolve(999);
-                                    }
-                                    else {
-                                        return resolve(6);
-                                    }
-                                });
-                            }
-                        },
-                        {
-                            id: 6,
-                            controlid: '',
-                            selector: '.ui-datepicker-title',
-                            isarray: false,
-                            checkcontent: '',
-                            type: '',
-                            value: ``,
-                            action: 'click',
-                            checkselector: '',
-                            tasks: [
-                                {
-                                    task_id: 1,
-                                    task_name: 'read content',
-                                    action: 'read',
-                                    selector: '.ui-datepicker-title',
-                                    read_type: 'inner-text',
-                                    plugins: [
-                                        {
-                                            parser: function(content) {
-                                                //console.log(`Month-2: ${content}`);
-                                            },
-                                            assess: function() {},
-                                            persistData: function() {}
-                                        }
-                                    ]
-                                },
-                            ],
-                            next: 4
-                        }
+                        // {
+                        //     id: 5,
+                        //     controlid: '',
+                        //     selector: '#ui-datepicker-div > div > a.ui-datepicker-next.ui-corner-all',
+                        //     isarray: false,
+                        //     checkcontent: '',
+                        //     type: '',
+                        //     value: ``,
+                        //     action: 'click',
+                        //     checkselector: '',
+                        //     next: function(userInput) {
+                        //         //checkselector: '#ui-datepicker-div > table > tbody > tr > td.event'
+                        //         return new Promise((resolve, reject) => {
+                        //             //console.log(`User input has controls : ${userInput.inputControl.length}`);
+                        //             //if(userInput.inputControl.length>0) {
+                        //             if((userInput.exit!==undefined && userInput.exit!==null && userInput.exit) || userInput.retrycount>3) {
+                        //                 userInput.exit = false;
+                        //                 userInput.retrycount = 0;
+                        //                 return resolve(999);
+                        //             }
+                        //             else {
+                        //                 return resolve(6);
+                        //             }
+                        //         });
+                        //     }
+                        // },
+                        // {
+                        //     id: 6,
+                        //     controlid: '',
+                        //     selector: '.ui-datepicker-title',
+                        //     isarray: false,
+                        //     checkcontent: '',
+                        //     type: '',
+                        //     value: ``,
+                        //     action: 'click',
+                        //     checkselector: '',
+                        //     tasks: [
+                        //         {
+                        //             task_id: 1,
+                        //             task_name: 'read content',
+                        //             action: 'read',
+                        //             selector: '.ui-datepicker-title',
+                        //             read_type: 'inner-text',
+                        //             plugins: [
+                        //                 {
+                        //                     parser: function(content) {
+                        //                         //console.log(`Month-2: ${content}`);
+                        //                     },
+                        //                     assess: function() {},
+                        //                     persistData: function() {}
+                        //                 }
+                        //             ]
+                        //         },
+                        //     ],
+                        //     next: 4
+                        // }
                     ]
                 }
             ]
