@@ -60,5 +60,11 @@
             "name": "Launch TMZ Program",
             "program": "${workspaceFolder}/indextmz.js"
         },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch INDR Program",
+            "program": "${workspaceFolder}/indexindr.js"
+        },
    ]
 }
