@@ -14,7 +14,9 @@ function repeatSource(elementData) {
     {
         elementData = elementData.trim();
         //let strreg = /^\w+( - )\w+$/gm;
-        let strreg = /\w+( \/ )\w+/gm;
+        //let strreg = /\w+( \/ )\w+/gm;
+        let strreg = /[0-9a-zA-Z ]*( \/ )[0-9a-zA-Z ]*/gm;
+        
         //data = elementData.match(strreg).map((val, idx) => val.replace(' - ',' / '));
         data = elementData.match(strreg).map((val, idx) => val.trim());
     }
