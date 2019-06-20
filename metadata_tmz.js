@@ -13,8 +13,10 @@ function repeatSource(elementData) {
     try
     {
         elementData = elementData.trim();
-        let strreg = /^\w+( - )\w+$/gm;
-        data = elementData.match(strreg).map((val, idx) => val.replace(' - ',' / '));
+        //let strreg = /^\w+( - )\w+$/gm;
+        let strreg = /\w+( \/ )\w+/gm;
+        //data = elementData.match(strreg).map((val, idx) => val.replace(' - ',' / '));
+        data = elementData.match(strreg).map((val, idx) => val.trim());
     }
     catch(e) {
         console.log(e);
@@ -445,8 +447,8 @@ module.exports = {
                     name: 'DealPage2A',
                     type: 'code',
                     repeat: true,
-                    repeatsourceselector: '#ctl00_mainbody_Panel1', /*#ctl00_mainbody_Panel1 > div > .ChngColor > a > span*/
-                    repeatsourceContentType: 'text',
+                    repeatsourceselector: '#ctl00_mainbody_ddsegment', /* Correct value : #ctl00_mainbody_Panel1*//*#ctl00_mainbody_Panel1 > div > .ChngColor > a > span*/
+                    repeatsourceContentType: 'html', /* text */
                     repeatsource: repeatSource,
                     userinputs: [
                         {
