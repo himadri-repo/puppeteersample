@@ -376,7 +376,8 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                     while(i<loopCount) {
                         let repeatsourceDataValue = (repeatsourceType==='array')?repeatsourceData[i]:'NA';
 
-                        let src_dest = repeatsourceDataValue.match(/\w+/gi);
+                        //let src_dest = repeatsourceDataValue.match(/\w+/gi);
+                        let src_dest = repeatsourceDataValue.split('-');
                         let key = '';
                         let options = {};
                         if(src_dest!==null && src_dest.length>1) {
@@ -895,6 +896,45 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, option
                     }
                 }
                 
+                break;
+            case 'select':
+                try
+                {
+                    if(typeof(userInput.value)==="string") {
+                        let keyedValue = userInput.value;
+                        if(userInput.value.indexOf('${')>-1) {
+                            keyedValue = transformData(userInput.value, data);
+                        }
+                        //await objPage.click(userInput.selector);
+                        if(userInput.selector) {
+                            //log('1', userInput.selector);
+                            //let inputControl = await objPage.$(userInput.selector).catch((reason)=> log(reason));
+                            // let inputControl = await page.$(userInput.selector).catch((reason)=> log(reason));
+                            // //let inputControl = await page.evaluate((selector) => document.querySelector(selector).click(), userInput.selector);
+                            // if(inputControl && inputControl.click) {
+                            //     await inputControl.click().catch(reason=> log(reason));
+                            // }
+                            
+                            // await page.evaluate(function(ui) {
+                            //     let element = document.querySelector(ui.selector);
+                            //     if(element)
+                            //         element.value='';
+                                
+                            // }, userInput).catch(reason => log(`E9 => ${reason}`));;
+
+                            await page.select(userInput.selector, keyedValue);
+                        }
+                        // await page.keyboard.type(keyedValue).catch(reason => log(`E11 => ${reason}`));
+                        if(userInput.delayafter>-1)
+                            delay = userInput.delayafter;
+    
+                        await page.waitFor(delay).catch(reason => log(`E12 => ${reason}`)); //400
+                        //log(`performUserOperation ${userInput.action} KEY CODE SENT`, keyedValue);
+                    }
+                }
+                catch(ex) {
+                    log(ex);
+                }
                 break;
             default:
                 break;

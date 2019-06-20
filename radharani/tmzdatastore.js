@@ -22,28 +22,28 @@ function getDBPool() {
     //     port: 3306
     // });
 
-    pool = mysql.createPool({
-        connectionLimit : 30,
-        connectTimeout  : 60 * 60 * 1000,
-        acquireTimeout  : 60 * 60 * 1000,
-        timeout         : 60 * 60 * 1000,        
-        host: "139.59.92.9",
-        user: "oxyusr",
-        password: "oxy@321",
-        database: "oxytra",
-        port: 3306
-    });
-
-    //Remote DB
     // pool = mysql.createPool({
-    //     connectionLimit: 30,
-    //     connectTimeout: 15000,
-    //     host: "www.oxytra.com",
+    //     connectionLimit : 30,
+    //     connectTimeout  : 60 * 60 * 1000,
+    //     acquireTimeout  : 60 * 60 * 1000,
+    //     timeout         : 60 * 60 * 1000,        
+    //     host: "139.59.92.9",
     //     user: "oxyusr",
-    //     password: "oxy@321-#",
+    //     password: "oxy@321",
     //     database: "oxytra",
     //     port: 3306
     // });
+
+    //Remote DB
+    pool = mysql.createPool({
+        connectionLimit: 30,
+        connectTimeout: 15000,
+        host: "www.oxytra.com",
+        user: "oxyusr",
+        password: "oxy@321-#",
+        database: "oxytra",
+        port: 3306
+    });
 
     return pool;
 }
@@ -560,7 +560,7 @@ function getMissingCities(conn, cities, circleData) {
         if(processedCities.indexOf(city)===-1) {
             let savedCityRecord = cities.find((data, idx) => {
                 //return data.city.toLowerCase().indexOf(city)===-1;
-                return data.city.toLowerCase().indexOf(city)>-1;
+                return data.city.toLowerCase().indexOf(city)>-1 || data.code.toLowerCase().indexOf(city)>-1;
             });
             if(savedCityRecord===undefined || savedCityRecord===null) {
                 if(missingData.indexOf(circleData[i].departure.circle)===-1)
@@ -575,7 +575,8 @@ function getMissingCities(conn, cities, circleData) {
         if(processedCities.indexOf(city)===-1) {
             savedCityRecord = cities.find((data, idx) => {
                 //return data.city.toLowerCase().indexOf(city)===-1;
-                return data.city.toLowerCase().indexOf(city)>-1;
+                //return data.city.toLowerCase().indexOf(city)>-1;
+                return data.city.toLowerCase().indexOf(city)>-1 || data.code.toLowerCase().indexOf(city)>-1;
                 //return data.city.toLowerCase()===city;
             });
             if(savedCityRecord===undefined || savedCityRecord===null) {

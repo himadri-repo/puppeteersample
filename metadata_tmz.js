@@ -15,7 +15,8 @@ function repeatSource(elementData) {
         elementData = elementData.trim();
         //let strreg = /^\w+( - )\w+$/gm;
         //let strreg = /\w+( \/ )\w+/gm;
-        let strreg = /[0-9a-zA-Z ]*( \/ )[0-9a-zA-Z ]*/gm;
+        //let strreg = /[0-9a-zA-Z ]*( \/ )[0-9a-zA-Z ]*/gm;
+        let strreg = /[0-9a-zA-Z ]{3}(-)[0-9a-zA-Z ]{3}/gm;
         
         //data = elementData.match(strreg).map((val, idx) => val.replace(' - ',' / '));
         data = elementData.match(strreg).map((val, idx) => val.trim());
@@ -467,21 +468,21 @@ module.exports = {
                             action: 'keyed',
                             delayafter: 200,
                             checkselector: '',
-                            next: 1
-                        },                        
-                        {
-                            id: 1,
-                            controlid: '',
-                            delaybefore: 100,
-                            selector: '#ctl00_mainbody_ddsegment',
-                            checkcontent: '',
-                            type: 'textbox',
-                            value: '${data}',
-                            action: 'keyed',
-                            delayafter: 200,
-                            checkselector: '',
                             next: 0
-                        },
+                        },                        
+                        // {
+                        //     id: 1,
+                        //     controlid: '',
+                        //     delaybefore: 100,
+                        //     selector: '#ctl00_mainbody_ddsegment',
+                        //     checkcontent: '',
+                        //     type: 'textbox',
+                        //     value: '${data}',
+                        //     action: 'keyed',
+                        //     delayafter: 200,
+                        //     checkselector: '',
+                        //     next: 0
+                        // },
                         {
                             id: 0,
                             controlid: '',
@@ -489,26 +490,26 @@ module.exports = {
                             selector: '#ctl00_mainbody_ddsegment',
                             isarray: false,
                             checkcontent: 'Select from Dropdown',
-                            type: 'hyperlink',
-                            value: '',
-                            action: 'click',
+                            type: 'select', /* hyperlink */
+                            value: '${data}',
+                            action: 'select', /* click */
                             checkselector: '',
                             delayafter: -1,
-                            next: 2
+                            next: 3 /* 2 */
                         },
-                        {
-                            id: 2,
-                            controlid: '',
-                            delaybefore: 100,
-                            selector: '#ctl00_mainbody_ddsegment',
-                            checkcontent: '',
-                            type: 'textbox',
-                            value: '${data}',
-                            action: 'keyed',
-                            delayafter: 200,
-                            checkselector: '',
-                            next: 3
-                        },
+                        // {
+                        //     id: 2,
+                        //     controlid: '',
+                        //     delaybefore: 100,
+                        //     selector: '#ctl00_mainbody_ddsegment',
+                        //     checkcontent: '',
+                        //     type: 'textbox',
+                        //     value: '${data}',
+                        //     action: 'keyed',
+                        //     delayafter: 200,
+                        //     checkselector: '',
+                        //     next: 3
+                        // },
                         {
                             id: 3,
                             controlid: '',
