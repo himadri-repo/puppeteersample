@@ -560,7 +560,8 @@ function getMissingCities(conn, cities, circleData) {
         if(processedCities.indexOf(city)===-1) {
             let savedCityRecord = cities.find((data, idx) => {
                 //return data.city.toLowerCase().indexOf(city)===-1;
-                return data.city.toLowerCase().indexOf(city)>-1 || data.code.toLowerCase().indexOf(city)>-1;
+                //return data.city.toLowerCase().indexOf(city)>-1 || data.code.toLowerCase().indexOf(city)>-1;
+                return data.code.toLowerCase().indexOf(city)>-1;
             });
             if(savedCityRecord===undefined || savedCityRecord===null) {
                 if(missingData.indexOf(circleData[i].departure.circle)===-1)
@@ -576,7 +577,8 @@ function getMissingCities(conn, cities, circleData) {
             savedCityRecord = cities.find((data, idx) => {
                 //return data.city.toLowerCase().indexOf(city)===-1;
                 //return data.city.toLowerCase().indexOf(city)>-1;
-                return data.city.toLowerCase().indexOf(city)>-1 || data.code.toLowerCase().indexOf(city)>-1;
+                //return data.city.toLowerCase().indexOf(city)>-1 || data.code.toLowerCase().indexOf(city)>-1;
+                return data.code.toLowerCase().indexOf(city)>-1;
                 //return data.city.toLowerCase()===city;
             });
             if(savedCityRecord===undefined || savedCityRecord===null) {
@@ -675,7 +677,8 @@ function transformCircleData(conn, circleData, cities) {
         
         if(deptCity===null) {
             deptCity = cities.find((city, ndx)=> {
-                return city.city.toLowerCase().indexOf(deptCityName)>-1;
+                //return city.city.toLowerCase().indexOf(deptCityName)>-1;
+                return city.code.toLowerCase().indexOf(deptCityName)>-1;
             });
         }
         if(deptCity!==null && deptCity!==undefined) {
@@ -689,7 +692,8 @@ function transformCircleData(conn, circleData, cities) {
 
         if(arrvCity===null) {
             arrvCity = cities.find((city, ndx)=> {
-                return city.city.toLowerCase().indexOf(arrvCityName)>-1;
+                //return city.city.toLowerCase().indexOf(arrvCityName)>-1;
+                return city.code.toLowerCase().indexOf(arrvCityName)>-1;
             });
         }
         
