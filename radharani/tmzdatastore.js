@@ -409,7 +409,9 @@ function saveCircleBatchData(runid, circleData, circleKey, callback) {
         try
         {
             if(err) {
-                throw err;
+                // throw err;
+                console.log(err);
+                callback(null);
             }
 
             //console.log('DB connected');
@@ -443,6 +445,9 @@ function saveCircleBatchData(runid, circleData, circleKey, callback) {
         }
         catch(e) {
             console.log(e);
+            if(callback) {
+                callback(null);
+            }
         }
     });
 
