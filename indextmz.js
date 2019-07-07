@@ -1226,8 +1226,9 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                             // task.plugins.forEach((plugin, iidx) => {
                                 let parsedContent = null;
                                 if(plugin.parser!==null && typeof(plugin.parser)==='function') {
+                                    log('Original Content: ', contentItem);
                                     parsedContent = plugin.parser(contentItem, i, storeData, runid, option);
-                                    // log('Parsed Content: ', JSON.stringify(parsedContent));
+                                    log('Parsed Content: ', JSON.stringify(parsedContent));
                                     if(parsedContent===null) {
                                         userInput.exit = true;
                                         userInput.inputControl = [];

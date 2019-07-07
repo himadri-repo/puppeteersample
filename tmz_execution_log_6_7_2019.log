@@ -1,0 +1,80 @@
+2019-07-06T08:05:00.017Z [tmzcrawler] info: 13:35:00.002 Cron started
+2019-07-06T08:05:31.025Z [tmzcrawler] info: 13:35:31.020 0 - NA
+2019-07-06T08:08:05.411Z [tmzcrawler] info: 13:38:05.407 0 - NA
+2019-07-06T08:08:08.794Z [tmzcrawler] info: 13:38:08.794 4 - Error: Protocol error (Runtime.evaluate): Cannot find context with specified id undefined
+2019-07-06T08:08:08.800Z [tmzcrawler] info: 13:38:08.799 END :: 0 - NA
+2019-07-06T08:08:08.802Z [tmzcrawler] info: 13:38:08.801  crawl process finished. Now saving circle data into table.
+2019-07-06T08:08:08.823Z [tmzcrawler] info: 13:38:08.823 Error: Invalid circle key passed
+2019-07-06T08:08:14.827Z [tmzcrawler] info: 13:38:14.826 E1 => Error: waiting for selector "#ctl00_mainbody_ddsegment" failed: timeout 6000ms exceeded
+2019-07-06T08:08:14.845Z [tmzcrawler] info: 13:38:14.844 E2 => Error: Error: failed to find element matching selector "#ctl00_mainbody_ddsegment"
+2019-07-06T08:08:14.847Z [tmzcrawler] info: 13:38:14.846 0 - NA
+2019-07-06T08:08:14.849Z [tmzcrawler] info: 13:38:14.848 END :: 0 - NA
+2019-07-06T08:08:14.851Z [tmzcrawler] info: 13:38:14.850  crawl process finished. Now saving circle data into table.
+2019-07-06T08:08:14.853Z [tmzcrawler] info: 13:38:14.852 Error: Invalid circle key passed
+2019-07-06T08:08:15.152Z [tmzcrawler] info: 13:38:15.152 Operation completed
+2019-07-06T08:08:15.153Z [tmzcrawler] info: 13:38:15.152 Process completed.
+2019-07-06T08:09:14.134Z [tmzcrawler] info: 13:39:14.128 0 - NA
+2019-07-06T08:11:05.076Z [tmzcrawler] info: 13:41:05.070 0 - NA
+2019-07-06T08:14:51.318Z [tmzcrawler] info: 13:44:51.314 0 - NA
+2019-07-06T08:14:51.360Z [tmzcrawler] info: 13:44:51.358 dom [load] even fired
+2019-07-06T08:14:51.985Z [tmzcrawler] info: 13:44:51.984 dom [load] even fired
+2019-07-06T08:14:51.987Z [tmzcrawler] info: 13:44:51.986 dom [domcontentloaded] even fired
+2019-07-06T08:14:52.028Z [tmzcrawler] info: 13:44:52.028 END :: 0 - NA
+2019-07-06T08:14:52.029Z [tmzcrawler] info: 13:44:52.029  crawl process finished. Now saving circle data into table.
+2019-07-06T08:14:52.038Z [tmzcrawler] info: 13:44:52.037 Error: Invalid circle key passed
+2019-07-06T08:19:30.854Z [tmzcrawler] info: 13:49:30.853 0 - AMD-MAA
+2019-07-06T08:19:42.500Z [tmzcrawler] info: 13:49:42.498 N03 = Function timed out - false
+2019-07-06T08:19:43.708Z [tmzcrawler] info: 13:49:43.708 END :: 0 - AMD-MAA
+2019-07-06T08:19:43.709Z [tmzcrawler] info: 13:49:43.708 AMD_MAA crawl process finished. Now saving circle data into table.
+2019-07-06T08:19:43.712Z [tmzcrawler] info: 13:49:43.711 Error: Circle data shouldn't be empty
+2019-07-06T08:19:43.713Z [tmzcrawler] info: 13:49:43.712 1 - AMD-CCU
+2019-07-06T08:19:55.235Z [tmzcrawler] info: 13:49:55.233 N03 = Function timed out - false
+2019-07-06T08:19:56.447Z [tmzcrawler] info: 13:49:56.447 END :: 1 - AMD-CCU
+2019-07-06T08:19:56.448Z [tmzcrawler] info: 13:49:56.448 AMD_CCU crawl process finished. Now saving circle data into table.
+2019-07-06T08:19:56.449Z [tmzcrawler] info: 13:49:56.449 Error: Circle data shouldn't be empty
+2019-07-06T08:19:56.450Z [tmzcrawler] info: 13:49:56.450 2 - AMD-BOM
+2019-07-06T08:20:07.955Z [tmzcrawler] info: 13:50:07.954 N03 = Function timed out - false
+2019-07-06T08:20:09.160Z [tmzcrawler] info: 13:50:09.159 END :: 2 - AMD-BOM
+2019-07-06T08:20:09.161Z [tmzcrawler] info: 13:50:09.160 AMD_BOM crawl process finished. Now saving circle data into table.
+2019-07-06T08:20:09.162Z [tmzcrawler] info: 13:50:09.161 Error: Circle data shouldn't be empty
+2019-07-06T08:20:09.163Z [tmzcrawler] info: 13:50:09.163 3 - IXB-BLR
+2019-07-06T08:20:20.633Z [tmzcrawler] info: 13:50:20.632 N03 = Function timed out - false
+2019-07-06T08:20:21.848Z [tmzcrawler] info: 13:50:21.847 END :: 3 - IXB-BLR
+2019-07-06T08:20:21.857Z [tmzcrawler] info: 13:50:21.849 IXB_BLR crawl process finished. Now saving circle data into table.
+2019-07-06T08:20:21.860Z [tmzcrawler] info: 13:50:21.858 Error: Circle data shouldn't be empty
+2019-07-06T08:20:21.862Z [tmzcrawler] info: 13:50:21.861 4 - IXB-MAA
+2019-07-06T08:38:40.574Z [tmzcrawler] info: 14:08:40.572 0 - NA
+2019-07-06T08:38:40.585Z [tmzcrawler] info: 14:08:40.583 dom [load] even fired
+2019-07-06T08:38:41.472Z [tmzcrawler] info: 14:08:41.471 dom [load] even fired
+2019-07-06T08:38:41.475Z [tmzcrawler] info: 14:08:41.474 dom [domcontentloaded] even fired
+2019-07-06T08:38:41.490Z [tmzcrawler] info: 14:08:41.490 END :: 0 - NA
+2019-07-06T08:38:41.491Z [tmzcrawler] info: 14:08:41.491  crawl process finished. Now saving circle data into table.
+2019-07-06T08:38:51.939Z [tmzcrawler] info: 14:08:51.939 Error: Invalid circle key passed
+2019-07-06T08:38:54.000Z [tmzcrawler] info: 14:08:53.998 0 - AMD-MAA
+2019-07-06T08:39:05.568Z [tmzcrawler] info: 14:09:05.567 N03 = Function timed out - false
+2019-07-06T08:39:06.781Z [tmzcrawler] info: 14:09:06.780 END :: 0 - AMD-MAA
+2019-07-06T08:39:06.782Z [tmzcrawler] info: 14:09:06.781 AMD_MAA crawl process finished. Now saving circle data into table.
+2019-07-06T08:46:44.634Z [tmzcrawler] info: 14:16:44.629 Error: Circle data shouldn't be empty
+2019-07-06T08:46:44.636Z [tmzcrawler] info: 14:16:44.636 1 - AMD-CCU
+2019-07-06T08:46:56.135Z [tmzcrawler] info: 14:16:56.132 N03 = Function timed out - false
+2019-07-06T08:46:57.357Z [tmzcrawler] info: 14:16:57.355 END :: 1 - AMD-CCU
+2019-07-06T09:15:14.316Z [tmzcrawler] info: 14:45:14.313 0 - NA
+2019-07-06T09:15:14.326Z [tmzcrawler] info: 14:45:14.324 dom [load] even fired
+2019-07-06T09:15:14.947Z [tmzcrawler] info: 14:45:14.946 dom [load] even fired
+2019-07-06T09:15:14.949Z [tmzcrawler] info: 14:45:14.948 dom [domcontentloaded] even fired
+2019-07-06T09:15:15.020Z [tmzcrawler] info: 14:45:15.020 END :: 0 - NA
+2019-07-06T09:15:15.021Z [tmzcrawler] info: 14:45:15.020  crawl process finished. Now saving circle data into table.
+2019-07-06T09:15:17.994Z [tmzcrawler] info: 14:45:17.994 Error: Invalid circle key passed
+2019-07-06T09:15:23.626Z [tmzcrawler] info: 14:45:23.625 0 - AMD-MAA
+2019-07-06T09:15:35.269Z [tmzcrawler] info: 14:45:35.267 N03 = Function timed out - false
+2019-07-06T09:15:36.490Z [tmzcrawler] info: 14:45:36.489 END :: 0 - AMD-MAA
+2019-07-06T09:15:36.492Z [tmzcrawler] info: 14:45:36.492 AMD_MAA crawl process finished. Now saving circle data into table.
+2019-07-06T09:16:10.000Z [tmzcrawler] info: 14:46:09.999 Error: Circle data shouldn't be empty
+2019-07-06T09:16:10.001Z [tmzcrawler] info: 14:46:10.000 1 - AMD-CCU
+2019-07-06T09:16:21.474Z [tmzcrawler] info: 14:46:21.473 N03 = Function timed out - false
+2019-07-06T09:16:22.685Z [tmzcrawler] info: 14:46:22.684 END :: 1 - AMD-CCU
+2019-07-06T09:16:22.687Z [tmzcrawler] info: 14:46:22.686 AMD_CCU crawl process finished. Now saving circle data into table.
+2019-07-06T09:16:32.629Z [tmzcrawler] info: 14:46:32.627 Error: Circle data shouldn't be empty
+2019-07-06T09:16:32.631Z [tmzcrawler] info: 14:46:32.630 2 - AMD-BOM
+2019-07-06T09:16:44.255Z [tmzcrawler] info: 14:46:44.254 N03 = Function timed out - false
+2019-07-06T09:16:45.470Z [tmzcrawler] info: 14:46:45.469 END :: 2 - AMD-BOM

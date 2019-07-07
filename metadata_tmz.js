@@ -29,7 +29,7 @@ function repeatSource(elementData) {
 }
 
 function parseContent(content, idx, store, runid, option) {
-    //console.log(`Data : \n${content}`);
+    // console.log(`Data : \n${content}`);
     var option = option || {'source': '', 'destination': '', 'key': ''};
     let contentItem = contentParser(content, store, runid, option);
     //console.log(`Data : ${JSON.stringify(contentItem)}`);
@@ -48,7 +48,9 @@ function contentParser(content, store, runid, option) {
 
     try
     {
-        let src_dest = content.match(/^([a-zA-Z0-9].*)$/gm);
+        // let src_dest = content.match(/^([a-zA-Z0-9].*)$/gm);
+        let src_dest = content.match(/([a-zA-Z0-9,].*)$/gm);
+        
         let disp_date = null;
         let rate = 0.00;
         let qty = 0;
@@ -66,7 +68,7 @@ function contentParser(content, store, runid, option) {
                     break;
                 case 1:
                     //this is rate
-                    rate = parseFloat(data.trim());
+                    rate = parseFloat(data.replace(',', '').trim());
                     break;
                 case 2:
                     //this is flight number
