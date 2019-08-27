@@ -22,28 +22,28 @@ function getDBPool() {
     //     port: 3306
     // });
 
-    pool = mysql.createPool({
-        connectionLimit : 30,
-        connectTimeout  : 60 * 60 * 1000,
-        acquireTimeout  : 60 * 60 * 1000,
-        timeout         : 60 * 60 * 1000,        
-        host: "139.59.92.9",
-        user: "oxyusr",
-        password: "oxy@321",
-        database: "oxytra",
-        port: 3306
-    });
-
-    //Remote DB
     // pool = mysql.createPool({
-    //     connectionLimit: 30,
-    //     connectTimeout: 15000,
-    //     host: "www.oxytra.com",
+    //     connectionLimit : 30,
+    //     connectTimeout  : 60 * 60 * 1000,
+    //     acquireTimeout  : 60 * 60 * 1000,
+    //     timeout         : 60 * 60 * 1000,        
+    //     host: "139.59.92.9",
     //     user: "oxyusr",
-    //     password: "oxy@321-#",
+    //     password: "oxy@321",
     //     database: "oxytra",
     //     port: 3306
     // });
+
+    //Remote DB
+    pool = mysql.createPool({
+        connectionLimit: 30,
+        connectTimeout: 15000,
+        host: "www.oxytra.com",
+        user: "oxyusr",
+        password: "oxy@321-#",
+        database: "oxytra",
+        port: 3306
+    });
 
     return pool;
 }
@@ -459,7 +459,9 @@ function saveTicketsData(conn, circleDataList, runid, callback) {
                     //to be inserted
                     insertTicketData(conn, ticket, runid, function(status) {
                         //status should be inserted it etc.
-                        ticket.id = status.insertId;
+                        if(status) {
+                            ticket.id = status.insertId;
+                        }
                     });
                 }
                 else if(ticketInfo!==null && ticketInfo.length>0) {

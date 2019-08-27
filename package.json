@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node indexairiq.js",
     "start-tmz": "node indextmz.js",
+    "start-indr": "node indexindr.js",
     "serve-nept": "node dist/nept/index.js",
     "start-nept": "nodemon --exec babel-node src/nept/index.js",
     "neptune": "set NODE_ENV=production && nodemon --exec babel-node src/nept/index.js",

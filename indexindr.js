@@ -102,7 +102,7 @@ async function navigatePage(pageName) {
         //log('before launch of browser');
         browser = await puppeteer.launch(
             {
-                headless:false,
+                headless:true,
                 ignoreHTTPSErrors: true,
                 ignoreDefaultArgs: ['--enable-automation'],
                 //args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
@@ -1233,12 +1233,12 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 // }
 
 var excutionStarted = false;
-// cron.schedule("*/5 * * * *", function() {
-//     log("Cron started");
-//     if(excutionStarted) {
-//         log('Previous process still running ...');
-//         return false;
-//     }
+cron.schedule("*/5 * * * *", function() {
+    log("Cron started");
+    if(excutionStarted) {
+        log('Previous process still running ...');
+        return false;
+    }
 
     try
     {
@@ -1289,6 +1289,6 @@ var excutionStarted = false;
         log(e);
         excutionStarted = false;
     }
-// });
+});
 
-// app.listen("3141");
+app.listen("3141");

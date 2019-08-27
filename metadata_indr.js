@@ -42,57 +42,67 @@ function contentParser(content, store, runid) {
 
     try
     {
-        let src_dest = content.match(/^([a-zA-Z0-9].*)$/gm);
+        let src_dest = content.match(/([a-zA-Z0-9-:]*)([^\s])/gm);
         let disp_date = null;
         let rate = 0.00;
         let qty = 0;
         let flight_number = '';
+        let start_date = '';
         let start_time = '';
+        let end_date = '';
         let end_time = '';
+        let source = '';
+        let destination = '';
         deal.ticket_type = 'Economy';
         for (let index = 0; index < src_dest.length; index++) {
             const data = src_dest[index];
 
             switch (index) {
                 case 0:
-                    //this is disp date
-                    disp_date = data.trim();
-                    break;
+                    deal.flight = data.trim();
                 case 1:
-                    //this is rate
-                    rate = parseFloat(data.trim());
-                    break;
+                    deal.flight_number = data.trim();
                 case 2:
-                    //this is flight number
-                    flight_number = data.trim();
-                    let flightParts = flight_number.split('-');
-                    if(flightParts!==null && flightParts.length>0) {
-                        deal.flight = flightParts[0].trim();
-                    }
-                    else {
-                        deal.flight = 'TMZ FLIGHT';
-                    }
+                    source = data.trim();
                     break;
                 case 3:
-                    //this is flight number
-                    start_time = data.trim();
+                    destination = data.trim();
                     break;
                 case 4:
-                    //this is flight number
-                    end_time = data.trim();
+                    start_date = data.trim();
                     break;
                 case 5:
-                    //this is flight number
-                    qty = parseInt(data.trim());
+                    start_time = data.trim();
+                    break;
+                case 6:
+                    end_date = data.trim();
+                    break;
+                case 7:
+                    end_time = data.trim();
+                    break;
+                case 8:
+                    qty = parseInt(data.trim(), 10);
+                    break;
+                case 9:
+                    rate = parseFloat(data.trim());
                     break;
                 default:
                     break;
             }
         }
-        deal.flight_number = flight_number;
+        //deal.flight_number = flight_number;
+        let arrvEpoch = Date.parse(`${end_date} ${end_time}`);
+
         deal.ticket_type = 'Economy';
-        deal.departure = {'circle': store.currentKey.source, 'date': disp_date, 'time': start_time, 'epoch_date': Date.parse(`${disp_date} ${start_time}`)};
-        deal.arrival = {'circle': store.currentKey.destination, 'date': disp_date, 'time': end_time, 'epoch_date': Date.parse(`${disp_date} ${end_time}`)};
+        deal.departure = {'circle': source, 'date': start_date, 'time': start_time, 'epoch_date': Date.parse(`${start_date} ${start_time}`)};
+
+        if(isNaN(arrvEpoch)) {
+            deal.arrival = {'circle': destination, 'date': start_date, 'time': end_time, 'epoch_date': Date.parse(`${start_date} ${end_time}`)};
+        }
+        else {
+            deal.arrival = {'circle': destination, 'date': end_date, 'time': end_time, 'epoch_date': Date.parse(`${end_date} ${end_time}`)};
+        }
+
         deal.availability = qty;
         deal.price = rate;
     }
@@ -193,12 +203,22 @@ function assessContent(rawContent, parsedContent, store, runid, idx, callback) {
     //console.log(`Assess: ${JSON.stringify(parsedContent)}`);
 
     key = `${parsedContent.departure.circle}_${parsedContent.arrival.circle}`;
+    if(store[key]===undefined || store[key]===null) {
+        store[key] = [];
+    }
+
+
     if(store!==undefined && store!==null && store[key]!==undefined && store[key]!==null && store[key] instanceof Array) {
         parsedContent.runid = runid;
-        if(store.attributes!==undefined && store.attributes!==null && store.attributes.length)
-            parsedContent.recid = parseInt(store.attributes[idx].value);
-        else
+        if(store.attributes!==undefined && store.attributes!==null && store.attributes.length) {
+            let attrValue = store.attributes[idx].value;
+            let recid = parseInt(attrValue.match(/\d+/gm));
+
+            parsedContent.recid = recid;
+        }
+        else {
             parsedContent.recid = -1;
+        }
 
         let iidx = store[key].findIndex((obj, ndx) => {
             return obj.recid === parsedContent.recid;
@@ -354,28 +374,36 @@ function circleCrawlingFinished(runid, store, circleKey, callback) {
     try
     {
         //console.log('circleCrawlingFinished called');
-        if(circleKey===null || circleKey===undefined || circleKey==="") return -1;
-        if(store[circleKey]===null || store[circleKey]===undefined || !(store[circleKey] instanceof Array)) return -1;
+        // if(circleKey===null || circleKey===undefined || circleKey==="") return -1;
+        // if(store[circleKey]===null || store[circleKey]===undefined || !(store[circleKey] instanceof Array)) return -1;
+        if(store['attributes']!==undefined) {
+            delete store['attributes'];
+        }
+
         //console.log('going to call saveCircleBatchData');
-        if(store[circleKey].length>0) {
-            let targetRunId = runid;
-            let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey, function(circleData) {
-                if(targetRunId!==null && targetRunId!==undefined && circleData.length>0) {
-                    let deptId = circleData[0].departure.id;
-                    let arrvId = circleData[0].arrival.id;
-                    let records = circleData.length;
-                    //let cdata = circleData;
-                    //updatedRecs = store[circleKey];
-                    let clearEmptyStock = datastore.updateExhaustedCircleInventory(runid, deptId, arrvId, function(status) {
-                        if(status!==null && status!==undefined) {
-                            let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
-                            console.log();
-                            if(callback) {
-                                callback(msg);
+        if(Object.keys(store).length>0) {
+            Object.keys(store).forEach(key => {
+                circleKey = key;
+
+                let targetRunId = runid;
+                let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey, function(circleData) {
+                    if(targetRunId!==null && targetRunId!==undefined && circleData.length>0) {
+                        let deptId = circleData[0].departure.id;
+                        let arrvId = circleData[0].arrival.id;
+                        let records = circleData.length;
+                        //let cdata = circleData;
+                        //updatedRecs = store[circleKey];
+                        let clearEmptyStock = datastore.updateExhaustedCircleInventory(runid, deptId, arrvId, function(status) {
+                            if(status!==null && status!==undefined) {
+                                let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
+                                console.log();
+                                if(callback) {
+                                    callback(msg);
+                                }
                             }
-                        }
-                    });
-                }
+                        });
+                    }
+                });
             });
         }
     }
