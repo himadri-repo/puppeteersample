@@ -48,8 +48,10 @@ const USERINPUT = {
 
 app = express();
 
-const TIMEOUT = 8000;
-const POSTBACK_TIMEOUT = 5000;
+// const TIMEOUT = 8000;
+// const POSTBACK_TIMEOUT = 5000;
+const TIMEOUT = 6000;
+const POSTBACK_TIMEOUT = 10000;
 
 var browser = null;
 var page = null;
@@ -89,8 +91,8 @@ async function navigatePage(pageName) {
                 headless:true,
                 ignoreHTTPSErrors: true,
                 ignoreDefaultArgs: ['--enable-automation'],
-                //args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
-                args: ['--start-fullscreen']
+                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
+                //args: ['--start-fullscreen']
             }).catch((reason) => {
                 log(reason);
                 return;
@@ -100,20 +102,33 @@ async function navigatePage(pageName) {
         page = pages.length>0?pages[0]:await browser.newPage();
         //log('after new page created');
         await page.setViewport({ width: 1366, height: 768});
-        //log('after view port');
+        log('after view port');
         /*page.setRequestInterception(true);
         page.on("load", interceptedRequest => {
             log("Load -> " + interceptedRequest.url());
         });*/
         //const response = await page.goto("https://github.com/login");
         await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1");
-        let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
+        //let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
+        //let response = await page.goto(pageName, {waitUntil:'load'}); //wait for 10 secs as timeout
+        // let response = await page.goto(pageName, {waitUntil:'load'}).catch(async (reason) => {
+        //     log('Navigation error : ${reason}');
+        // }); 
+        // let response = await page.goto(pageName, {waitUntil:['networkidle2', 'load']}).catch(async (reason) => {
+        //     log(`Navigation error : ${reason}`);
+        // }); 
+        let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}).catch(async (reason) => {
+            log(`Navigation error : ${reason}`);
+        }); 
+
         //log(await page.cookies());
         //await page.waitForNavigation();
-        //log('after navigation done');
+        //takeSnapshot('After_pageload');
+        log('after navigation done');
         //assumed page loaded
         pageConfig = metadata.pages.find(pg => {
-            return response.url().indexOf(pg.name)>-1;
+            //return response.url().indexOf(pg.name)>-1;
+            return pageName.indexOf(pg.name)>-1;
         });
         
         page.on('domcontentloaded',()=> {
@@ -149,7 +164,9 @@ async function navigatePage(pageName) {
             });
         }
 
-        await page.waitFor(3000).catch((reason) => { log(reason) });
+        await page.waitFor(5000).catch((reason) => { log(`Error -> ${reason}`)});
+        //takeSnapshot('After_pageload');
+        log('Waited for 5secs more');
 
         for(var iidx=0; iidx<actionItem.userinputs.length; iidx++) {
             try
@@ -159,15 +176,18 @@ async function navigatePage(pageName) {
 
                 //log(JSON.stringify(val) + ' - ' + idx);
                 if(val.action==='keyed') {
-                    //log('Going to click');
-                    await page.click(val.selector).then(function(val1, val2) {
-                        //log('Click finished');
+                    // //log('Going to click');
+                    // await page.click(val.selector).then(function(val1, val2) {
+                    //     //log('Click finished');
+                    // });
+                    // //log('Clicked');
+                    // await page.keyboard.type(val.value).then(function(val1, val2) {
+                    //     //log('Key pressed');
+                    // });
+                    // //log('Keyed');
+                    await page.type(val.selector, val.value, {delay: 20}).then((val1, val2) => {
+                        log(`Text typed : ${val.selector} - ${val.value}`);
                     });
-                    //log('Clicked');
-                    await page.keyboard.type(val.value).then(function(val1, val2) {
-                        //log('Key pressed');
-                    });
-                    //log('Keyed');
                 }
                 else if(val.action==='click') { 
                     pageLoaded = false;
@@ -196,7 +216,10 @@ async function navigatePage(pageName) {
                     }
 
                     if(val.checkselector!=='' && val.checkselector!==null) {
-                        await page.waitForSelector(val.checkselector, {timeout: TIMEOUT});
+                        await page.waitForSelector(val.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
+                            log(`ERR1 - TIMEOUT = ${TIMEOUT} - ${reason}`); 
+                        });
+                        //takeSnapshot('After_login_postback');
                     }
                 }
             }
@@ -207,7 +230,8 @@ async function navigatePage(pageName) {
         }
     }
     catch(fe) {
-
+        log('fe');
+        log(fe);
     }
 }
 
@@ -219,7 +243,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
             return;
 
         await navigatePage(targetUri);
-        //log('Page navigated...');
+        log('Page navigated...');
         if(browser!==null && page!==null) {
             //log('URL -> ' + page.url());
 
@@ -276,7 +300,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                         else if(repeatsourceType==='function') {
                             //log('getting repeatSourceData');
                             repeatsourceData = repeatsource(repeatsourceContent); //it should return array
-                            //log('got repeatSourceData');
+                            log('got repeatSourceData');
                             if(repeatsourceData instanceof Number) {
                                 repeatsourceType = 'number';
                             }
@@ -321,7 +345,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                             storeData[key]=[];
                         }
 
-                        log(`${i} - ${repeatsourceDataValue}`);
+                        log(`${i} - ${repeatsourceDataValue} - ${loopCount}`);
                         //remove false from here, this is just for testing.
                         if(pageConfig.actions[0].userinputs.length>0) {
                             //for(var iidx=0; iidx<pageConfig.actions[0].userinputs.length; iidx++) {
@@ -1138,7 +1162,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 // }
 
 var excutionStarted = false;
-cron.schedule("*/20 * * * *", function() {
+cron.schedule("*/5 * * * *", function() {
     log("Cron started");
     if(excutionStarted) {
         log('Previous process still running ...');

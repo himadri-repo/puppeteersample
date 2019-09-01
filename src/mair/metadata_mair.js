@@ -13,6 +13,7 @@ function repeatSource(elementData) {
     //repeatsource could be function which will prepare data for iteration
     try
     {
+        //console.log(`RepeatSource : ${elementData}`);
         let strreg = /\>(.*?)\</gm;
         data = elementData.match(strreg).map((val, idx) => val.replace('>','').replace('<','')).filter((val, idx) => {
             //console.log(`${idx} - ${val}`);
