@@ -468,7 +468,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                             let keys = Object.keys(getStore());
                             for(var indx=0; indx<keys.length; indx++) {
                                 let keyName = keys[indx].trim();
-                                let impactedRows = await metadata.circlecrawlfinished(runid, getStore(), keyName);
+                                let impactedRows = await metadata.circlecrawlfinished(runid, getStore(), keyName, log);
 
                                 log(keyName, `Count => ${getStore()[keyName].length}`);
                             }

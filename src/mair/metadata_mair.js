@@ -304,9 +304,9 @@ async function finalizeData(runid, datasourceUrl) {
     }
 }
 
-async function circleCrawlingFinished(runid, store, circleKey) {
+async function circleCrawlingFinished(runid, store, circleKey, logger) {
     const datastore = require('../../radharani/mairdatastore');
-
+    let returnValue = null;
     try
     {
         //console.log('circleCrawlingFinished called');
@@ -314,12 +314,16 @@ async function circleCrawlingFinished(runid, store, circleKey) {
         if(store[circleKey]===null || store[circleKey]===undefined || !(store[circleKey] instanceof Array)) return -1;
         //console.log('going to call saveCircleBatchData');
         console.log(`${circleKey} -> Count => ${store[circleKey].length}`);
-        let returnValue = await datastore.saveCircleBatchData(runid, store[circleKey], circleKey);
-        console.log(`Return : JSON.stringify(returnValue)`);
+        logger(circleKey, `${circleKey} -> Count => ${store[circleKey].length}`);
+        returnValue = await datastore.saveCircleBatchData(runid, store[circleKey], circleKey);
+        console.log(`Return : ${JSON.stringify(returnValue)}`);
+        logger(circleKey, `Return : ${JSON.stringify(returnValue)}`);
     }
     catch(e3) {
         console.log(e3);
     }
+
+    return returnValue;
 }
 
 module.exports = {
@@ -339,7 +343,7 @@ module.exports = {
                             selector: '#SiteBody_UserId',
                             checkcontent: '',
                             type: 'textbox',
-                            value: '+8768360458',
+                            value: '9382207002',
                             action: 'keyed',
                             checkselector: ''
                         },
