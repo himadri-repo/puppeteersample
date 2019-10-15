@@ -667,7 +667,7 @@ function transformCircleData(conn, circleData, cities) {
         let deptCity = null;
         let arrvCity = null;
         
-        if(deptCity===null) {
+        if(deptCity===null && cities!==null && cities!==undefined) {
             deptCity = cities.find((city, ndx)=> {
                 return city.city.toLowerCase().indexOf(deptCityName)>-1;
             });
@@ -682,7 +682,7 @@ function transformCircleData(conn, circleData, cities) {
             ticket.departure.id = -1;
         }
 
-        if(arrvCity===null) {
+        if(arrvCity===null && cities!==null && cities!==undefined) {
             arrvCity = cities.find((city, ndx)=> {
                 return city.city.toLowerCase().indexOf(arrvCityName)>-1;
             });
