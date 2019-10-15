@@ -321,6 +321,7 @@ async function circleCrawlingFinished(runid, store, circleKey, logger) {
     }
     catch(e3) {
         console.log(e3);
+        logger(circleKey, `ERROR : ${e3}`);
     }
 
     return returnValue;
