@@ -66,5 +66,11 @@
             "name": "Launch INDR Program",
             "program": "${workspaceFolder}/indexindr.js"
         },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch CHEAF Program",
+            "program": "${workspaceFolder}/indexcheap.js"
+        },
    ]
 }
