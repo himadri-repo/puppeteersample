@@ -1,0 +1,60 @@
+2019-10-22T16:34:34.912Z [cheapcrawler] info: 22:04:34.910 info 	(0) Ticket Save == (KOLKATA-AHMEDABAD)
+2019-10-22T16:34:34.915Z [cheapcrawler] info: 22:04:34.914 info 		(0) Ticket == 03-Nov-2019 - [16:25 - 19:25]
+2019-10-22T16:34:36.143Z [cheapcrawler] info: 22:04:36.142 info 	(1) Ticket Save == (AHMEDABAD-KOLKATA)
+2019-10-22T16:34:36.143Z [cheapcrawler] info: 22:04:36.143 info 		(1) Ticket == 28-Oct-2019 - [06:10 - 08:45]
+2019-10-22T16:34:36.144Z [cheapcrawler] info: 22:04:36.144 info 	(2) Ticket Save == (AHMEDABAD-KOLKATA)
+2019-10-22T16:34:36.145Z [cheapcrawler] info: 22:04:36.144 info 		(2) Ticket == 29-Oct-2019 - [06:00 - 08:40]
+2019-10-22T16:34:36.146Z [cheapcrawler] info: 22:04:36.145 info 	(3) Ticket Save == (AHMEDABAD-KOLKATA)
+2019-10-22T16:34:36.146Z [cheapcrawler] info: 22:04:36.146 info 		(3) Ticket == 30-Oct-2019 - [06:00 - 08:40]
+2019-10-22T16:34:37.376Z [cheapcrawler] info: 22:04:37.376 info 	(4) Ticket Save == (AMD-IXC)
+2019-10-22T16:34:37.377Z [cheapcrawler] info: 22:04:37.377 info 		(4) Ticket == 28-Oct-2019 - [10:30 - 12:10]
+2019-10-22T16:34:37.378Z [cheapcrawler] info: 22:04:37.378 info 	(5) Ticket Save == (AMD-IXC)
+2019-10-22T16:34:37.379Z [cheapcrawler] info: 22:04:37.379 info 		(5) Ticket == 30-Oct-2019 - [10:30 - 12:10]
+2019-10-22T16:34:38.614Z [cheapcrawler] info: 22:04:38.614 info 	(6) Ticket Save == (BENGALURU-DELHI)
+2019-10-22T16:34:38.615Z [cheapcrawler] info: 22:04:38.614 info 		(6) Ticket == 23-Oct-2019 - [20:55 - 23:45]
+2019-10-22T16:34:38.616Z [cheapcrawler] info: 22:04:38.616 info 	(7) Ticket Save == (BENGALURU-DELHI)
+2019-10-22T16:34:38.617Z [cheapcrawler] info: 22:04:38.617 info 		(7) Ticket == 23-Oct-2019 - [20:55 - 23:45]
+2019-10-22T16:34:38.619Z [cheapcrawler] info: 22:04:38.618 info 	(8) Ticket Save == (BENGALURU-DELHI)
+2019-10-22T16:34:38.620Z [cheapcrawler] info: 22:04:38.619 info 		(8) Ticket == 24-Oct-2019 - [20:55 - 23:45]
+2019-10-22T16:34:38.621Z [cheapcrawler] info: 22:04:38.621 info 	(9) Ticket Save == (BENGALURU-DELHI)
+2019-10-22T16:34:38.622Z [cheapcrawler] info: 22:04:38.621 info 		(9) Ticket == 24-Oct-2019 - [11:40 - 14:30]
+2019-10-22T16:34:39.850Z [cheapcrawler] info: 22:04:39.849 info 	(10) Ticket Save == (CHANDIGARH-MUMBAI)
+2019-10-22T16:34:39.850Z [cheapcrawler] info: 22:04:39.850 info 		(10) Ticket == 29-Oct-2019 - [11:25 - 13:55]
+2019-10-22T16:34:39.852Z [cheapcrawler] info: 22:04:39.851 info 	(11) Ticket Save == (CHANDIGARH-MUMBAI)
+2019-10-22T16:34:39.852Z [cheapcrawler] info: 22:04:39.852 info 		(11) Ticket == 30-Oct-2019 - [11:25 - 13:55]
+2019-10-22T16:34:39.853Z [cheapcrawler] info: 22:04:39.853 info 	(12) Ticket Save == (CHANDIGARH-MUMBAI)
+2019-10-22T16:34:39.853Z [cheapcrawler] info: 22:04:39.853 info 		(12) Ticket == 05-Nov-2019 - [11:30 - 13:55]
+2019-10-22T16:34:41.079Z [cheapcrawler] info: 22:04:41.079 info 	(13) Ticket Save == (COCHIN-AHMEDABAD)
+2019-10-22T16:34:41.080Z [cheapcrawler] info: 22:04:41.079 info 		(13) Ticket == 05-Nov-2019 - [13:50 - 16:30]
+2019-10-22T16:34:41.081Z [cheapcrawler] info: 22:04:41.080 info 	(14) Ticket Save == (COCHIN-AHMEDABAD)
+2019-10-22T16:34:41.081Z [cheapcrawler] info: 22:04:41.081 info 		(14) Ticket == 06-Nov-2019 - [13:50 - 16:30]
+2019-10-22T16:34:43.687Z [cheapcrawler] info: 22:04:43.686 info 	(15) Ticket Save == (DELHI-BENGALURU)
+2019-10-22T16:34:43.688Z [cheapcrawler] info: 22:04:43.687 info 		(15) Ticket == 29-Oct-2019 - [18:50 - 21:35]
+2019-10-22T16:34:43.692Z [cheapcrawler] info: 22:04:43.692 info 	(16) Ticket Save == (DELHI-BENGALURU)
+2019-10-22T16:34:43.693Z [cheapcrawler] info: 22:04:43.692 info 		(16) Ticket == 29-Oct-2019 - [18:50 - 21:35]
+2019-10-22T16:34:43.695Z [cheapcrawler] info: 22:04:43.694 info 	(17) Ticket Save == (DELHI-BENGALURU)
+2019-10-22T16:34:43.696Z [cheapcrawler] info: 22:04:43.695 info 		(17) Ticket == 30-Oct-2019 - [05:50 - 08:35]
+2019-10-22T16:34:43.698Z [cheapcrawler] info: 22:04:43.697 info 	(18) Ticket Save == (DELHI-BENGALURU)
+2019-10-22T16:34:43.698Z [cheapcrawler] info: 22:04:43.698 info 		(18) Ticket == 30-Oct-2019 - [15:15 - 18:05]
+2019-10-22T16:34:43.700Z [cheapcrawler] info: 22:04:43.699 info 	(19) Ticket Save == (DELHI-BENGALURU)
+2019-10-22T16:34:43.700Z [cheapcrawler] info: 22:04:43.700 info 		(19) Ticket == 31-Oct-2019 - [05:50 - 08:35]
+2019-10-22T16:34:43.701Z [cheapcrawler] info: 22:04:43.701 info 	(20) Ticket Save == (DELHI-BENGALURU)
+2019-10-22T16:34:43.704Z [cheapcrawler] info: 22:04:43.704 info 		(20) Ticket == 31-Oct-2019 - [15:15 - 18:05]
+2019-10-22T16:34:43.706Z [cheapcrawler] info: 22:04:43.706 info 	(21) Ticket Save == (DELHI-BENGALURU)
+2019-10-22T16:34:43.707Z [cheapcrawler] info: 22:04:43.706 info 		(21) Ticket == 01-Nov-2019 - [05:50 - 08:35]
+2019-10-22T16:34:43.708Z [cheapcrawler] info: 22:04:43.707 info 	(22) Ticket Save == (DELHI-BENGALURU)
+2019-10-22T16:34:43.708Z [cheapcrawler] info: 22:04:43.708 info 		(22) Ticket == 01-Nov-2019 - [15:15 - 18:05]
+2019-10-22T16:34:44.946Z [cheapcrawler] info: 22:04:44.946 info 	(23) Ticket Save == (Delhi-Goa)
+2019-10-22T16:34:44.947Z [cheapcrawler] info: 22:04:44.946 info 		(23) Ticket == 03-Jan-2019 - [10:40 - 13:20]
+2019-10-22T16:34:44.948Z [cheapcrawler] info: 22:04:44.947 info 	(24) Ticket Save == (Delhi-Goa)
+2019-10-22T16:34:44.948Z [cheapcrawler] info: 22:04:44.948 info 		(24) Ticket == 31-Oct-2019 - [10:40 - 13:20]
+2019-10-22T16:34:44.950Z [cheapcrawler] info: 22:04:44.949 info 	(25) Ticket Save == (Delhi-Goa)
+2019-10-22T16:34:44.950Z [cheapcrawler] info: 22:04:44.950 info 		(25) Ticket == 01-Nov-2019 - [10:40 - 13:20]
+2019-10-22T16:34:44.951Z [cheapcrawler] info: 22:04:44.951 info 	(26) Ticket Save == (Delhi-Goa)
+2019-10-22T16:34:44.952Z [cheapcrawler] info: 22:04:44.951 info 		(26) Ticket == 30-Dec-2019 - [10:40 - 13:20]
+2019-10-22T16:34:44.954Z [cheapcrawler] info: 22:04:44.953 info 	(27) Ticket Save == (Delhi-Goa)
+2019-10-22T16:34:44.954Z [cheapcrawler] info: 22:04:44.954 info 		(27) Ticket == 31-Dec-2019 - [10:40 - 13:20]
+2019-10-22T16:34:44.955Z [cheapcrawler] info: 22:04:44.955 info 	(28) Ticket Save == (Delhi-Goa)
+2019-10-22T16:34:44.956Z [cheapcrawler] info: 22:04:44.956 info 		(28) Ticket == 02-Jan-2020 - [10:40 - 13:20]
+2019-10-22T16:34:44.957Z [cheapcrawler] info: 22:04:44.957 info 	(29) Ticket Save == (Delhi-Goa)
+2019-10-22T16:34:44.957Z [cheapcrawler] info: 22:04:44.957 info 		(29) Ticket == 04-Jan-2020 - [10:40 - 13:20]

@@ -369,47 +369,61 @@ function finalizeData(runid, datasourceUrl) {
 }
 
 function circleCrawlingFinished(runid, store, circleKey, callback) {
-    const datastore = require('./radharani/indrdatastore');
+    return new Promise((resolve, reject) => {
+        const datastore = require('./radharani/indrdatastore');
 
-    try
-    {
-        //console.log('circleCrawlingFinished called');
-        // if(circleKey===null || circleKey===undefined || circleKey==="") return -1;
-        // if(store[circleKey]===null || store[circleKey]===undefined || !(store[circleKey] instanceof Array)) return -1;
-        if(store['attributes']!==undefined) {
-            delete store['attributes'];
-        }
+        try
+        {
+            //console.log('circleCrawlingFinished called');
+            // if(circleKey===null || circleKey===undefined || circleKey==="") return -1;
+            // if(store[circleKey]===null || store[circleKey]===undefined || !(store[circleKey] instanceof Array)) return -1;
+            if(store['attributes']!==undefined) {
+                delete store['attributes'];
+            }
+    
+            let key_count = Object.keys(store).length;
+            //console.log('going to call saveCircleBatchData');
+            if(Object.keys(store).length>0) {
+                Object.keys(store).forEach(key => {
+                    circleKey = key;
+    
+                    let targetRunId = runid;
+                    let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey, function(circleData) {
+                        if(targetRunId!==null && targetRunId!==undefined && circleData.length>0) {
+                            let deptId = circleData[0].departure.id;
+                            let arrvId = circleData[0].arrival.id;
+                            let records = circleData.length;
+                            //let cdata = circleData;
+                            //updatedRecs = store[circleKey];
+                            let clearEmptyStock = datastore.updateExhaustedCircleInventory(runid, deptId, arrvId, function(status) {
+                                if(status!==null && status!==undefined) {
+                                    let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
+                                    console.log(msg);
+                                    --key_count;
 
-        //console.log('going to call saveCircleBatchData');
-        if(Object.keys(store).length>0) {
-            Object.keys(store).forEach(key => {
-                circleKey = key;
-
-                let targetRunId = runid;
-                let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey, function(circleData) {
-                    if(targetRunId!==null && targetRunId!==undefined && circleData.length>0) {
-                        let deptId = circleData[0].departure.id;
-                        let arrvId = circleData[0].arrival.id;
-                        let records = circleData.length;
-                        //let cdata = circleData;
-                        //updatedRecs = store[circleKey];
-                        let clearEmptyStock = datastore.updateExhaustedCircleInventory(runid, deptId, arrvId, function(status) {
-                            if(status!==null && status!==undefined) {
-                                let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
-                                console.log();
-                                if(callback) {
-                                    callback(msg);
+                                    if(key_count===0) {
+                                        resolve('All circle processed');
+                                    }
+                                    // if(callback) {
+                                    //     callback(msg);
+                                    // }
                                 }
-                            }
-                        });
-                    }
+                            });
+                        }
+                    });
                 });
-            });
+            }
+            else {
+                let msg = 'No data available to update';
+                console.log(msg);
+                resolve(msg);
+            }
         }
-    }
-    catch(e3) {
-        console.log(e3);
-    }
+        catch(e3) {
+            console.log(e3);
+            return reject(e3);
+        }
+    });
 }
 
 module.exports = {
@@ -470,104 +484,6 @@ module.exports = {
                     repeatsourceContentType: 'text',
                     repeatsource: '',
                     userinputs: [
-                        // {
-                        //     id: 100,
-                        //     controlid: '',
-                        //     delaybefore: 200,
-                        //     selector: 'body > div > div.content-wrapper > section:nth-child(3) > div > div > div > table > tbody',
-                        //     checkcontent: '',
-                        //     type: 'textbox',
-                        //     value: function() {
-                        //         var dt = new Date();
-                        //         return dt.getMonth()+1 + "/" + dt.getDate() + "/" + dt.getFullYear();
-                        //     },
-                        //     action: 'keyed',
-                        //     delayafter: 200,
-                        //     checkselector: '',
-                        //     next: 1
-                        // },                        
-                        // {
-                        //     id: 1,
-                        //     controlid: '',
-                        //     delaybefore: 100,
-                        //     selector: '#ctl00_mainbody_ddsegment',
-                        //     checkcontent: '',
-                        //     type: 'textbox',
-                        //     value: '${data}',
-                        //     action: 'keyed',
-                        //     delayafter: 200,
-                        //     checkselector: '',
-                        //     next: 0
-                        // },
-                        // {
-                        //     id: 0,
-                        //     controlid: '',
-                        //     delaybefore: 100,
-                        //     selector: '#ctl00_mainbody_ddsegment',
-                        //     isarray: false,
-                        //     checkcontent: 'Select from Dropdown',
-                        //     type: 'hyperlink',
-                        //     value: '',
-                        //     action: 'click',
-                        //     checkselector: '',
-                        //     delayafter: -1,
-                        //     next: 2
-                        // },
-                        // {
-                        //     id: 2,
-                        //     controlid: '',
-                        //     delaybefore: 100,
-                        //     selector: '#ctl00_mainbody_ddsegment',
-                        //     checkcontent: '',
-                        //     type: 'textbox',
-                        //     value: '${data}',
-                        //     action: 'keyed',
-                        //     delayafter: 200,
-                        //     checkselector: '',
-                        //     next: 3
-                        // },
-                        // {
-                        //     id: 3,
-                        //     controlid: '',
-                        //     delaybefore: 100,
-                        //     selector: '#ctl00_mainbody_DD_no_days',
-                        //     checkcontent: '',
-                        //     type: 'textbox',
-                        //     value: 'Next 15 days',
-                        //     action: 'keyed',
-                        //     delayafter: 200,
-                        //     checkselector: '',
-                        //     next: 4
-                        // },                        
-                        // {
-                        //     id: 4,
-                        //     controlid: '',
-                        //     delaybefore: 100,
-                        //     selector: '#ctl00_mainbody_btn_Search',
-                        //     isarray: false,
-                        //     checkcontent: '',
-                        //     type: '',
-                        //     value: '',
-                        //     action: 'click',
-                        //     haspostback: false,
-                        //     delayafter: 400,
-                        //     checkselector: '',
-                        //     next: 5
-                        // },
-                        // {
-                        //     id: 3,
-                        //     controlid: '',
-                        //     delaybefore: 300,
-                        //     selector: 'input#check_out.form-control.hasDatepicker',
-                        //     isarray: false,
-                        //     checkcontent: '',
-                        //     type: '',
-                        //     value: ``,
-                        //     action: 'click',
-                        //     checkselector: 'div#ui-datepicker-div[style*="display: block"]',
-                        //     delayafter: 800,
-                        //     next: 4
-                        // },
                         {
                             id: 5,
                             controlid: '',
@@ -625,96 +541,6 @@ module.exports = {
                                         }
                                     ]
                                 },
-                                // {
-                                //     task_id: 1,
-                                //     task_name: 'read content',
-                                //     action: 'read',
-                                //     selector: '.ui-datepicker-title',
-                                //     read_type: 'inner-text',
-                                //     plugins: [
-                                //         {
-                                //             parser: function(content) {
-                                //                 //console.log(`Month-1: ${content}`);
-                                //             },
-                                //             assess: function(parsedData) {
-                                //                 //console.log(JSON.stringify(parsedData));
-                                //             },
-                                //             persistData: function() {}
-                                //         }
-                                //     ]
-                                // },
-                                // {
-                                //     task_id: 2,
-                                //     task_name: 'click content',
-                                //     action: 'click',
-                                //     selector: '',
-                                //     read_type: 'inner-text',
-                                //     plugins: [
-                                //         {
-                                //             parser: function(content) {
-                                //                 console.log(`No idea what is this: ${content}`);
-                                //             },
-                                //             assess: function(parsedData) {
-                                //                 console.log(JSON.stringify(parsedData));
-                                //             },
-                                //             persistData: function() {}
-                                //         }
-                                //     ]
-                                // },
-                                // {
-                                //     task_id: 3,
-                                //     task_name: 'read content',
-                                //     selector: 'a#SearchBtn.btn',
-                                //     value: '',
-                                //     action: 'click',
-                                //     haspostback: true,
-                                //     checkselector: 'div.flit-detls, #empty_lbl' /* .flit-detls */
-                                // },
-                                // {
-                                //     task_id: 4,
-                                //     task_name: 'read content',
-                                //     action: 'read',
-                                //     selector: `#ctl00_mainbody_GV_Report1 > tbody > tr[style*="font-size:12px;"] > td:nth-last-child(-n+1) > input:nth-last-child(-n+1)`,
-                                //     read_type: 'attributes',
-                                //     attributes: ['value'],
-                                //     plugins: [
-                                //         {
-                                //             parser: function(content) {
-                                //                 //.flit-detls tr .tble_item1_txt>input[type=hidden i]
-                                //                 //console.log(`attr value - ${JSON.stringify(content)}`);
-                                //                 return content;
-                                //             },
-                                //             assess: function(contentItem, parsedContent, store, runid, idx, callback) {
-                                //                 if(callback) {
-                                //                     callback(store);
-                                //                 }
-                                //                 //return parsedContent;
-                                //             },
-                                //             persistData: function() { }
-                                //         }
-                                //     ]
-                                // },
-                                // {
-                                //     task_id: 5,
-                                //     task_name: 'read content',
-                                //     action: 'read',
-                                //     selector: 'div.flit-detls, #empty_lbl', /*.flit-detls */
-                                //     read_type: 'inner-text',
-                                //     plugins: [
-                                //         {
-                                //             parser: parseContent,
-                                //             assess: assessContent,
-                                //             persistData: function() { }
-                                //         }
-                                //     ]
-                                // },
-                                // {
-                                //     task_id: 6,
-                                //     task_name: 'click content',
-                                //     action: 'click',
-                                //     selector: 'input#check_out.form-control.hasDatepicker',
-                                //     read_type: 'inner-text'
-                                // }        
                             ],
                             next: function(userInput) {
                                 return new Promise((resolve, reject) => {

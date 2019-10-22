@@ -8,7 +8,7 @@ const fs = require("fs");
 
 const uuidv4 = require('uuid/v4');
 const puppeteer = require('puppeteer');
-const metadata = require('./metadata_indr');
+// const metadata = require('./metadata_indr');
 const delay = require('delay');
 const moment = require('moment');
 const winston = require('winston');
@@ -40,10 +40,10 @@ var timeFormatFn = function() {
 };
 
 winston.configure({
-    defaultMeta: {service: 'indexindr-crawler'},
-    format: combine(label({label: 'indrcrawler'}), timestamp(), myFormat),
+    defaultMeta: {service: 'indextudan-crawler'},
+    format: combine(label({label: 'tudancrawler'}), timestamp(), myFormat),
     transports:[
-       new winston.transports.File({filename: `indr_execution_log_${moment().format("D_M_YYYY")}.log`, })
+       new winston.transports.File({filename: `tudan_execution_log_${moment().format("D_M_YYYY")}.log`, })
     ]
 });
 
@@ -63,14 +63,55 @@ const USERINPUT = {
 
 app = express();
 
-const TIMEOUT = 8000;
-const POSTBACK_TIMEOUT = 12000;
+const TIMEOUT = 6000;
+const POSTBACK_TIMEOUT = 10000;
 const POLLINGDELAY = 100;
 
 var browser = null;
 var page = null;
 var pageConfig = null;
 var capturedData = {};
+var context = {};
+var context_type = () => {
+
+    var contextObj = function() {
+        this._data = [];
+        this.parameters = [];
+    };
+
+    contextObj.prototype.getContextData = function(key) {
+        var data = null;
+        if(this._data && Array.isArray(this._data)) {
+            this._data.forEach((item_key, item_val) => {
+                if(item_key.key == key) {
+                    data = item_key.val;
+                    // break;
+                }
+            });
+        }
+
+        return data;
+    }
+
+    contextObj.prototype.setContextData = function(key, val) {
+        if (key === null || key === undefined) return -1;
+
+        var item_val = this.getContextData(key);
+        if(item_val === null || item_val === undefined) {
+            this._data.push({key, val});
+        }
+
+        return this;
+    }
+
+    function init() {
+        var ct = new contextObj();
+        
+        return ct;
+    }
+
+    return init();
+};
 //jshint ignore:start
 
 function getStore() {
@@ -96,7 +137,7 @@ async function takeSnapshot(filename) {
 }
 
 let pageLoaded = true;
-async function navigatePage(pageName) {
+async function navigatePageV2(pageName) {
     try
     {
         //log('before launch of browser');
@@ -158,12 +199,12 @@ async function navigatePage(pageName) {
         });
         
         page.on('domcontentloaded',()=> {
-            log('dom even fired');
+            //log('dom even fired');
             pageLoaded = true;
         });
 
         page.on('load',()=> {
-            log('dom even fired');
+            //log('dom even fired');
             pageLoaded = true;
         });
 
@@ -183,95 +224,246 @@ async function navigatePage(pageName) {
                 req.continue();
             }
         });
-
-        /* puppeteer issues*/
-        // const elementHandle = await page.$('body').catch((reason)=> log(reason));
-        // elementHandle.constructor.prototype.boundingBox = async function() {
-        //   const box = await this.executionContext().evaluate(element => {
-        //     const rect = element.getBoundingClientRect();
-        //     const x = Math.max(rect.left, 0);
-        //     const width = Math.min(rect.right, window.innerWidth) - x;
-        //     const y = Math.max(rect.top, 0);
-        //     const height = Math.min(rect.bottom, window.innerHeight) - y;
-        //     return { x: x, width: width, y: y, height: height };
-        //   }, this);
-        //   return box;
-        // };
-        // elementHandle.dispose();
-        /*End of fixes */
-
-        //log(actionItem);
-
-        for(var iidx=0; iidx<actionItem.userinputs.length; iidx++) {
-            try
-            {
-                var val = actionItem.userinputs[iidx];
-                var idx = iidx;
-
-                //log(JSON.stringify(val) + ' - ' + idx);
-                if(val.action==='keyed') {
-                    //log('Going to click');
-                    await page.click(val.selector).then(function(val1, val2) {
-                        //log('Click finished');
-                    });
-                    //log('Clicked');
-                    await page.keyboard.type(val.value).then(function(val1, val2) {
-                        //log('Key pressed');
-                    });
-                    //log('Keyed');
-                }
-                else if(val.action==='click') { 
-                    let chkControl = null;
-                    pageLoaded = false;
-                    await page.click(val.selector);
-                    //await page.waitFor(200);
-                    if(val.haspostback!==undefined && val.haspostback!==null && val.haspostback) {
-                        //log(`N01 : haspostback? ${val.selector}`);
-                        if(!pageLoaded) {
-                            //log(`N01 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
-                            
-                            await page.hackyWaitForFunction(async (isLoaded) => {
-                                //let time = new Date().toLocaleTimeString();
-                                //console.log(`${time} N01 checking isLoaded ${pageLoaded}`);
-                                //let chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
-                                // let chkControl = await page.$eval(val.checkselector, e => e.outerHTML).catch((reason)=> a=1);
-                                // return (pageLoaded || (chkControl!==null && chkControl!==undefined));
-                                return pageLoaded;
-                            }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, val.checkselector).catch(async (reason) => { 
-                                log(`N01 = ${reason} - ${pageLoaded}`); 
-                                //await takeSnapshot('N01');
-                                chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
-                                if(chkControl===null || chkControl===undefined)
-                                    await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
-                            });    
-                        }
-                    }
-                    
-                    if((chkControl===null || chkControl===undefined) && val.checkselector!=='' && val.checkselector!==undefined && val.checkselector!==null) {
-                        
-                        let selectedItem = await page.waitForSelector(val.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
-                            log(`2.eclick - child - ${reason}`);
-                            await takeSnapshot('2_eclick-child');
-                        });
-                        if(selectedItem===null || selectedItem===undefined) {
-                            selectedItem = await page.$(task.checkselector).catch(reason=> log('2_checkselector not found', reason));
-                        }
-                    }
-
-                    // if(val.checkselector!=='' && val.checkselector!==null) {
-                    //     await page.waitForSelector(val.checkselector, {timeout: TIMEOUT});
-                    // }
-                }
-            }
-            catch(err) {
-                log('err1');
-                log(err);
-            }
-        }
     }
     catch(fe) {
 
     }
+}
+
+function init_context() {
+    // this.context = context_type.call(this);
+    this.context = context_type();
+}
+
+function getContext() {
+    if(this.context === null || this.context === undefined) {
+        init_context();
+    }
+    return this.context;
+}
+
+function hlp_get_passed_parameters(taskinfo, direction='') {
+    var params = {};
+    var drc = direction;
+    if(direction === '') {
+        drc = 'input';
+    }
+    taskinfo.parameters.forEach(parameter => {
+        if(parameter && parameter.direction===drc) {
+            if(parameter.sourcetype === 'value') {
+                params[parameter.name] = parameter.value;
+            } else if(parameter.sourcetype === 'variable') {
+                params[parameter.name] = replaceVariable(parameter.value, getContext());
+            }
+        }
+    });
+
+    return params;
+}
+
+function getActionExecutor(context, action=null, task_info=null, callback) {
+    if(task_info && task_info.name==='end') {
+        return null;
+    }
+
+    var config = context.getContextData('runbook').config;
+    var source = this;
+    var taskinfo = {};
+    var task_name = '';
+    var task_prefix = 'tx';
+
+    if(config && config.task_prefix) {
+        task_prefix = config.task_prefix;
+    }
+
+    if(action) {
+        if(action.codefile!==undefined && action.codefile!==null && action.codefile!=='') {
+            source = require(action.codefile);
+
+            if(source instanceof Object) {
+                source = Object.create(source.prototype, {
+                    context: {
+                        writable: false,
+                        configurable: true,
+                        value: context,
+                    },
+                    parameters: {
+                        writable: true,
+                        configurable: true,
+                        value: task_info.parameters,
+                    },
+                    config: {
+                        writable: true,
+                        configurable: true,
+                        value: action,
+                    },
+                    page: {
+                        writable: false,
+                        configurable: false,
+                        value: context.getContextData('page'),
+                    },
+                    log: {
+                        writable: true,
+                        configurable: true,
+                        value: log,
+                    },
+                    input_parameters: {
+                        writable: false,
+                        configurable: false,
+                        value: hlp_get_passed_parameters(task_info, 'input'),
+                    },
+                    output_parameters: {
+                        writable: false,
+                        configurable: false,
+                        value: hlp_get_passed_parameters(task_info, 'output'),
+                    }
+                });
+            }
+        }
+
+        if(task_info===null || task_info===undefined) {
+            if(action.tasks && Array.isArray(action.tasks) && action.tasks.length>0) {
+                taskinfo = action.tasks[0];
+            }
+        }
+        else {
+            taskinfo = task_info;
+        }
+
+        if(taskinfo && taskinfo.name) {
+            task_name = `${task_prefix}_${taskinfo.name}`;
+        }
+    }
+
+    return {sourceobj: source, executor: source[task_name], task_name};
+}
+
+function load_rb_config(tenantname='') {
+    var rb_file_name = '';
+    switch (tenantname) {
+        case 'tudan':
+            rb_file_name = './tudan_crawl_runbook.json';
+            break;
+        default:
+            break;
+    }
+
+    return require(rb_file_name);
+}
+
+function replaceVariable(expr, context) {
+    var vars = [];
+    let i=0;
+    let j=0;
+
+    while ((j = expr.indexOf('${', i))>-1) {
+        i++;
+        const varName = expr.substr(j+2, (expr.indexOf('}', j)-(j+2)));
+        if(varName && varName!=='') {
+            const contatValue = context.getContextData(varName) || context.parameters[varName] || '';
+            
+            vars.push({key: varName, val: contatValue});
+
+            if(expr.trim().length === ('${'+varName+'}').length) {
+                expr = contatValue;
+                break;
+            } else {
+                expr = expr.replace('${'+varName+'}', contatValue);
+            }
+        }
+    }
+
+    return expr;
+}
+
+function getNextActionTask(context, action = null, taskinfo = null) {
+    var nxttaskinfo = null;
+    if(taskinfo && action) {
+        let evaluatedResult = false;
+        for (let index = 0; ((index < taskinfo.connects.length) && (evaluatedResult === false)); index++) {
+            evaluatedResult = false;
+            const connect = taskinfo.connects[index];
+            if(connect) {
+                evaluatedResult = eval(replaceVariable(connect.expression, context));
+
+                if(evaluatedResult === true) {
+                    for (let index = 0; index < action.tasks.length; index++) {
+                        const tsk = action.tasks[index];
+                        if(tsk.id == connect.taskid) {
+                            nxttaskinfo = tsk;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return nxttaskinfo;
+}
+
+async function ProcessActivityV2(targetUri, runid=uuid5()) {
+    try
+    {
+        if(targetUri===undefined || targetUri===null || targetUri==="")
+            return;
+
+        var config_data = {};
+        init_context();
+        await navigatePageV2(targetUri);
+        //log('Page navigated...');
+        if(browser!==null && page!==null) {
+            //log('URL -> ' + page.url());
+
+            config_data = load_rb_config('tudan');
+            let contextObj = getContext();
+            contextObj.setContextData('targeturi', targetUri);
+            contextObj.setContextData('browser', browser);
+            contextObj.setContextData('page', page);
+            contextObj.setContextData('runbook', config_data);
+
+            for(pageIdx=0; pageIdx<config_data.pages.length; pageIdx++) {
+                pageConfig = config_data.pages[pageIdx];
+                contextObj.setContextData('pageconfig', pageConfig);
+
+                for (let aindex = 0; aindex < pageConfig.actions.length; aindex++) {
+                    const action = pageConfig.actions[aindex];
+                    
+                    var task_info = action.tasks[0];
+                    // var action = pageConfig.actions[0];
+                    var actionExecutorFinder = getActionExecutor(contextObj, action, task_info, (status) => {
+                        log('info', status);
+                    });
+
+                    var task_name = actionExecutorFinder.task_name;
+                    var source = actionExecutorFinder.sourceobj;
+                    var actionExecutor = actionExecutorFinder.executor;
+    
+                    while(actionExecutorFinder !== null) {
+                        // actionExecutor.execute();
+                        contextObj.setContextData('result', await actionExecutor.call(source, task_info));
+                        contextObj.parameters = source.output_parameters;
+                        task_info = getNextActionTask(contextObj, action, task_info);
+    
+                        actionExecutorFinder = getActionExecutor(contextObj, action, task_info, (status) => {
+                            log('info', status);
+                        });
+
+                        if(actionExecutorFinder) {
+                            task_name = actionExecutorFinder.task_name;
+                            source = actionExecutorFinder.sourceobj;
+                            actionExecutor = actionExecutorFinder.executor;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch(ex) {
+        log(`Retrying once again.`)
+    }
+
+    return;
 }
 
 async function ProcessActivity(targetUri, runid=uuid5()) {
@@ -281,16 +473,33 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
         if(targetUri===undefined || targetUri===null || targetUri==="")
             return;
 
+        this.init_context();
         await navigatePage(targetUri);
         //log('Page navigated...');
         if(browser!==null && page!==null) {
             //log('URL -> ' + page.url());
 
+            this.getContext().setContextData('targeturi', targetUri);
+            this.getContext().setContextData('browser', browser);
+            this.getContext().setContextData('page', page);
+            this.getContext().setContextData('metadata', metadata);
+
             for(pageIdx=0; pageIdx<metadata.pages.length; pageIdx++) {
                 pageConfig = metadata.pages[pageIdx];
-                // pageConfig = metadata.pages.find(pg => {
-                //     return page.url().indexOf(pg.name)>-1;
-                // });
+                this.getContext().setContextData('pageconfig', pageConfig);
+
+                var actionExecutor = this.getActionExecutor(this.getContext(), pageConfig.actions[0], (status) => {
+                    console.log(status);
+                });
+
+                while(actionExecutor !== null) {
+                    actionExecutor.execute();
+
+                    actionExecutor = this.getActionExecutor(this.getContext(), actionExecutor.getNextAction(), (status) => {
+                        console.log(status);
+                    });
+                }
+
                 let repeatsourceContent = null;
                 let repeatsourceData = null;
                 let repeatsourceType = null;
@@ -299,13 +508,6 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                 let isrepeat = (pageConfig.actions[0].repeat===undefined 
                     || pageConfig.actions[0].repeat===null)?false:pageConfig.actions[0].repeat;
                 if(isrepeat) {
-                    // let ctrlItem = await page.evaluate(() => {
-                    //     let chatCtrl = document.querySelector('div.meshim_widget_components_chatButton_Button.ltr');
-                    //     if(chatCtrl!==null) {
-                    //         chatCtrl.setAttribute('style', 'display:none');
-                    //     }
-                    // });
-
                     repeatsource = pageConfig.actions[0].repeatsource;
                     repeatsourceType = (repeatsource===undefined || repeatsource===null)?null:((repeatsource instanceof Array)?
                         'array':((repeatsource instanceof Number)?'number':(typeof(repeatsource)==='function'?'function':null)));
@@ -498,15 +700,10 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                         //going for next circle
                         //log('moving to next circle');
                         log(`${key} crawl process finished. Now saving circle data into table.`);
-                        const store = getStore();
-                        if(store && store.attributes && store.attributes.length>0) {
-                            let statusinfo = await metadata.circlecrawlfinished(runid, getStore(), key, function(status) {
-                                log(`Finaliation of ${key} - ${status}`);
-                            });
-                            //log(`Next operation ${i} starting`);
-
-                            log(`Final Status :: ${statusinfo}`);
-                        }
+                        let impactedRows = metadata.circlecrawlfinished(runid, getStore(), key, function(status) {
+                            log(`Finaliation of ${key} - ${status}`);
+                        });
+                        //log(`Next operation ${i} starting`);
                     }
                 }
             }
@@ -1238,17 +1435,18 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 // }
 
 var excutionStarted = false;
-cron.schedule("*/10 * * * *", function() {
-    log("Cron started");
-    if(excutionStarted) {
-        log('Previous process still running ...');
-        return false;
-    }
+// cron.schedule("*/15 * * * *", function() {
+//     log("Cron started");
+//     if(excutionStarted) {
+//         log('Previous process still running ...');
+//         return false;
+//     }
 
     try
     {
         excutionStarted = true;
         capturedData = {};
+        //init_context();
         process.on('unhandledRejection', (reason, promise) => {
             //log('Unhandled Rejection at:', reason.stack || reason);
             log('Unhandled Rejection at:', reason);
@@ -1261,8 +1459,9 @@ cron.schedule("*/10 * * * *", function() {
         //let crawlingUri = "https://airiq.in/Admin/Search.aspx";
         //let crawlingUri = "https://www.tripmaza.com/App/DealPage2A.aspx";
         //let crawlingUri = "https://www.tripmaza.com";
-        let crawlingUri = "http://indertours.com/admin/signin.php";
-        ProcessActivity(crawlingUri, runid).then(()=> {
+        let crawlingUri = "http://traveludaan.com/";
+        // ProcessActivity(crawlingUri, runid).then(()=> {
+        ProcessActivityV2(crawlingUri, runid).then(()=> {
             //what to do after the promise being called
             try
             {
@@ -1294,6 +1493,6 @@ cron.schedule("*/10 * * * *", function() {
         log(e);
         excutionStarted = false;
     }
-});
+// });
 
-app.listen("3141");
+// app.listen("3152");

@@ -367,7 +367,7 @@ function updateExhaustedCircleInventory(runid, deptid, arrvid, callback) {
             }
             let currentDate = moment.utc(new Date().toGMTString()).format("YYYY-MM-DD HH:mm:ss"); //moment(new Date()).format("YYYY-MM-DD HH:mm");
             
-            var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where available='YES' and data_collected_from='cheap' and source=${deptid} and destination=${arrvid} and last_sync_key<>'${runid}'`;
+            var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where available='YES' and data_collected_from='indr' and source=${deptid} and destination=${arrvid} and last_sync_key<>'${runid}'`;
             
             try {
                 conn.query(sql, function (err, data) {
@@ -613,7 +613,7 @@ function insertTicketData(conn, ticket, runid, callback) {
             let ticket_no = ticket.recid;
         
             var insertSql = `INSERT INTO tickets_tbl (source, destination, source1, destination1, trip_type, departure_date_time, arrival_date_time, flight_no, terminal, departure_date_time1, arrival_date_time1, flight_no1, terminal1, terminal2, terminal3, no_of_person, max_no_of_person, no_of_stops, stops_name, no_of_stops1, stops_name1, class, class1, airline, airline1, aircode, aircode1, pnr, ticket_no, price, baggage, meal, markup, admin_markup, discount, total, sale_type, refundable, availibility, user_id, remarks, approved, available, data_collected_from, last_sync_key, companyid, created_by) 
-            VALUES ('${ticket.departure.id}','${ticket.arrival.id}',0,0,'ONE','${deptDate}','${arrvDate}','${ticket.flight_number}','NA', '${emptyDate}','${emptyDate}','','','','',${ticket.availability},${ticket.availability},0,'NA',0,'NA', '${ticket.ticket_type.toUpperCase()}','','${ticket.flight_id}',0,'${ticket.flight}','','','TKT-${ticket_no}', ${ticket.price},0,0,0,300,0,${ticket.price},'request','N',${ticket.availability},${DEFAULT_USER_ID},'',0, '${ticket.availability>0?'YES':'NO'}', 'cheap', '${runid}', ${DEFAULT_COMPANY_ID}, ${DEFAULT_USER_ID})`;
+            VALUES ('${ticket.departure.id}','${ticket.arrival.id}',0,0,'ONE','${deptDate}','${arrvDate}','${ticket.flight_number}','NA', '${emptyDate}','${emptyDate}','','','','',${ticket.availability},${ticket.availability},0,'NA',0,'NA', '${ticket.ticket_type.toUpperCase()}','','${ticket.flight_id}',0,'${ticket.flight}','','','TKT-${ticket_no}', ${ticket.price},0,0,0,300,0,${ticket.price},'request','N',${ticket.availability},${DEFAULT_USER_ID},'',2, '${ticket.availability>0?'YES':'NO'}', 'cheap', '${runid}', ${DEFAULT_COMPANY_ID}, ${DEFAULT_USER_ID})`;
             //console.log(insertSql);
             conn.query(insertSql, function (err, data) {
                 if (err) {

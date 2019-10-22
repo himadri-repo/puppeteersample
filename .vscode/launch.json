@@ -72,5 +72,11 @@
             "name": "Launch CHEAF Program",
             "program": "${workspaceFolder}/indexcheap.js"
         },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch TUDAN Program",
+            "program": "${workspaceFolder}/src/tudan/indextudan.js"
+        },
    ]
 }
