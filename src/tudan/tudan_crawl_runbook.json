@@ -75,25 +75,6 @@
 								{"id": 3, "name": "contents", "value": "${contents}", "sourcetype": "variable", "direction": "output"}
 							],
 							"connects": [
-								{"id": 1, "name": "connect1", "expression": "${result} === true", "taskid": 6},
-								{"id": 2, "name": "connect2", "expression": "${result} === false", "taskid": 19}
-							]
-						},
-						{
-							"id": 6,
-							"name": "read_ticket_data",
-							"parameters": [
-								{"id": 1, "name": "content", "value": "${content}", "sourcetype": "variable", "direction": "input"},
-								{"id": 2, "name": "selector", "value": "#Select_Sector", "sourcetype": "value", "direction": "input"},
-								{"id": 3, "name": "content_selector", "value": ".datatable>tbody", "sourcetype": "value", "direction": "input"},
-								{"id": 4, "name": "page_size_selector", "value": "select.input-sm.form-control", "sourcetype": "value", "direction": "input"},
-								{"id": 5, "name": "page_size_value", "value": "100", "sourcetype": "value", "direction": "input"},
-								{"id": 6, "name": "timeout", "value": "30000", "sourcetype": "value", "direction": "input"},
-								{"id": 7, "name": "delay", "value": "1000", "sourcetype": "value", "direction": "input"},
-								{"id": 8, "name": "tickets", "value": "", "sourcetype": "value", "direction": "output"},
-								{"id": 9, "name": "status", "value": "${result}", "sourcetype": "variable", "direction": "output"}
-							],
-							"connects": [
 								{"id": 1, "name": "connect1", "expression": "${result} === true", "taskid": 7},
 								{"id": 2, "name": "connect2", "expression": "${result} === false", "taskid": 19}
 							]

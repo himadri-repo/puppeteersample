@@ -30,12 +30,19 @@ class CheapPortal_Crawl {
         //const page = this.context.getContextData('page');
         //var params = this.hlp_get_passed_parameters(taskinfo);
         var flag = true;
+        var timeout = 10000;
 
         var selector = this.input_parameters.selector;
         await this.page.click(selector).catch(reason => {
             console.log(`E13 => ${reason}`);
             flag = false;
         });
+
+        await this.page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: timeout}).catch((reason) => {
+            this.log('error', `Error (button click) => ${reason}`);
+            console.log('error', `Error (button click) => ${reason}`);
+        });
+
         return flag;
     }
 
@@ -73,6 +80,8 @@ class CheapPortal_Crawl {
             }
         }
 
+        //this.log('info', `Content => ${content}`);
+
         this.output_parameters.content = content.trim();
 
         return content.trim()!=='';
@@ -87,6 +96,8 @@ class CheapPortal_Crawl {
         var content_type = this.input_parameters.content_type;
         var regex = this.input_parameters.regex;
         
+
+        //this.log('info', `Content to parse => ${content}`);
         //var clear_html_regex = /(<([^>]+)>)/ig;
         // var clear_html_regex = /(<([^>]+)>)(\s*)/ig;
         var clear_html_regex = /(<([^>]+)>)/ig;
@@ -124,35 +135,47 @@ class CheapPortal_Crawl {
         var timeout = parseInt(this.input_parameters.timeout);
         var delay = parseInt(this.input_parameters.delay);
         var i = 0;
+        var timeout = 4000;
 
         for (let index = 0; index < content.length; index++) {
             const item = content[index];
             element_loaded = true;
 
             console.log(`Circle -> ${item}`);
+            this.log('info', `Circle : ${item}`);
 
             if(item && item.trim() === 'Select Sector') {
-                await this.page.select(selector, item).catch(reason => console.log(`${reason}`));
+                await this.page.select(selector, item).catch(reason => console.log(`Error (read ticket_data): ${reason}`));
 
-                await this.page.waitFor(1000);
+                //await this.page.waitFor(timeout);
+                // await this.page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: timeout}).catch((reason) => {
+                //     this.log('error', `Error (select) => ${reason}`);
+                //     console.log('error', `Error (select) => ${reason}`);
+                // });
 
                 //{visible: true, timeout: timeout}
                 await this.page.waitForSelector(content_selector, {timeout: timeout}).catch(reason => {
                     console.log(`E20 => ${reason}`);
+                    this.log('info', `E20 : ${reason}`);
                     // element_loaded = false;
                 });
             }
 
             if(item && item.trim()!=='Select Sector') {
                 await this.page.select(selector, item).catch(reason => console.log(`${reason}`));
-                await this.page.waitFor(1000);
+                await this.page.waitFor(timeout);
                 await this.page.select(page_size_selector, page_size_value).catch(reason => console.log(`${reason}`));
                 
-                await this.page.waitFor(200);
+                //await this.page.waitFor(timeout);
+                // await this.page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: timeout}).catch((reason) => {
+                //     this.log('error', `Error (select circle) => ${reason}`);
+                //     console.log('error', `Error (select circle) => ${reason}`);
+                // });
 
                 //{visible: true, timeout: timeout}
                 await this.page.waitForSelector(content_selector, {timeout: timeout}).catch(reason => {
-                    console.log(`E20 => ${reason}`);
+                    console.log(`E21 => ${reason}`);
+                    this.log('info', `E21 : ${reason}`);
                     // element_loaded = false;
                 });
 
@@ -164,6 +187,7 @@ class CheapPortal_Crawl {
                     //     console.log(`E18 => ${reason}`);
                     //     flag = false;
                     // });
+                    //this.log('info', `HTML Content : ${htmlcontent}`);
 
                     // var clear_html_regex = /(<([^>]+)>)/ig;
         

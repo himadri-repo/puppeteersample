@@ -271,7 +271,7 @@ function finalization(runid, callback) {
                 }
                 let currentDate = moment.utc(new Date().toGMTString()).format("YYYY-MM-DD HH:mm:ss"); //moment(new Date()).format("YYYY-MM-DD HH:mm");
     
-                var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where available='YES' and data_collected_from='cheap' and last_sync_key<>'${runid}'`;
+                var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where available='YES' and data_collected_from='tudan' and last_sync_key<>'${runid}'`;
                 
                 try {
                     conn.query(sql, function (err, data) {
@@ -512,6 +512,7 @@ async function saveTicketsData(conn, circleDataList, runid, callback) {
                         //to be inserted
                         var status = await insertTicketData(conn, ticket, runid, function(status) {
                         });
+                        console.log(`Result -> ${JSON.stringify(status)}`);
                         if(status) {
                             ticket.id = status.insertId;
                         }
@@ -549,7 +550,7 @@ function getTicketData(conn, ticket, callback) {
         try
         {
             let deptDate = moment(new Date(ticket.departure.epoch_date)).format("YYYY-MM-DD HH:mm");
-            let qry = `select id from tickets_tbl where source=${ticket.departure.id} and destination=${ticket.arrival.id} and ticket_no='TKT-${ticket.recid}' and data_collected_from='cheap'`;
+            let qry = `select id from tickets_tbl where source=${ticket.departure.id} and destination=${ticket.arrival.id} and ticket_no='TKT-${ticket.recid}' and data_collected_from='tudan'`;
     
             conn.query(qry, function(err, data) {
                 if(err) {
@@ -578,7 +579,7 @@ function updateTicketData(conn, ticket, runid, callback) {
             let ticket_no = ticket.recid;
             let currentDate = moment.utc(new Date().toGMTString()).format("YYYY-MM-DD HH:mm:ss"); //moment(new Date()).format("YYYY-MM-DD HH:mm");
         
-            var updateSql = `update tickets_tbl set no_of_person=${ticket.availability}, max_no_of_person=${ticket.availability}, availibility= ${ticket.availability}, available='${ticket.availability>0?'YES':'NO'}', price=${ticket.price}, total=${ticket.price}, last_sync_key='${runid}', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where source='${ticket.departure.id}' and destination='${ticket.arrival.id}' and ticket_no='TKT-${ticket_no}' and data_collected_from ='cheap'`;
+            var updateSql = `update tickets_tbl set no_of_person=${ticket.availability}, max_no_of_person=${ticket.availability}, availibility= ${ticket.availability}, available='${ticket.availability>0?'YES':'NO'}', price=${ticket.price}, total=${ticket.price}, last_sync_key='${runid}', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where source='${ticket.departure.id}' and destination='${ticket.arrival.id}' and ticket_no='TKT-${ticket_no}' and data_collected_from ='tudan'`;
         
             conn.query(updateSql, function (err, data) {
                 if (err) {
@@ -613,7 +614,7 @@ function insertTicketData(conn, ticket, runid, callback) {
             let ticket_no = ticket.recid;
         
             var insertSql = `INSERT INTO tickets_tbl (source, destination, source1, destination1, trip_type, departure_date_time, arrival_date_time, flight_no, terminal, departure_date_time1, arrival_date_time1, flight_no1, terminal1, terminal2, terminal3, no_of_person, max_no_of_person, no_of_stops, stops_name, no_of_stops1, stops_name1, class, class1, airline, airline1, aircode, aircode1, pnr, ticket_no, price, baggage, meal, markup, admin_markup, discount, total, sale_type, refundable, availibility, user_id, remarks, approved, available, data_collected_from, last_sync_key, companyid, created_by) 
-            VALUES ('${ticket.departure.id}','${ticket.arrival.id}',0,0,'ONE','${deptDate}','${arrvDate}','${ticket.flight_number}','NA', '${emptyDate}','${emptyDate}','','','','',${ticket.availability},${ticket.availability},0,'NA',0,'NA', '${ticket.ticket_type.toUpperCase()}','','${ticket.flight_id}',0,'${ticket.flight}','','','TKT-${ticket_no}', ${ticket.price},0,0,0,300,0,${ticket.price},'request','N',${ticket.availability},${DEFAULT_USER_ID},'',2, '${ticket.availability>0?'YES':'NO'}', 'cheap', '${runid}', ${DEFAULT_COMPANY_ID}, ${DEFAULT_USER_ID})`;
+            VALUES ('${ticket.departure.id}','${ticket.arrival.id}',0,0,'ONE','${deptDate}','${arrvDate}','${ticket.flight_number}','NA', '${emptyDate}','${emptyDate}','','','','',${ticket.availability},${ticket.availability},0,'NA',0,'NA', '${ticket.ticket_type.toUpperCase()}','','${ticket.flight_id}',0,'${ticket.flight}','','','TKT-${ticket_no}', ${ticket.price},0,0,0,300,0,${ticket.price},'request','N',${ticket.availability},${DEFAULT_USER_ID},'',1, '${ticket.availability>0?'YES':'NO'}', 'tudan', '${runid}', ${DEFAULT_COMPANY_ID}, ${DEFAULT_USER_ID})`;
             //console.log(insertSql);
             conn.query(insertSql, function (err, data) {
                 if (err) {
@@ -645,11 +646,13 @@ function getMissingCities(conn, cities, circleData) {
     for(var i=0; i<circleData.length; i++) {
         //for departure city
         let city = circleData[i].departure.circle.toLowerCase();
+        //console.log(`City =>${city}-CITY`);
 
         if(processedCities.indexOf(city)===-1) {
             let savedCityRecord = cities.find((data, idx) => {
                 //return data.city.toLowerCase().indexOf(city)===-1;
-                return data.city.toLowerCase().indexOf(city)>-1;
+                //return data.code.toLowerCase()===city || data.city.toLowerCase().indexOf(city)>-1;
+                return data.code.toLowerCase()===city;
             });
             if(savedCityRecord===undefined || savedCityRecord===null) {
                 if(missingData.indexOf(circleData[i].departure.circle)===-1)
@@ -664,7 +667,9 @@ function getMissingCities(conn, cities, circleData) {
         if(processedCities.indexOf(city)===-1) {
             savedCityRecord = cities.find((data, idx) => {
                 //return data.city.toLowerCase().indexOf(city)===-1;
-                return data.city.toLowerCase().indexOf(city)>-1;
+                //return data.city.toLowerCase().indexOf(city)>-1;
+                //return data.code.toLowerCase()===city || data.city.toLowerCase().indexOf(city)>-1;
+                return data.code.toLowerCase()===city;
                 //return data.city.toLowerCase()===city;
             });
             if(savedCityRecord===undefined || savedCityRecord===null) {
@@ -763,7 +768,9 @@ function transformCircleData(conn, circleData, cities) {
         
         if(deptCity===null) {
             deptCity = cities.find((city, ndx)=> {
-                return city.city.toLowerCase().indexOf(deptCityName)>-1;
+                //return city.city.toLowerCase().indexOf(deptCityName)>-1;
+                //return city.code.toLowerCase()===deptCityName || city.city.toLowerCase().indexOf(deptCityName)>-1;
+                return city.code.toLowerCase()===deptCityName;
             });
         }
         if(deptCity!==null && deptCity!==undefined) {
@@ -777,7 +784,9 @@ function transformCircleData(conn, circleData, cities) {
 
         if(arrvCity===null) {
             arrvCity = cities.find((city, ndx)=> {
-                return city.city.toLowerCase().indexOf(arrvCityName)>-1;
+                //return city.city.toLowerCase().indexOf(arrvCityName)>-1;
+                //return city.code.toLowerCase()===arrvCityName || city.city.toLowerCase().indexOf(arrvCityName)>-1;
+                return city.code.toLowerCase()===arrvCityName;
             });
         }
         

@@ -205,7 +205,7 @@ async function navigatePageV2(pageName) {
         });
 
         page.on('load',()=> {
-            log('dom even fired');
+            log('dom load even fired');
             pageLoaded = true;
         });
 
@@ -280,7 +280,7 @@ function getActionExecutor(context, action=null, task_info=null, callback) {
     if(action) {
         if(action.codefile!==undefined && action.codefile!==null && action.codefile!=='') {
             source = require(action.codefile);
-
+            log('info', `source of ${action.codefile} loaded`);
             if(source instanceof Object) {
                 source = Object.create(source.prototype, {
                     context: {
@@ -334,6 +334,8 @@ function getActionExecutor(context, action=null, task_info=null, callback) {
         if(taskinfo && taskinfo.name) {
             task_name = `${task_prefix}_${taskinfo.name}`;
         }
+
+        log('info', `Task Name (child method) => ${task_name}`);
     }
 
     return {sourceobj: source, executor: source[task_name], task_name};
@@ -412,9 +414,9 @@ async function ProcessActivityV2(targetUri, runid=uuid5()) {
         var config_data = {};
         init_context();
         await navigatePageV2(targetUri);
-        //log('Page navigated...');
+        log('Page navigated...');
         if(browser!==null && page!==null) {
-            //log('URL -> ' + page.url());
+            log('URL -> ' + page.url());
 
             config_data = load_rb_config('cheapflight');
             let contextObj = getContext();
@@ -439,6 +441,7 @@ async function ProcessActivityV2(targetUri, runid=uuid5()) {
                     var task_name = actionExecutorFinder.task_name;
                     var source = actionExecutorFinder.sourceobj;
                     var actionExecutor = actionExecutorFinder.executor;
+                    log('info', `Task Name : ${task_name}`);
     
                     while(actionExecutorFinder !== null) {
                         // actionExecutor.execute();
@@ -454,6 +457,7 @@ async function ProcessActivityV2(targetUri, runid=uuid5()) {
                             task_name = actionExecutorFinder.task_name;
                             source = actionExecutorFinder.sourceobj;
                             actionExecutor = actionExecutorFinder.executor;
+                            log('info', `Next Task Name : ${task_name}`);
                         }
                     }
                 }
@@ -461,7 +465,7 @@ async function ProcessActivityV2(targetUri, runid=uuid5()) {
         }
     }
     catch(ex) {
-        log(`Retrying once again.`)
+        log(`Retrying once again.${ex}`);
     }
 
     return;

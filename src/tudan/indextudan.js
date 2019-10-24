@@ -460,7 +460,7 @@ async function ProcessActivityV2(targetUri, runid=uuid5()) {
         }
     }
     catch(ex) {
-        log(`Retrying once again.`)
+        log(`Retrying once again. ${ex}`);
     }
 
     return;
@@ -1435,12 +1435,12 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 // }
 
 var excutionStarted = false;
-// cron.schedule("*/15 * * * *", function() {
-//     log("Cron started");
-//     if(excutionStarted) {
-//         log('Previous process still running ...');
-//         return false;
-//     }
+cron.schedule("*/5 * * * *", function() {
+    log("Cron started");
+    if(excutionStarted) {
+        log('Previous process still running ...');
+        return false;
+    }
 
     try
     {
@@ -1493,6 +1493,6 @@ var excutionStarted = false;
         log(e);
         excutionStarted = false;
     }
-// });
+});
 
-// app.listen("3152");
+app.listen("3153");
