@@ -116,7 +116,7 @@ async function navigatePage(pageName) {
         page = pages.length>0?pages[0]:await browser.newPage();
         //log('after new page created');
         await page.setViewport({ width: 1366, height: 768});
-        //log('after view port');
+        log('view port being set');
         /*page.setRequestInterception(true);
         page.on("load", interceptedRequest => {
             log("Load -> " + interceptedRequest.url());
@@ -126,10 +126,13 @@ async function navigatePage(pageName) {
         await page.setUserAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36");
 
         //let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
-        let response = await page.goto(pageName, {waitUntil:'domcontentloaded', timeout:30000}); //wait for 10 secs as timeout
+        let response = await page.goto(pageName, {waitUntil:'domcontentloaded', timeout:30000}).catch((reason) => {
+            log(`GOTO request - Exception raised ${reason}`);
+        }); 
+        //wait for 10 secs as timeout
         //log(await page.cookies());
         //await page.waitForNavigation();
-        //log('after navigation done');
+        log('after navigation done');
         //assumed page loaded
 
         page.hackyWaitForFunction = (predicate, opts = {}, isLoadedCtrl=false, chkControl=null) => {
@@ -152,6 +155,7 @@ async function navigatePage(pageName) {
               setTimeout(check, polling);
             })
         }
+        log('after hackyWaitForFunction function set');
 
         pageConfig = metadata.pages.find(pg => {
             return response.url().indexOf(pg.name)>-1;
@@ -166,6 +170,8 @@ async function navigatePage(pageName) {
             log('dom [load] even fired');
             pageLoaded = true;
         });
+
+        log('Event handler set');
 
         var actionItem = pageConfig.actions[0];
 
