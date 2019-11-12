@@ -145,9 +145,10 @@ async function navigatePageV2(pageName) {
             {
                 headless:true,
                 ignoreHTTPSErrors: true,
+                devtools: false,
                 ignoreDefaultArgs: ['--enable-automation'],
-                //args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
-                args: ['--start-fullscreen']
+                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox', '--disable-gpu']
+                // args: ['--start-fullscreen']
             }).catch((reason) => {
                 log(reason);
                 return;
@@ -170,7 +171,7 @@ async function navigatePageV2(pageName) {
         let response = await page.goto(pageName, {waitUntil:'domcontentloaded', timeout:30000}); //wait for 10 secs as timeout
         //log(await page.cookies());
         //await page.waitForNavigation();
-        //log('after navigation done');
+        log('after navigation done');
         //assumed page loaded
 
         page.hackyWaitForFunction = (predicate, opts = {}, isLoadedCtrl=false, chkControl=null) => {
@@ -194,28 +195,32 @@ async function navigatePageV2(pageName) {
             })
         }
 
-        pageConfig = metadata.pages.find(pg => {
-            return response.url().indexOf(pg.name)>-1;
-        });
+        // pageConfig = metadata.pages.find(pg => {
+        //     return response.url().indexOf(pg.name)>-1;
+        // });
         
         page.on('domcontentloaded',()=> {
-            //log('dom even fired');
+            log('domcontentloaded even fired');
             pageLoaded = true;
         });
 
         page.on('load',()=> {
-            //log('dom even fired');
+            log('load even fired');
             pageLoaded = true;
         });
 
-        var actionItem = pageConfig.actions[0];
+        // var actionItem = pageConfig.actions[0];
 
         //block image loading
+
+        log('Intercepting request ...');
         await page.setCacheEnabled(true);
         await page.setRequestInterception(true);
         page.on('request', (req) => {
             let url = req.url().toLowerCase();
-            if(req.resourceType() === 'image' || req.resourceType() === 'font' || url.indexOf('fonts')>-1
+            //log(`Req.Type : ${req.resourceType()} - ${req.url()}`);
+            //console.log(`Req.Type : ${req.resourceType()} - ${req.url()}`);
+            if(req.resourceType() === 'stylesheet' || req.resourceType() === 'image' || req.resourceType() === 'font' || url.indexOf('fonts')>-1
              || url.indexOf('animate')>-1 || url.indexOf('des')>-1 || url.indexOf('tabs')>-1){
                 req.abort();
             }
@@ -1435,7 +1440,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 // }
 
 var excutionStarted = false;
-cron.schedule("*/5 * * * *", function() {
+cron.schedule("*/10 * * * *", function() {
     log("Cron started");
     if(excutionStarted) {
         log('Previous process still running ...');
@@ -1479,9 +1484,13 @@ cron.schedule("*/5 * * * *", function() {
                 //process.exit(0);
                 excutionStarted = false;
             }
+            if(browser) {
+                browser.close();
+                log('Closing browser');
+            }
             return;
         }).catch((reason) => {
-            log(reason);
+            log(`ProcessActivity Error : ${reason}`);
             log(JSON.stringify(capturedData));
             //log('Closing Browser');
             //page.waitFor(500);
@@ -1490,7 +1499,7 @@ cron.schedule("*/5 * * * *", function() {
         });
     }
     catch(e) {
-        log(e);
+        log(`Main Error => ${e}`);
         excutionStarted = false;
     }
 });

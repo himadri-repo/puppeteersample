@@ -31,7 +31,7 @@ class CheapPortal_Crawl {
         //const page = this.context.getContextData('page');
         //var params = this.hlp_get_passed_parameters(taskinfo);
         var flag = true;
-        var timeout = 20000;
+        var timeout = 40000;
 
         var selector = this.input_parameters.selector;
         await this.page.click(selector).catch(reason => {
@@ -267,18 +267,23 @@ class CheapPortal_Crawl {
 
         try
         {
-            await datastore.saveCircleBatchData(runid, tickets, '', (updatedTickets) => {
-                if(updatedTickets) {
-                    this.log('info', `Ticket length : ${updatedTickets.length}`);
-                }
-                // let impactedRows = metadata.circlecrawlfinished(runid, getStore(), key, function(status) {
-                //     log(`Finaliation of ${key} - ${status}`);
-                // });
-            });
+            if(tickets.length>0) {
+                await datastore.saveCircleBatchData(runid, tickets, '', (updatedTickets) => {
+                    if(updatedTickets) {
+                        this.log('info', `Ticket length : ${updatedTickets.length}`);
+                    }
+                    // let impactedRows = metadata.circlecrawlfinished(runid, getStore(), key, function(status) {
+                    //     log(`Finaliation of ${key} - ${status}`);
+                    // });
+                });
 
-            var finalizedDataset = await datastore.finalization(runid);
+                var finalizedDataset = await datastore.finalization(runid);
 
-            this.log('info', JSON.stringify(finalizedDataset));
+                this.log('info', JSON.stringify(finalizedDataset));
+            }
+            else {
+                this.log('info', 'No tickets found - Not saving into DB');
+            }
         }
         catch(ex) {
             this.log('Error', ex);

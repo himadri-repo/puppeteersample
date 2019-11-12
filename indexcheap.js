@@ -147,8 +147,8 @@ async function navigatePageV2(pageName) {
                 headless:true,
                 ignoreHTTPSErrors: true,
                 ignoreDefaultArgs: ['--enable-automation'],
-                //args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
-                args: ['--start-fullscreen']
+                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox', '--disable-gpu']
+                // args: ['--start-fullscreen']
             }).catch((reason) => {
                 log(reason);
                 return;
@@ -201,27 +201,33 @@ async function navigatePageV2(pageName) {
         
         page.on('domcontentloaded',()=> {
             log('dom even fired');
+            console.log('domcontentloaded loaded');
             pageLoaded = true;
         });
 
         page.on('load',()=> {
             log('dom load even fired');
+            console.log('load loaded');
             pageLoaded = true;
         });
 
         //var actionItem = pageConfig.actions[0];
 
         //block image loading
+        log('Intercepting request ...');
+
         await page.setCacheEnabled(true);
         await page.setRequestInterception(true);
         page.on('request', (req) => {
             let url = req.url().toLowerCase();
-            if(req.resourceType() === 'image' || req.resourceType() === 'font' || url.indexOf('fonts')>-1
+            if(req.resourceType() === 'stylesheet' || req.resourceType() === 'image' || req.resourceType() === 'font' || url.indexOf('fonts')>-1
              || url.indexOf('animate')>-1 || url.indexOf('des')>-1 || url.indexOf('tabs')>-1){
+                //log('info', `Url Disallowed : ${url}`);
                 req.abort();
             }
             else {
                 //log(`Req.Type : ${req.resourceType()} - ${req.url()}`);
+                //log('info', `Url Allowed : ${url}`);
                 req.continue();
             }
         });
@@ -1483,6 +1489,10 @@ cron.schedule("*/15 * * * *", function() {
             finally {
                 //process.exit(0);
                 excutionStarted = false;
+            }
+            if(browser) {
+                browser.close();
+                log('Closing browser');
             }
             return;
         }).catch((reason) => {

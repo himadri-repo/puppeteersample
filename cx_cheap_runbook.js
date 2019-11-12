@@ -17,6 +17,13 @@ class CheapPortal_Crawl {
         //var params = this.hlp_get_passed_parameters(taskinfo);
         var selector = this.input_parameters.selector;
         var value = this.input_parameters.value;
+
+        await this.page.waitForSelector(selector).catch(reason => {
+            console.log(`E1 => ${reason}`);
+            this.log(`E1 => ${reason}`);
+            element_loaded = false;
+        });
+
         await this.page.type(selector, value);
 
         this.output_parameters.status = true;
@@ -30,7 +37,8 @@ class CheapPortal_Crawl {
         //const page = this.context.getContextData('page');
         //var params = this.hlp_get_passed_parameters(taskinfo);
         var flag = true;
-        var timeout = 10000;
+        var timeout = 30000;
+        var time = moment().format("HH_mm_ss_SSS");
 
         var selector = this.input_parameters.selector;
         await this.page.click(selector).catch(reason => {
@@ -42,6 +50,8 @@ class CheapPortal_Crawl {
             this.log('error', `Error (button click) => ${reason}`);
             console.log('error', `Error (button click) => ${reason}`);
         });
+
+        //await this.page.screenshot({path: `cheap-${time}.png`});
 
         return flag;
     }
@@ -156,9 +166,11 @@ class CheapPortal_Crawl {
                 //{visible: true, timeout: timeout}
                 await this.page.waitForSelector(content_selector, {timeout: timeout}).catch(reason => {
                     console.log(`E20 => ${reason}`);
-                    this.log('info', `E20 : ${reason}`);
+                    //this.log('info', `E20 : ${reason}`);
                     // element_loaded = false;
                 });
+
+                this.log('info', 'Select Sector over');
             }
 
             if(item && item.trim()!=='Select Sector') {
@@ -175,9 +187,10 @@ class CheapPortal_Crawl {
                 //{visible: true, timeout: timeout}
                 await this.page.waitForSelector(content_selector, {timeout: timeout}).catch(reason => {
                     console.log(`E21 => ${reason}`);
-                    this.log('info', `E21 : ${reason}`);
+                    //this.log('info', `E21 : ${reason}`);
                     // element_loaded = false;
                 });
+                this.log('info', 'Actual sector');
 
                 if(element_loaded) {
                     //timeout = 10000;
@@ -187,7 +200,7 @@ class CheapPortal_Crawl {
                     //     console.log(`E18 => ${reason}`);
                     //     flag = false;
                     // });
-                    //this.log('info', `HTML Content : ${htmlcontent}`);
+                    this.log('info', `HTML Content loaded`);
 
                     // var clear_html_regex = /(<([^>]+)>)/ig;
         
@@ -367,18 +380,23 @@ class CheapPortal_Crawl {
 
         try
         {
-            await datastore.saveCircleBatchData(runid, tickets, '', (updatedTickets) => {
-                if(updatedTickets) {
-                    this.log('info', `Ticket length : ${updatedTickets.length}`);
-                }
-                // let impactedRows = metadata.circlecrawlfinished(runid, getStore(), key, function(status) {
-                //     log(`Finaliation of ${key} - ${status}`);
-                // });
-            });
+            if(tickets && tickets.length>0) {
+                await datastore.saveCircleBatchData(runid, tickets, '', (updatedTickets) => {
+                    if(updatedTickets) {
+                        this.log('info', `Ticket length : ${updatedTickets.length}`);
+                    }
+                    // let impactedRows = metadata.circlecrawlfinished(runid, getStore(), key, function(status) {
+                    //     log(`Finaliation of ${key} - ${status}`);
+                    // });
+                });
 
-            var finalizedDataset = await datastore.finalization(runid);
+                var finalizedDataset = await datastore.finalization(runid);
 
-            this.log('info', JSON.stringify(finalizedDataset));
+                this.log('info', JSON.stringify(finalizedDataset));
+            }
+            else {
+                this.log('info', 'No tickets available');
+            }
         }
         catch(ex) {
             this.log('Error', ex);
