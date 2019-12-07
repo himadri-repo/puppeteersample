@@ -385,32 +385,47 @@ function circleCrawlingFinished(runid, store, circleKey, callback) {
             //console.log('going to call saveCircleBatchData');
             if(Object.keys(store).length>0) {
                 Object.keys(store).forEach(key => {
-                    circleKey = key;
-    
-                    let targetRunId = runid;
-                    let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey, function(circleData) {
-                        if(targetRunId!==null && targetRunId!==undefined && circleData.length>0) {
-                            let deptId = circleData[0].departure.id;
-                            let arrvId = circleData[0].arrival.id;
-                            let records = circleData.length;
-                            //let cdata = circleData;
-                            //updatedRecs = store[circleKey];
-                            let clearEmptyStock = datastore.updateExhaustedCircleInventory(runid, deptId, arrvId, function(status) {
-                                if(status!==null && status!==undefined) {
-                                    let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
-                                    console.log(msg);
-                                    --key_count;
+                    try
+                    {
+                        circleKey = key;
+        
+                        let targetRunId = runid;
+                        let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey, function(circleData) {
+                            try
+                            {
+                                if(targetRunId!==null && targetRunId!==undefined && circleData.length>0) {
+                                    let deptId = circleData[0].departure.id;
+                                    let arrvId = circleData[0].arrival.id;
+                                    let records = circleData.length;
+                                    //let cdata = circleData;
+                                    //updatedRecs = store[circleKey];
+                                    let clearEmptyStock = datastore.updateExhaustedCircleInventory(runid, deptId, arrvId, function(status) {
+                                        if(status!==null && status!==undefined) {
+                                            let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
+                                            console.log(msg);
+                                            --key_count;
 
-                                    if(key_count===0) {
-                                        resolve('All circle processed');
-                                    }
-                                    // if(callback) {
-                                    //     callback(msg);
-                                    // }
+                                            if(key_count===0) {
+                                                resolve('All circle processed');
+                                            }
+                                            // if(callback) {
+                                            //     callback(msg);
+                                            // }
+                                        }
+                                    });
                                 }
-                            });
-                        }
-                    });
+                            }
+                            catch(eex1) {
+                                console.log(`Error in circleCrawlingFinished:saveCircleBatchData : ${eex1}`);
+                                return reject(eex1);
+                            }
+                        });
+                    }
+                    catch(ex1) {
+                        console.log(`Error in circleCrawlingFinished:forEach : ${ex1}`);
+                        return reject(ex1);
+                        // console.log(ex1);
+                    }
                 });
             }
             else {

@@ -442,7 +442,7 @@ function saveCircleBatchData(runid, circleData, circleKey, callback) {
             });
         }
         catch(e) {
-            console.log(e);
+            console.log(`Error in saveCircleBatchData:getConnection: ${e}`);
         }
     });
 
