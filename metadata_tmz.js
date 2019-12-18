@@ -368,7 +368,7 @@ function circleCrawlingFinished(runid, store, circleKey, callback) {
         {
             //console.log('circleCrawlingFinished called');
             if(circleKey===null || circleKey===undefined || circleKey==="") {
-                reject('Invalid circle key passed');
+                reject(`Invalid circle key passed - circleKey => ${circleKey}`);
                 //return -1;
             }
 
@@ -424,11 +424,77 @@ module.exports = {
     pages: [
         {
             id: 1,
-            name: 'Default',
+            name: 'Start',
             actions: [
                 {
-                    name: 'Default',
+                    name: 'Start',
+                    type: 'code',
+                    userinputs: [
+                        {
+                            id: 1,
+                            controlid: '',
+                            selector: '#ctl00_LinkButton25',
+                            checkcontent: '',
+                            type: 'button',
+                            value: '',
+                            action: 'click',
+                            haspostback: true,
+                            checkselector: '#ctl00_mainbody_txtusername'
+                        }                        
+                    ]
+                }
+            ]
+        },
+        {
+            id: 2,
+            name: 'Signin',
+            actions: [
+                {
+                    name: 'Signin',
                     type: 'authentication',
+                    userinputs: [
+                        {
+                            id: 1,
+                            controlid: '',
+                            selector: '#ctl00_mainbody_txtusername',
+                            checkcontent: '',
+                            type: 'textbox',
+                            value: '9800412356',
+                            action: 'keyed',
+                            checkselector: ''
+                        },
+                        {
+                            id: 2,
+                            controlid: '',
+                            selector: '#ctl00_mainbody_txtpass',
+                            checkcontent: '',
+                            type: 'textbox',
+                            value: 'Sumit@12356',
+                            action: 'keyed',
+                            checkselector: ''
+                        },
+                        {
+                            id: 3,
+                            controlid: '',
+                            selector: '#ctl00_mainbody_btnSubmit',
+                            checkcontent: '',
+                            type: 'button',
+                            value: '',
+                            action: 'click',
+                            haspostback: true,
+                            checkselector: '#ctl00_PnlMnuDesktop > div:nth-child(3) > a'
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 3,
+            name: 'Default1',
+            actions: [
+                {
+                    name: 'Default1',
+                    type: 'code',
                     userinputs: [
                         {
                             id: 1,
@@ -439,14 +505,14 @@ module.exports = {
                             value: '',
                             action: 'click',
                             haspostback: true,
-                            checkselector: '#ctl00_mainbody_Panel1 > div > .ChngColor > a > span'
+                            checkselector: '#ctl00_mainbody_Panel1 > div.TMBackcolor.newcls > div > div.TMBackcolor > div > table > tbody > tr'
                         }                        
                     ]
                 }
             ]
         },
         {
-            id: 3,
+            id: 4,
             name: 'DealPage2A',
             actions: [
                 {
@@ -520,7 +586,7 @@ module.exports = {
                             selector: '#ctl00_mainbody_DD_no_days',
                             checkcontent: '',
                             type: 'textbox',
-                            value: 'Next 15 days',
+                            value: '+ Next 15',
                             action: 'keyed',
                             delayafter: 200,
                             checkselector: '',

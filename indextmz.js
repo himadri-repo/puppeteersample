@@ -63,9 +63,9 @@ const USERINPUT = {
 
 app = express();
 
-const TIMEOUT = 6000;
-const POSTBACK_TIMEOUT = 10000;
-const POLLINGDELAY = 100;
+const TIMEOUT = 10000;
+const POSTBACK_TIMEOUT = 12000;
+const POLLINGDELAY = 300;
 
 var browser = null;
 var page = null;
@@ -92,7 +92,7 @@ function log() {
 
 async function takeSnapshot(filename) {
     var time = moment().format("HH_mm_ss_SSS");
-    await page.screenshot({path: `${filename}-${time}.png`});
+    await page.screenshot({path: `TMZ_${filename}-${time}.png`});
 }
 
 let pageLoaded = true;
@@ -105,8 +105,8 @@ async function navigatePage(pageName) {
                 headless:true,
                 ignoreHTTPSErrors: true,
                 ignoreDefaultArgs: ['--enable-automation'],
-                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
-                //args: ['--start-fullscreen']
+                // args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
+                args: ['--start-fullscreen']
             }).catch((reason) => {
                 log(reason);
                 return;
@@ -157,9 +157,17 @@ async function navigatePage(pageName) {
         }
         log('after hackyWaitForFunction function set');
 
-        pageConfig = metadata.pages.find(pg => {
-            return response.url().indexOf(pg.name)>-1;
-        });
+        // try
+        // {
+        //     if(metadata && metadata.pages && metadata.pages.length>0) {
+        //         pageConfig = metadata.pages.find(pg => {
+        //             return response.url().indexOf(pg.name)>-1;
+        //         });
+        //     }
+        // }
+        // catch(ex) {
+        //     log(`Error -> ${ex}`);
+        // }
         
         page.on('domcontentloaded',()=> {
             log('dom [domcontentloaded] even fired');
@@ -173,13 +181,14 @@ async function navigatePage(pageName) {
 
         log('Event handler set');
 
-        var actionItem = pageConfig.actions[0];
+        //var actionItem = pageConfig.actions[0];
 
         //block image loading
         await page.setCacheEnabled(true);
         await page.setRequestInterception(true);
         page.on('request', (req) => {
             let url = req.url().toLowerCase();
+            //log(`Req.Type : ${req.resourceType()} - ${req.url()}`);
             if(req.resourceType() === 'image' || req.resourceType() === 'font' || url.indexOf('fonts')>-1
              || url.indexOf('animate')>-1 || url.indexOf('des')>-1 || url.indexOf('tabs')>-1){
                 req.abort();
@@ -189,6 +198,7 @@ async function navigatePage(pageName) {
                 req.continue();
             }
         });
+        log('request handler set');
 
         /* puppeteer issues*/
         // const elementHandle = await page.$('body').catch((reason)=> log(reason));
@@ -208,70 +218,72 @@ async function navigatePage(pageName) {
 
         //log(actionItem);
 
-        for(var iidx=0; iidx<actionItem.userinputs.length; iidx++) {
-            try
-            {
-                var val = actionItem.userinputs[iidx];
-                var idx = iidx;
-
-                //log(JSON.stringify(val) + ' - ' + idx);
-                if(val.action==='keyed') {
-                    //log('Going to click');
-                    await page.click(val.selector).then(function(val1, val2) {
-                        //log('Click finished');
-                    });
-                    //log('Clicked');
-                    await page.keyboard.type(val.value).then(function(val1, val2) {
-                        //log('Key pressed');
-                    });
-                    //log('Keyed');
-                }
-                else if(val.action==='click') { 
-                    let chkControl = null;
-                    pageLoaded = false;
-                    await page.click(val.selector);
-                    //await page.waitFor(200);
-                    if(val.haspostback!==undefined && val.haspostback!==null && val.haspostback) {
-                        //log(`N01 : haspostback? ${val.selector}`);
-                        if(!pageLoaded) {
-                            //log(`N01 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
-                            
-                            await page.hackyWaitForFunction(async (isLoaded) => {
-                                //let time = new Date().toLocaleTimeString();
-                                //console.log(`${time} N01 checking isLoaded ${pageLoaded}`);
-                                //let chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
-                                // let chkControl = await page.$eval(val.checkselector, e => e.outerHTML).catch((reason)=> a=1);
-                                // return (pageLoaded || (chkControl!==null && chkControl!==undefined));
-                                return pageLoaded;
-                            }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, val.checkselector).catch(async (reason) => { 
-                                log(`N01 = ${reason} - ${pageLoaded}`); 
-                                //await takeSnapshot('N01');
-                                chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
-                                if(chkControl===null || chkControl===undefined)
-                                    await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
-                            });    
-                        }
-                    }
-                    
-                    if((chkControl===null || chkControl===undefined) && val.checkselector!=='' && val.checkselector!==undefined && val.checkselector!==null) {
-                        
-                        let selectedItem = await page.waitForSelector(val.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
-                            log(`2.eclick - child - ${reason}`);
-                            await takeSnapshot('2_eclick-child');
+        if(actionItem && actionItem.userinputs && actionItem.userinputs.length>0) {
+            for(var iidx=0; iidx<actionItem.userinputs.length; iidx++) {
+                try
+                {
+                    var val = actionItem.userinputs[iidx];
+                    var idx = iidx;
+    
+                    //log(JSON.stringify(val) + ' - ' + idx);
+                    if(val.action==='keyed') {
+                        //log('Going to click');
+                        await page.click(val.selector).then(function(val1, val2) {
+                            //log('Click finished');
                         });
-                        if(selectedItem===null || selectedItem===undefined) {
-                            selectedItem = await page.$(task.checkselector).catch(reason=> log('2_checkselector not found', reason));
-                        }
+                        //log('Clicked');
+                        await page.keyboard.type(val.value).then(function(val1, val2) {
+                            //log('Key pressed');
+                        });
+                        //log('Keyed');
                     }
-
-                    // if(val.checkselector!=='' && val.checkselector!==null) {
-                    //     await page.waitForSelector(val.checkselector, {timeout: TIMEOUT});
-                    // }
+                    else if(val.action==='click') { 
+                        let chkControl = null;
+                        pageLoaded = false;
+                        await page.click(val.selector);
+                        //await page.waitFor(200);
+                        if(val.haspostback!==undefined && val.haspostback!==null && val.haspostback) {
+                            //log(`N01 : haspostback? ${val.selector}`);
+                            if(!pageLoaded) {
+                                //log(`N01 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
+                                
+                                await page.hackyWaitForFunction(async (isLoaded) => {
+                                    //let time = new Date().toLocaleTimeString();
+                                    //console.log(`${time} N01 checking isLoaded ${pageLoaded}`);
+                                    //let chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
+                                    // let chkControl = await page.$eval(val.checkselector, e => e.outerHTML).catch((reason)=> a=1);
+                                    // return (pageLoaded || (chkControl!==null && chkControl!==undefined));
+                                    return pageLoaded;
+                                }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, val.checkselector).catch(async (reason) => { 
+                                    log(`N01 = ${reason} - ${pageLoaded}`); 
+                                    //await takeSnapshot('N01');
+                                    chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
+                                    if(chkControl===null || chkControl===undefined)
+                                        await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
+                                });    
+                            }
+                        }
+                        
+                        if((chkControl===null || chkControl===undefined) && val.checkselector!=='' && val.checkselector!==undefined && val.checkselector!==null) {
+                            
+                            let selectedItem = await page.waitForSelector(val.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
+                                log(`2.eclick - child - ${reason}`);
+                                await takeSnapshot('2_eclick-child');
+                            });
+                            if(selectedItem===null || selectedItem===undefined) {
+                                selectedItem = await page.$(task.checkselector).catch(reason=> log('2_checkselector not found', reason));
+                            }
+                        }
+    
+                        // if(val.checkselector!=='' && val.checkselector!==null) {
+                        //     await page.waitForSelector(val.checkselector, {timeout: TIMEOUT});
+                        // }
+                    }
                 }
-            }
-            catch(err) {
-                log('err1');
-                log(err);
+                catch(err) {
+                    log('err1');
+                    log(err);
+                }
             }
         }
     }
@@ -288,7 +300,9 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
             return;
 
         await navigatePage(targetUri);
-        //log('Page navigated...');
+        log('Page navigated...');
+        //await takeSnapshot('TMZ_Page_Navigated');
+
         if(browser!==null && page!==null) {
             //log('URL -> ' + page.url());
 
@@ -396,6 +410,8 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                         }
 
                         log(`${i} - ${repeatsourceDataValue}`);
+                        //await takeSnapshot(`TMZ_${repeatsourceDataValue}`);
+
                         //remove false from here, this is just for testing.
                         if(pageConfig.actions[0].userinputs.length>0) {
                             //for(var iidx=0; iidx<pageConfig.actions[0].userinputs.length; iidx++) {
@@ -808,7 +824,8 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, option
                             try
                             {
                                 await page.waitForSelector(userInput.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
-                                    log(`E16 => ${reason}`)
+                                    log(`E16 => ${reason} - ${userInput.checkselector}`);
+                                    await takeSnapshot('E16-CHK_SELECTOR');
                                     let chkSelector = await page.$(userInput.checkselector).catch((reason)=> log(`E16-DoubleCheck - ${reason}`));
                                     if(chkSelector===null || chkSelector===undefined)
                                     {
@@ -1320,6 +1337,8 @@ cron.schedule("*/5 * * * *", function() {
         //let crawlingUri = "https://airiq.in/Admin/Search.aspx";
         //let crawlingUri = "https://www.tripmaza.com/App/DealPage2A.aspx";
         let crawlingUri = "https://www.tripmaza.com";
+        //let crawlingUri = "https://www.tripmaza.com/signin.aspx";
+        
         ProcessActivity(crawlingUri, runid).then(()=> {
             //what to do after the promise being called
             try
