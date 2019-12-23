@@ -18,7 +18,7 @@ function login() {
     Logger.log('info', "Logging in ...");
 
     let e2fcrawler = new E2FCrawler({url: '', output: 'json'});
-    let response = e2fcrawler.postData({url: 'https://expressdev.ease2fly.com/api/auth/login', data: {
+    let response = e2fcrawler.postData({url: 'https://eflyapi.ease2fly.com/api/auth/login', data: {
         email:"info@oxytra.com",
         pwd:"Sumit@12356"
     }});
@@ -40,7 +40,7 @@ function startProcess(token) {
     Logger.log('info', "Starting process ...");
 
     let e2fcrawler = new E2FCrawler({url: '', output: 'json', token: token});
-    let response = e2fcrawler.postData({url: 'https://expressdev.ease2fly.com/api/destinations/get-destinations-list', data: {
+    let response = e2fcrawler.postData({url: 'https://eflyapi.ease2fly.com/api/destinations/get-destinations-list', data: {
         usrId: 109,
         usrType: "N"
     }, token: token});
