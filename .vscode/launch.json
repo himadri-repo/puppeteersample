@@ -78,5 +78,11 @@
             "name": "Launch TUDAN Program",
             "program": "${workspaceFolder}/src/tudan/indextudan.js"
         },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch GSHEET Program",
+            "program": "${workspaceFolder}/src/gsheet/indexgsheet.js"
+        },
    ]
 }
