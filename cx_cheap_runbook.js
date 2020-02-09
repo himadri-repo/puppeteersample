@@ -235,14 +235,16 @@ class CheapPortal_Crawl {
                                                         if(circle !== null && circle !== '') {
                                                             var airports = circle.split('-');
                                                             if(airports && airports.length===1)
+                                                                airports = circle.trim().toLowerCase().split('to');
+                                                            if(airports && airports.length===1)
                                                                 airports = circle.split(' ');
 
                                                             if(airports) {
-                                                                ticket.departure = {'circle': airports[0]};
-                                                                ticket.arrival = {'circle': airports[1]};
+                                                                ticket.departure = {'circle': airports[0]?airports[0].trim():airports[0]};
+                                                                ticket.arrival = {'circle': airports[1]?airports[1].trim():airports[1]};
                                                                 if(airports.length>2) {
-                                                                    ticket.rtn_departure = {'circle': airports[1]};
-                                                                    ticket.rtn_arrival = {'circle': airports[2]};
+                                                                    ticket.rtn_departure = {'circle': airports[1]?airports[1].trim():airports[1]};
+                                                                    ticket.rtn_arrival = {'circle': airports[2]?airports[2].trim():airports[2]};
                                                                 }
                                                             }
                                                         }
@@ -272,6 +274,9 @@ class CheapPortal_Crawl {
                                                         else {
                                                             var ed_time = cell_item.text.replace('\t', '').trim();
                                                             //ticket.start_arrv_time = cell_item.text.replace('\t', '').trim();
+                                                            if(ed_time!==undefined && ed_time.trim()==='')
+                                                                ed_time = ticket.departure.time;
+
                                                             ticket.arrival.time = ed_time;
                                                         }
                                                         break;
@@ -302,12 +307,21 @@ class CheapPortal_Crawl {
                                                         break;
                                                     case 11:
                                                         ticket.availability = parseInt(cell_item.text.replace('\t', '').trim());
+                                                        if(isNaN(ticket.availability)) {
+                                                            ticket.availability = 0.00;
+                                                        }
                                                         break;
                                                     case 15:
                                                         ticket.max_no_of_person = parseInt(cell_item.text.replace('\t', '').trim());
+                                                        if(isNaN(ticket.max_no_of_person)) {
+                                                            ticket.max_no_of_person = 0.00;
+                                                        }
                                                         break;
                                                     case 17:
                                                         ticket.price = parseFloat(cell_item.text.replace('\t', '').trim());
+                                                        if(isNaN(ticket.price)) {
+                                                            ticket.price = 0.00;
+                                                        }
                                                         break;
                                                     default:
                                                         break;
