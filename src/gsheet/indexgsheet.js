@@ -254,10 +254,11 @@ async function get_sheet_data(sheetconf, sheet_name, sheets) {
                                 arrv_datetime = moment(row[1]+'T'+row[7]+':00+00:00', 'DD-MMM-YYYY HH:mm');
                             }
 
+                            row[10] = row[10].replace(',', '');
                             let price = isNaN(row[10]) ? 0.00 : parseFloat(row[10]);  
                             let no_of_pax = isNaN(row[9]) ? 0 : parseInt(row[9], 10);  
 
-                            if(isNaN(row[10]) && row[10].toLowerCase() === 'sold') {
+                            if(isNaN(row[10]) && (row[10].toLowerCase() === 'sold' || row[10].toLowerCase() === 'close' || row[10].toLowerCase() === 'cancel')) {
                                 price = 0.00;
                                 no_of_pax = 0;
                             }

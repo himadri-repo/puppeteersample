@@ -22,6 +22,19 @@ function getDBPool() {
     //     port: 3306
     // });
 
+
+    // pool = mysql.createPool({
+    //     connectionLimit : 30,
+    //     connectTimeout  : 60 * 60 * 1000,
+    //     acquireTimeout  : 60 * 60 * 1000,
+    //     timeout         : 60 * 60 * 1000,        
+    //     host: "localhost",
+    //     user: "root",
+    //     password: "",
+    //     database: "oxytra",
+    //     port: 3306
+    // });
+
     //Remote DB
     pool = mysql.createPool({
         connectionLimit: 30,
@@ -522,7 +535,7 @@ function insertTicketData(conn, ticket, runid, callback) {
     let ticket_no = ticket.recid;
 
     var insertSql = `INSERT INTO tickets_tbl (source, destination, source1, destination1, trip_type, departure_date_time, arrival_date_time, flight_no, terminal, departure_date_time1, arrival_date_time1, flight_no1, terminal1, terminal2, terminal3, no_of_person, max_no_of_person, no_of_stops, stops_name, no_of_stops1, stops_name1, class, class1, airline, airline1, aircode, aircode1, pnr, ticket_no, price, baggage, meal, markup, admin_markup, discount, total, sale_type, refundable, availibility, user_id, remarks, approved, available, data_collected_from, last_sync_key, companyid, created_by) 
-    VALUES ('${ticket.departure.id}','${ticket.arrival.id}',0,0,'ONE','${deptDate}','${arrvDate}','${ticket.flight_number}','NA','${emptyDate}','${emptyDate}','','','','',${ticket.availability},${ticket.availability},0,'NA',0,'NA','${ticket.ticket_type.toUpperCase()}','','${ticket.flight_id}',0,'${ticket.flight}','','','TKT-${ticket_no}',${ticket.price},0,0,0,300,0,${ticket.price},'request','N',${ticket.availability},104,'',0,'${ticket.availability>0?'YES':'NO'}', 'mpt', '${runid}', ${DEFAULT_COMPANY_ID}, ${DEFAULT_USER_ID})`;
+    VALUES ('${ticket.departure.id}','${ticket.arrival.id}',0,0,'ONE','${deptDate}','${arrvDate}','${ticket.flight_number}','NA','${emptyDate}','${emptyDate}','','','','',${ticket.availability},${ticket.availability},0,'NA',0,'NA','${(ticket.ticket_type)?ticket.ticket_type.toUpperCase():'ECONOMY'}','','${ticket.flight_id}',0,'${ticket.flight}','','','TKT-${ticket_no}',${ticket.price},0,0,0,300,0,${ticket.price},'request','N',${ticket.availability},104,'',0,'${ticket.availability>0?'YES':'NO'}', 'mpt', '${runid}', ${DEFAULT_COMPANY_ID}, ${DEFAULT_USER_ID})`;
     //console.log(insertSql);
     return new Promise((resolve, reject) => {
         try

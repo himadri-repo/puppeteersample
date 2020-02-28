@@ -98,14 +98,14 @@ export class MPTCrawler {
                     flight_number: dataItem.flight_number,
                     departure: {
                         id: -1,
-                        circle: await this._getCircleName(dataItem.sector_name, 0, '-').then(result => result).catch(reason => Logger.log('error', reason)),
+                        circle: await this._getCircleName(dataItem.sector_name, 0, ['-',' ', 'to']).then(result => result).catch(reason => Logger.log('error', reason)),
                         time: dataItem.departure_time,
                         date: moment(dataItem.departure_at).format("YYYY-MM-DD"),
                         epoch_date: await this._getDate(moment(dataItem.departure_at).format("YYYY-MM-DD"), dataItem.departure_time).then(result => result).catch(reason => Logger.log('error', reason))
                     },
                     arrival: {
                         id: -1,
-                        circle: await this._getCircleName(dataItem.sector_name, 1, '-').then(result => result).catch(reason => Logger.log('error', reason)),
+                        circle: await this._getCircleName(dataItem.sector_name, 1, ['-', ' ', 'to']).then(result => result).catch(reason => Logger.log('error', reason)),
                         time: dataItem.departure_time,
                         date: moment(dataItem.departure_at).format("YYYY-MM-DD"),
                         epoch_date: await this._getDate(moment(dataItem.departure_at).format("YYYY-MM-DD"), dataItem.departure_time).then(result => result).catch(reason => Logger.log('error', reason))
@@ -130,12 +130,17 @@ export class MPTCrawler {
         return parsedDataSet;
     }
 
-    async _getCircleName(circle, index, delimeter='to') {
+    async _getCircleName(circle, index, delimeters=['-',' ','to']) {
         let circleName = '';
-        if(circle!==null && circle!==undefined && circle.indexOf(delimeter)>-1) {
-            let circles = circle.split(delimeter);
-            if(circles.length>0) {
-                circleName = circles[index].trim();
+
+        for (let idx = 0; idx < delimeters.length; idx++) {
+            const delimeter = delimeters[idx];
+            if(circle!==null && circle!==undefined && circle.indexOf(delimeter)>-1) {
+                let circles = circle.split(delimeter);
+                if(circles.length>0) {
+                    circleName = circles[index].trim();
+                    break;
+                }
             }
         }
 
