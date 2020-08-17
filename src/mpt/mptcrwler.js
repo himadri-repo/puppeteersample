@@ -93,6 +93,9 @@ export class MPTCrawler {
             try
             {
                 let dataItem = data[i];
+                if(dataItem.departure_time === null) {
+                    dataItem.departure_time = "00:00";
+                }
                 parsedRecord = {
                     flight: dataItem.airline.name,
                     flight_number: dataItem.flight_number,

@@ -543,7 +543,7 @@ function insertTicketData(conn, ticket, runid, callback) {
             conn.query(insertSql, function (err, data) {
                 if (err) {
                     console.log(err);
-                    reject(e);
+                    reject(err);
                 }
                 else {
                     insertStatus = data;
