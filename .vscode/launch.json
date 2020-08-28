@@ -84,5 +84,11 @@
             "name": "Launch GSHEET Program",
             "program": "${workspaceFolder}/src/gsheet/indexgsheet.js"
         },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch SNG Program",
+            "program": "${workspaceFolder}/indexsng.js"
+        }
    ]
 }
