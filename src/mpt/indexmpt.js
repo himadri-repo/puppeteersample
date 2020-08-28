@@ -68,12 +68,12 @@ function startProcess(token) {
 }
 
 var excutionStarted = false;
-// cron.schedule("*/20 * * * *", function() {
-//     Logger.log("info", "Cron started");
-//     if(excutionStarted) {
-//         Logger.log("info", 'Previous process still running ...');
-//         return false;
-//     }
+cron.schedule("*/5 * * * *", function() {
+    Logger.log("info", "Cron started");
+    if(excutionStarted) {
+        Logger.log("info", 'Previous process still running ...');
+        return false;
+    }
 
     try
     {
@@ -82,6 +82,7 @@ var excutionStarted = false;
             Logger.log('info','Unhandled Rejection at:', reason);
         });
         startProcess();
+        console.log("Process done");
         //login();
     }
     catch(e) {
@@ -90,6 +91,6 @@ var excutionStarted = false;
     finally {
         excutionStarted = false;
     }
-// });
+});
 
-// app.listen("3236");
+app.listen("3236");

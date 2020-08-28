@@ -129,6 +129,7 @@ export class E2FCrawler {
 
     async _getCircleName(circle, index) {
         let circleName = '';
+        circle = circle.toLowerCase();
         if(circle!==null && circle!==undefined && circle.indexOf('to')>-1) {
             let circles = circle.split('to');
             if(circles.length>0) {

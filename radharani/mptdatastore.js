@@ -6,6 +6,7 @@ const moment = require('moment');
 const DEFAULT_COMPANY_ID = 1;
 const DEFAULT_USER_ID = 104;
 var pool = null;
+// import {Logger} from '../dist/mpt/mptcrwler';
 
 function getDBPool() {
     if(pool) return pool;

@@ -22,6 +22,19 @@ function getDBPool() {
     //     port: 3306
     // });
 
+    //Local DB
+    // pool = mysql.createPool({
+    //     connectionLimit : 30,
+    //     connectTimeout  : 60 * 60 * 1000,
+    //     acquireTimeout  : 60 * 60 * 1000,
+    //     timeout         : 60 * 60 * 1000,        
+    //     host: "localhost",
+    //     user: "root",
+    //     password: "",
+    //     database: "oxytra",
+    //     port: 3306
+    // });    
+
     //Remote DB
     pool = mysql.createPool({
         connectionLimit: 30,
@@ -729,8 +742,14 @@ function saveCity(conn, city, callback) {
         try
         {
             conn.query(qry, function(err, data) {
-                if(callback)
-                    callback(data.insertId);
+                if(callback) {
+                    if(data) {
+                        callback(data.insertId);
+                    }
+                    else if(err) {
+                        console.log(err);
+                    }
+                }
             });
         }
         catch(e) {

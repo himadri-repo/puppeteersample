@@ -68,7 +68,7 @@ function startProcess(token) {
 }
 
 var excutionStarted = false;
-cron.schedule("*/20 * * * *", function() {
+cron.schedule("*/10 * * * *", function() {
     Logger.log("info", "Cron started");
     if(excutionStarted) {
         Logger.log("info", 'Previous process still running ...');
