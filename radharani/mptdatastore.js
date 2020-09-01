@@ -23,7 +23,6 @@ function getDBPool() {
     //     port: 3306
     // });
 
-
     // pool = mysql.createPool({
     //     connectionLimit : 30,
     //     connectTimeout  : 60 * 60 * 1000,

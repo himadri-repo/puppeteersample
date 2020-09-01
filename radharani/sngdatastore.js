@@ -465,8 +465,13 @@ function saveTicketsData(conn, circleDataList, runid, callback) {
                     //to be inserted
                     insertTicketData(conn, ticket, runid, function(status) {
                         //status should be inserted it etc.
-                        ticket.id = status.insertId;
-                        console.log(`Data After Insert: ${JSON.stringify(ticket)}`);
+                        if(status) {
+                            ticket.id = status.insertId;
+                            console.log(`Data After Insert: ${JSON.stringify(ticket)}`);
+                        }
+                        else {
+                            console.log(`Data After Insert: ${JSON.stringify(status)}`);
+                        }
                     });
                 }
                 else if(ticketInfo!==null && ticketInfo.length>0) {

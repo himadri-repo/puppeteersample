@@ -19,7 +19,7 @@ function login() {
 
     let mptcrawler = new MPTCrawler({url: '', output: 'json'});
     let response = mptcrawler.getData({url: 'https://fd.metropolitantravels.com/api/flights?_=1557470967694', data: {
-        email:"info@oxytra.com",
+        email:"radharaniholidays@gmail.com",
         pwd:"Sumit@12356"
     }});
 

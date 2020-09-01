@@ -66,7 +66,8 @@ function contentParser(content, store, runid, option) {
     try
     {
         // let src_dest = content.match(/^([a-zA-Z0-9].*)$/gm);
-        let src_dest = content.match(/([a-zA-Z0-9,].*)$/gm);
+        //let src_dest = content.match(/([a-zA-Z0-9,].*)$/gm);
+        let src_dest = content.trim().split('\n');
         
         let disp_date = null;
         let rate = 0.00;
@@ -84,22 +85,11 @@ function contentParser(content, store, runid, option) {
                     //this is disp date
                     disp_date = data.trim();
                     break;
-                case 6:
+                case 9:
                     //this is rate
                     rate = parseFloat(data.replace(',', '').trim());
                     break;
-                // case 2:
-                //     //this is flight number
-                //     flight_number = data.trim();
-                //     let flightParts = flight_number.split('-');
-                //     if(flightParts!==null && flightParts.length>0) {
-                //         deal.flight = flightParts[0].trim();
-                //     }
-                //     else {
-                //         deal.flight = 'TMZ FLIGHT';
-                //     }
-                //     break;
-                case 3:
+                case 4:
                     //this is both time (start and end)
                     times = data.trim().replace('-',' ').split(' ');
                     if(times && times.length>0)
@@ -107,11 +97,7 @@ function contentParser(content, store, runid, option) {
                     if(times && times.length>1)
                         end_time = times[1].trim();
                     break;
-                // case 4:
-                //     //this is flight number
-                //     end_time = data.trim();
-                //     break;
-                case 5:
+                case 7:
                     //this is available seats
                     qty = parseInt(data.trim());
                     break;
@@ -475,13 +461,13 @@ module.exports = {
                         {
                             id: 1,
                             controlid: '',
-                            delaybefore: 100,
+                            delaybefore: 500,
                             selector: 'body > div.main-agileits > div.sub-main > form > select',
                             checkcontent: '',
                             type: 'select',
                             value: '${data}',
                             action: 'select',
-                            delayafter: 500,
+                            delayafter: 1000,
                             checkselector: '',
                             next: 5
                         },
