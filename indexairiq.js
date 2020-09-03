@@ -1221,13 +1221,13 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 //     });
 // }
 
-var excutionStarted = false;
-cron.schedule("*/5 * * * *", function() {
-    log("Cron started");
-    if(excutionStarted) {
-        log('Previous process still running ...');
-        return false;
-    }
+// var excutionStarted = false;
+// cron.schedule("*/5 * * * *", function() {
+//     log("Cron started");
+//     if(excutionStarted) {
+//         log('Previous process still running ...');
+//         return false;
+//     }
 
     try
     {
@@ -1275,6 +1275,6 @@ cron.schedule("*/5 * * * *", function() {
         log(e);
         excutionStarted = false;
     }
-});
+// });
 
-app.listen("3131");
+// app.listen("3131");

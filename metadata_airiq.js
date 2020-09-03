@@ -60,7 +60,7 @@ function contentParser(content) {
             deal.ticket_type = 'Economy';
         }
         else {
-            deal.flight = '';
+            deal.flight = 'SPL_000-000';
             deal.flight_number = 'AIQ-000';
             deal.ticket_type = 'Economy';
         }

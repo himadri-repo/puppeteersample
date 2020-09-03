@@ -22,18 +22,19 @@ function getDBPool() {
     //     port: 3306
     // });
 
+    //Local DB
     // pool = mysql.createPool({
     //     connectionLimit : 30,
     //     connectTimeout  : 60 * 60 * 1000,
     //     acquireTimeout  : 60 * 60 * 1000,
     //     timeout         : 60 * 60 * 1000,        
-    //     host: "139.59.92.9",
-    //     user: "oxyusr",
-    //     password: "oxy@123",
+    //     host: "localhost",
+    //     user: "root",
+    //     password: "",
     //     database: "oxytra",
     //     port: 3306
-    // });
-
+    // });    
+    
     //Remote DB
     pool = mysql.createPool({
         connectionLimit: 30,
