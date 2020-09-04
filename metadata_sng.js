@@ -85,11 +85,14 @@ function contentParser(content, store, runid, option) {
                     //this is disp date
                     disp_date = data.trim();
                     break;
-                case 9:
+                case 4:
+                    flight_number = data.trim().toUpperCase();
+                    deal.flight = data.trim().substr(0,2).toUpperCase();
+                case 10:
                     //this is rate
                     rate = parseFloat(data.replace(',', '').trim());
                     break;
-                case 4:
+                case 5:
                     //this is both time (start and end)
                     times = data.trim().replace('-',' ').split(' ');
                     if(times && times.length>0)
@@ -97,7 +100,7 @@ function contentParser(content, store, runid, option) {
                     if(times && times.length>1)
                         end_time = times[1].trim();
                     break;
-                case 7:
+                case 8:
                     //this is available seats
                     qty = parseInt(data.trim());
                     break;
