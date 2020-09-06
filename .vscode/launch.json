@@ -89,6 +89,12 @@
             "request": "launch",
             "name": "Launch SNG Program",
             "program": "${workspaceFolder}/indexsng.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch RTT Program",
+            "program": "${workspaceFolder}/indexrtt.js"
         }
    ]
 }
