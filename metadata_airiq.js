@@ -56,12 +56,12 @@ function contentParser(content) {
         if(src_dest!==null && src_dest!==undefined && src_dest.length>0) {
             let classValue = `Class (${src_dest[0].replace('(','').replace(')','')})`;
             deal.flight = classValue;
-            deal.flight_number = 'AIQ-000';
+            deal.flight_number = 'SPL-000';
             deal.ticket_type = 'Economy';
         }
         else {
             deal.flight = 'SPL_000-000';
-            deal.flight_number = 'AIQ-000';
+            deal.flight_number = 'SPL-000';
             deal.ticket_type = 'Economy';
         }
 
