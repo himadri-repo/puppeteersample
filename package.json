@@ -7,6 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node indexairiq.js",
     "start-sng": "node indexsng.js",
+    "start-rtt": "node indexrtt.js",
+    "start-tgtt": "node indextgtt.js",
     "start-tmz": "node indextmz.js",
     "start-indr": "node indexindr.js",
     "serve-nept": "node dist/nept/index.js",

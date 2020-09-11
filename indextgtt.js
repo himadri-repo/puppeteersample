@@ -8,7 +8,7 @@ const fs = require("fs");
 
 const uuidv4 = require('uuid/v4');
 const puppeteer = require('puppeteer');
-const metadata = require('./metadata_rtt');
+const metadata = require('./metadata_tgtt');
 const delay = require('delay');
 const moment = require('moment');
 const winston = require('winston');
@@ -40,10 +40,10 @@ var timeFormatFn = function() {
 };
 
 winston.configure({
-    defaultMeta: {service: 'indexrtt-crawler'},
-    format: combine(label({label: 'rttcrawler'}), timestamp(), myFormat),
+    defaultMeta: {service: 'indextgtt-crawler'},
+    format: combine(label({label: 'tgttcrawler'}), timestamp(), myFormat),
     transports:[
-       new winston.transports.File({filename: `rtt_execution_log_${moment().format("D_M_YYYY")}.log`, })
+       new winston.transports.File({filename: `tgtt_execution_log_${moment().format("D_M_YYYY")}.log`, })
     ]
 });
 
@@ -92,7 +92,7 @@ function log() {
 
 async function takeSnapshot(filename) {
     var time = moment().format("HH_mm_ss_SSS");
-    await page.screenshot({path: `RTT_${filename}-${time}.png`});
+    await page.screenshot({path: `TGTT_${filename}-${time}.png`});
 }
 
 let pageLoaded = true;
@@ -244,6 +244,8 @@ async function navigatePage(pageName) {
                         //await page.waitFor(200);
                         if(val.haspostback!==undefined && val.haspostback!==null && val.haspostback) {
                             //log(`N01 : haspostback? ${val.selector}`);
+                            await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch((reason) => log(reason.message));
+
                             if(!pageLoaded) {
                                 //log(`N01 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
                                 
@@ -301,7 +303,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
 
         await navigatePage(targetUri);
         log('Page navigated...');
-        //await takeSnapshot('RTT_Page_Navigated');
+        //await takeSnapshot('TGTT_Page_Navigated');
 
         if(browser!==null && page!==null) {
             //log('URL -> ' + page.url());
@@ -402,15 +404,23 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                         let options = {};
                         if(src_dest!==null && src_dest.length>1) {
                             key = (src_dest[0].trim() + '_' + src_dest[1].trim());
+                            options = {'source': src_dest[0].trim(), 'destination': src_dest[1].trim(), 'key': key};
+                        }
+                        else {
+                            key = (src_dest[0].trim());
+                            options = {'source': '', 'destination': '', 'key': key};
+                        }
+
+                        if(src_dest!==null && src_dest.length>0) {
                             let storeData = getStore();
                             storeData[key]=[];
                             storeData.attributes = [];
                             //storeData.currentKey = {'source': src_dest[0].trim(), 'destination': src_dest[1].trim(), 'key': key};
-                            options = {'source': src_dest[0].trim(), 'destination': src_dest[1].trim(), 'key': key};
+                            // options = {'source': src_dest[0].trim(), 'destination': src_dest[1].trim(), 'key': key};
                         }
 
                         log(`${i} - ${repeatsourceDataValue}`);
-                        //await takeSnapshot(`RTT_${repeatsourceDataValue}`);
+                        //await takeSnapshot(`TGTT_${repeatsourceDataValue}`);
 
                         //remove false from here, this is just for testing.
                         if(pageConfig.actions[0].userinputs.length>0) {
@@ -795,6 +805,8 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, option
                         //await page.waitFor(200);
                         if(userInput.haspostback!==undefined && userInput.haspostback!==null && userInput.haspostback) {
                             //log(`N03 : haspostback? ${userInput.selector}`);
+                            await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch((reason) => log(reason.message));
+
                             if(!pageLoaded) {
                                 //log(`N03 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
                                 await page.hackyWaitForFunction(async (isLoaded) => {
@@ -930,7 +942,7 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, option
                         }
                         //await objPage.click(userInput.selector);
                         if(userInput.selector) {
-                            //log('1', userInput.selector);
+                            log('1', userInput.selector, keyedValue);
                             //let inputControl = await objPage.$(userInput.selector).catch((reason)=> log(reason));
                             // let inputControl = await page.$(userInput.selector).catch((reason)=> log(reason));
                             // //let inputControl = await page.evaluate((selector) => document.querySelector(selector).click(), userInput.selector);
@@ -945,18 +957,26 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, option
                                 
                             // }, userInput).catch(reason => log(`E9 => ${reason}`));;
 
+                            // Below code works in all the crawl so far
                             await page.select(userInput.selector, keyedValue);
+                            // let id = userInput.selector.replace('#', '');
+                            // const option = (await page.$x(
+                            //     '//*[@id = "' + id + '"]/option[text() = "' + keyedValue + '"]'
+                            //   ))[0];
+                            // const value = await (await option.getProperty('value')).jsonValue();
+                            // await page.select(userInput.selector, value);
+                            // await page.click().catch((reason) => log(reason.message));
                         }
                         // await page.keyboard.type(keyedValue).catch(reason => log(`E11 => ${reason}`));
                         if(userInput.delayafter>-1)
                             delay = userInput.delayafter;
     
                         await page.waitFor(delay).catch(reason => log(`E12 => ${reason}`)); //400
-                        //log(`performUserOperation ${userInput.action} KEY CODE SENT`, keyedValue);
+                        log(`performUserOperation ${userInput.action} KEY CODE SENT`, keyedValue);
                     }
                 }
                 catch(ex) {
-                    log(ex);
+                    log(`Error in Select : ${ex}`);
                 }
                 break;
             default:
@@ -964,7 +984,7 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, option
         }
     }
     catch(fe) {
-        log(fe);
+        log(`Error in performUserOperation : ${fe}`);
         throw fe;
     }
     //log(`End of == performUserOperation ${userInput.action} starting`);
@@ -1077,6 +1097,8 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                         //await page.waitFor(200);
                         if(task.haspostback!==undefined && task.haspostback!==null && task.haspostback) {
                             //log(`N02 : haspostback? ${task.selector}`);
+                            await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch((reason) => log(reason.message));
+
                             if(!pageLoaded) {
                                 //log(`N02 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
                                 let previousLoadValue = pageLoaded;
@@ -1330,13 +1352,14 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
             log('Unhandled Rejection at:', reason);
             // Recommended: send the information to sentry.io
             // or whatever crash reporting service you use
+            promise.resolve();
         });
 
         let runid = `${uuidv4()}_${moment().format("DD-MMM-YYYY HH:mm:ss.SSS")}`;
         //let crawlingUri = "https://www.neptunenext.com/agent/general/index";
         //let crawlingUri = "https://airiq.in/Admin/Search.aspx";
         //let crawlingUri = "https://www.tripmaza.com/App/DealPage2A.aspx";
-        let crawlingUri = "http://rttfd.in/";
+        let crawlingUri = "http://transglobalholidays.com/pre-purchased/";
         //let crawlingUri = "https://www.tripmaza.com/signin.aspx";
         
         ProcessActivity(crawlingUri, runid).then(()=> {
@@ -1357,7 +1380,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                 //process.exit(0);
                 excutionStarted = false;
             }
-            return;
+            return true;
         }).catch((reason) => {
             log(reason);
             log(JSON.stringify(capturedData));
@@ -1373,4 +1396,4 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
     }
 // });
 
-// app.listen("5142");
+// app.listen("5145");

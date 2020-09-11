@@ -1,7 +1,7 @@
 //jshint esversion: 6
 var colors = require('colors');
 const moment = require('moment');
-const { parseTwoDigitYear } = require('moment');
+// const { parseTwoDigitYear } = require('moment');
 
 const ALLOWPERSIST = true;
 
@@ -18,10 +18,22 @@ function repeatSource(elementData) {
         //let strreg = /\w+( \/ )\w+/gm;
         //let strreg = /[0-9a-zA-Z ]*( \/ )[0-9a-zA-Z ]*/gm;
         //let strreg = /[0-9a-zA-Z ]{3}(-)[0-9a-zA-Z ]{3}/gm;
-        let strreg = /^[a-zA-Z]*-[a-zA-Z]*$/gm;
+        
+        //let strreg = /[0-9a-zA-Z]*( - )[0-9a-zA-Z]*/gm;
+        let strreg = /value="\d+"/gm;
         
         //data = elementData.match(strreg).map((val, idx) => val.replace(' - ',' / '));
-        data = elementData.match(strreg).map((val, idx) => val.trim());
+        data = elementData.match(strreg).map((val, idx) => {
+            try
+            {
+                let strreg = /\d+/gm;
+                val = val.match(strreg).map((val1, idx1) => val1);
+                return (val && val.length>0) ? val[0].trim() : false;
+            }
+            catch(e) {
+                console.log(`Error in repeatSource method => ${e}`);
+            }
+        });
     }
     catch(e) {
         console.log(e);
@@ -32,6 +44,8 @@ function repeatSource(elementData) {
 
 function parseContent(content, idx, store, runid, option) {
     // console.log(`Data : \n${content}`);
+    if(!content || content==='') return '';
+
     var option = option || {'source': '', 'destination': '', 'key': ''};
     let contentItem = contentParser(content, store, runid, option);
     //console.log(`Data : ${JSON.stringify(contentItem)}`);
@@ -48,6 +62,8 @@ function parseContent(content, idx, store, runid, option) {
 function contentParser(content, store, runid, option) {
     let deal = {};
 
+    if(!content || content==='') return;
+
     try
     {
         // let src_dest = content.match(/^([a-zA-Z0-9].*)$/gm);
@@ -63,51 +79,68 @@ function contentParser(content, store, runid, option) {
         let flight_number = '';
         let start_time = '';
         let end_time = '';
+        let source = '';
+        let destination = '';
         deal.flight = 'SPL';
         deal.ticket_type = 'Economy';
         for (let index = 0; index < src_dest.length; index++) {
             const data = src_dest[index];
 
             switch (index) {
-                case 0:
+                case 1:
                     //this is disp date
                     //disp_date = data.trim();
+                    flight_number = 'SPL_000-000';
+                    sectors = data.trim().split('-');
+                    if(sectors.length>1) {
+                        source = sectors[0].trim();
+                        destination = sectors[1].trim();
+                    }
+                    else {
+                        return '';
+                    }
                     break;
-                case 6:
+                case 5:
                     //this is rate
                     rate = parseFloat(data.replace(',', '').trim());
                     break;
+                // case 2:
+                //     deal.flight = data.trim();
+                //     break;
+                // case 3:
+                //     //this is flight number
+                //     flight_number = data.trim();
+                //     // let flightParts = flight_number.split('-');
+                //     // if(flightParts!==null && flightParts.length>0) {
+                //     //     deal.flight = flightParts[0].trim();
+                //     // }
+                //     // else {
+                //     //     if(!deal.flight || deal.flight==='')
+                //     //         deal.flight = 'SPL';
+                //     // }
+                //     break;
                 case 2:
-                    deal.flight = data.trim();
-                    break;
-                case 3:
                     //this is flight number
-                    flight_number = data.trim();
-                    // let flightParts = flight_number.split('-');
-                    // if(flightParts!==null && flightParts.length>0) {
-                    //     deal.flight = flightParts[0].trim();
-                    // }
-                    // else {
-                    //     if(!deal.flight || deal.flight==='')
-                    //         deal.flight = 'SPL';
-                    // }
-                    break;
-                case 1:
-                    //this is flight number
-                    let dt = data.trim().replace('Hurry !!', '').trim()+'-' + (new Date).getFullYear();
-                    // if(dt && dt.length>0) {
-                    //     let mth = dt[1].trim().toLowerString();
-                    //     if(mth === 'jan' || mth === 'feb')
-                    // }
+                    let dt = data.trim().split(' ');
                     start_time = "00:00";
                     end_time = "00:00";
-                    disp_date = dt;
+                    disp_date = null;
+                    
+                    if(dt && dt.length>0) {
+                        disp_date = dt[0].trim();
+                        start_time = dt[1].trim();
+                        end_time = "00:00";
+                        var time = moment(`${disp_date} ${start_time}`, "DD-MM-YYYY HH:mm");
+                        disp_date = time.format("DD-MMM-YYYY");
+                        start_time = time.format("HH:mm");
+                    }
+                    
                     break;
+                // case 4:
+                //     //this is flight number
+                //     // end_time = data.trim();
+                //     break;
                 case 4:
-                    //this is flight number
-                    // end_time = data.trim();
-                    break;
-                case 8:
                     //this is flight number
                     qty = parseInt(data.trim());
                     break;
@@ -117,8 +150,8 @@ function contentParser(content, store, runid, option) {
         }
         deal.flight_number = flight_number;
         deal.ticket_type = 'Economy';
-        deal.departure = {'circle': option.source, 'date': disp_date, 'time': start_time, 'epoch_date': Date.parse(`${disp_date} ${start_time}`)};
-        deal.arrival = {'circle': option.destination, 'date': disp_date, 'time': end_time, 'epoch_date': Date.parse(`${disp_date} ${end_time}`)};
+        deal.departure = {'circle': source, 'date': disp_date, 'time': start_time, 'epoch_date': Date.parse(`${disp_date} ${start_time}`)};
+        deal.arrival = {'circle': destination, 'date': disp_date, 'time': end_time, 'epoch_date': Date.parse(`${disp_date} ${end_time}`)};
         // deal.departure = {'circle': option.source, 'date': disp_date, 'time': start_time, 'epoch_date': Date.parse(`${start_time}`)};
         // deal.arrival = {'circle': option.destination, 'date': disp_date, 'time': end_time, 'epoch_date': Date.parse(`${end_time}`)};
         deal.availability = qty;
@@ -216,12 +249,13 @@ function assessContent(rawContent, parsedContent, store, runid, idx, option, cal
     let key = null;
 
     var option = option || {'source': '', 'destination': '', 'key': ''};
-    if(!parsedContent.availability || parsedContent.availability===-1 || !parsedContent.arrival.date || !parsedContent.departure.date || parsedContent.price===0) { //data not present
+    if(!parsedContent || !parsedContent.availability || parsedContent.availability===-1 || !parsedContent.arrival.date || !parsedContent.departure.date || parsedContent.price===0) { //data not present
         return parsedContent;
     }
     //console.log(`Assess: ${JSON.stringify(parsedContent)}`);
 
-    key = `${parsedContent.departure.circle}_${parsedContent.arrival.circle}`;
+    // key = `${parsedContent.departure.circle}_${parsedContent.arrival.circle}`;
+    key = option.key;
     if(store!==undefined && store!==null && store[key]!==undefined && store[key]!==null && store[key] instanceof Array) {
         parsedContent.runid = runid;
         if(store.attributes!==undefined && store.attributes!==null && store.attributes.length>idx)
@@ -352,7 +386,7 @@ function assessor(content, result, store, runid, callback) {
 
 function persistDataItem(result, runid, callback) {
     //const datastore = require('./radharani/datastore');
-    const datastore = require('./radharani/rttdatastore');
+    const datastore = require('./radharani/tgttdatastore');
 
     datastore.saveData(result, runid, function(data) {
         //console.log(`Proceed with next record ${JSON.stringify(data)}`);
@@ -362,7 +396,7 @@ function persistDataItem(result, runid, callback) {
 
 function finalizeData(runid, datasourceUrl) {
     //const datastore = require('./radharani/datastore');
-    const datastore = require('./radharani/rttdatastore');
+    const datastore = require('./radharani/tgttdatastore');
     // const datasource = require(datasourceUrl);
 
     try
@@ -380,7 +414,7 @@ function finalizeData(runid, datasourceUrl) {
 }
 
 function circleCrawlingFinished(runid, store, circleKey, callback) {
-    const datastore = require('./radharani/rttdatastore');
+    const datastore = require('./radharani/tgttdatastore');
 
     return new Promise((resolve, reject) => {
         try
@@ -450,73 +484,88 @@ module.exports = {
                     type: 'code',
                     userinputs: [
                         {
-                            id: 1,
+                            id: 0,
                             controlid: '',
-                            selector: 'body > header > div > div > div.login-btn.pull-right > a',
-                            checkcontent: '',
-                            type: 'button',
-                            value: '',
-                            action: 'click',
+                            delaybefore: 100,
+                            selector: '#ccounts',
+                            isarray: false,
+                            /*checkcontent: 'Select from Dropdown',*/
+                            type: 'select', /* hyperlink */
+                            value: '60',
+                            action: 'select', /* click */
+                            checkselector: '#csector',
+                            delayafter: 1800,
                             haspostback: true,
-                            checkselector: '#Name1'
+                            // next: 3 /* 2 */
                         }                        
+                        // {
+                        //     id: 1,
+                        //     controlid: '',
+                        //     selector: 'body > header > div > div > div.login-btn.pull-right > a',
+                        //     checkcontent: '',
+                        //     type: 'button',
+                        //     value: '',
+                        //     action: 'click',
+                        //     haspostback: true,
+                        //     checkselector: '#Name1'
+                        // }
                     ]
                 }
             ]
         },
+        // {
+        //     id: 2,
+        //     name: 'Signin',
+        //     actions: [
+        //         {
+        //             name: 'Signin',
+        //             type: 'authentication',
+        //             userinputs: [
+        //                 {
+        //                     id: 1,
+        //                     controlid: '',
+        //                     selector: '#Name1',
+        //                     checkcontent: '',
+        //                     type: 'textbox',
+        //                     value: 'oxy',
+        //                     action: 'keyed',
+        //                     checkselector: ''
+        //                 },
+        //                 {
+        //                     id: 2,
+        //                     controlid: '',
+        //                     selector: '#email1',
+        //                     checkcontent: '',
+        //                     type: 'textbox',
+        //                     value: 'oxy',
+        //                     action: 'keyed',
+        //                     checkselector: ''
+        //                 },
+        //                 {
+        //                     id: 3,
+        //                     controlid: '',
+        //                     selector: 'body > section.login > div > div > div:nth-child(2) > div > form > div > div:nth-child(6) > div > button',
+        //                     checkcontent: '',
+        //                     type: 'button',
+        //                     value: '',
+        //                     action: 'click',
+        //                     haspostback: true,
+        //                     checkselector: '#add-listing > div > div.row.with-forms > div.col-md-8 > select'
+        //                 }
+        //             ]
+        //         }
+        //     ]
+        // },
         {
             id: 2,
-            name: 'Signin',
-            actions: [
-                {
-                    name: 'Signin',
-                    type: 'authentication',
-                    userinputs: [
-                        {
-                            id: 1,
-                            controlid: '',
-                            selector: '#Name1',
-                            checkcontent: '',
-                            type: 'textbox',
-                            value: 'oxy',
-                            action: 'keyed',
-                            checkselector: ''
-                        },
-                        {
-                            id: 2,
-                            controlid: '',
-                            selector: '#email1',
-                            checkcontent: '',
-                            type: 'textbox',
-                            value: 'oxy',
-                            action: 'keyed',
-                            checkselector: ''
-                        },
-                        {
-                            id: 3,
-                            controlid: '',
-                            selector: 'body > section.login > div > div > div:nth-child(2) > div > form > div > div:nth-child(6) > div > button',
-                            checkcontent: '',
-                            type: 'button',
-                            value: '',
-                            action: 'click',
-                            haspostback: true,
-                            checkselector: '#add-listing > div > div.row.with-forms > div.col-md-8 > select'
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            id: 3,
             name: 'DealPage2A',
             actions: [
                 {
                     name: 'DealPage2A',
                     type: 'code',
                     repeat: true,
-                    repeatsourceselector: '#add-listing > div > div.row.with-forms > div.col-md-8 > select', /* Correct value : #ctl00_mainbody_Panel1*//*#ctl00_mainbody_Panel1 > div > .ChngColor > a > span*/
-                    repeatsourceContentType: 'text', /* html */
+                    repeatsourceselector: '#csector', /* Correct value : #ctl00_mainbody_Panel1*//*#ctl00_mainbody_Panel1 > div > .ChngColor > a > span*/
+                    repeatsourceContentType: 'html', /* html | text*/
                     repeatsource: repeatSource,
                     userinputs: [
                         // {
@@ -535,15 +584,16 @@ module.exports = {
                         {
                             id: 0,
                             controlid: '',
-                            delaybefore: 100,
-                            selector: '#add-listing > div > div.row.with-forms > div.col-md-8 > select',
+                            delaybefore: 300,
+                            selector: '#csector',
                             isarray: false,
                             /*checkcontent: 'Select from Dropdown',*/
-                            type: 'select', /* hyperlink */
+                            type: 'select', /* hyperlink textbox*/
                             value: '${data}',
-                            action: 'select', /* click */
+                            action: 'select', /* keyed | click */
                             checkselector: '',
-                            delayafter: -1,
+                            haspostback: false,
+                            delayafter: 1800,
                             next: 3 /* 2 */
                         },
                         // {
@@ -576,15 +626,15 @@ module.exports = {
                             id: 3,
                             controlid: '',
                             delaybefore: 100,
-                            selector: '#add-listing > div > div.row.with-forms > div.col-md-4 > button',
+                            selector: 'body > section > div.row > div > p',
                             isarray: false,
                             checkcontent: '',
                             type: '',
                             value: '',
                             action: 'click',
                             haspostback: true,
-                            delayafter: 800,
-                            checkselector: 'body > div.container > div > div.col-md-12 > div > table > tbody:nth-child(2)',
+                            delayafter: 600,
+                            checkselector: 'body > section > div.container.add-bottom35 > div > div > div.table-responsive > table > tbody',
                             next: 5
                         },
                         // {
@@ -604,7 +654,7 @@ module.exports = {
                         {
                             id: 5,
                             controlid: '',
-                            selector: 'body > div.container > div > div.col-md-12 > div > table > tbody:nth-child(2)',
+                            selector: 'body > section > div.container.add-bottom35 > div > div > div.table-responsive > table > tbody',
                             isarray: true,
                             checkcontent: '',
                             type: '',
@@ -616,7 +666,7 @@ module.exports = {
                                     task_id: 1,
                                     task_name: 'read content',
                                     action: 'read',
-                                    selector: `body > div.container > div > div.col-md-12 > div > table > tbody:nth-child(2) > tr > td:nth-last-child(-n+1) > a`,
+                                    selector: `body > section > div.container.add-bottom35 > div > div > div.table-responsive > table > tbody > tr > td:nth-child(n) > a`,
                                     read_type: 'attributes',
                                     attributes: ['href'],
                                     plugins: [
@@ -624,7 +674,7 @@ module.exports = {
                                             parser: function(content) {
                                                 //.flit-detls tr .tble_item1_txt>input[type=hidden i]
                                                 //console.log(`attr value - ${JSON.stringify(content)}`);
-                                                let strreg = /\d*$/gm;
+                                                let strreg = /\d+/gm;
         
                                                 //data = elementData.match(strreg).map((val, idx) => val.replace(' - ',' / '));
                                                 data = content.value.match(strreg).map((val, idx) => val.trim());
@@ -654,7 +704,7 @@ module.exports = {
                                     task_id: 2,
                                     task_name: 'read content',
                                     action: 'read',
-                                    selector: `body > div.container > div > div.col-md-12 > div > table > tbody:nth-child(2) > tr`, /*.flit-detls*/ 
+                                    selector: `body > section > div.container.add-bottom35 > div > div > div.table-responsive > table > tbody > tr:nth-child(odd)`, /*.flit-detls*/ 
                                     read_type: 'inner-text',
                                     plugins: [
                                         {

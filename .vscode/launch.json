@@ -95,6 +95,12 @@
             "request": "launch",
             "name": "Launch RTT Program",
             "program": "${workspaceFolder}/indexrtt.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch TGTT Program",
+            "program": "${workspaceFolder}/indextgtt.js"
         }
    ]
 }
