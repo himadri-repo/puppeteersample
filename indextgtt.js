@@ -64,7 +64,7 @@ const USERINPUT = {
 app = express();
 
 const TIMEOUT = 10000;
-const POSTBACK_TIMEOUT = 8000;
+const POSTBACK_TIMEOUT = 12000;
 const POLLINGDELAY = 300;
 
 var browser = null;
