@@ -438,8 +438,12 @@ function circleCrawlingFinished(runid, store, circleKey, callback) {
                         let deptId = circleData[0].departure.id;
                         let arrvId = circleData[0].arrival.id;
                         let records = circleData.length;
+
+                        resolve(circleData);
+
                         //let cdata = circleData;
                         //updatedRecs = store[circleKey];
+
                         let clearEmptyStock = datastore.updateExhaustedCircleInventory(runid, deptId, arrvId, function(status) {
                             if(status!==null && status!==undefined) {
                                 let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
@@ -447,7 +451,7 @@ function circleCrawlingFinished(runid, store, circleKey, callback) {
                                 if(callback) {
                                     callback(msg);
                                 }
-
+                                console.log(`Circle data exhaused and cleared`);
                                 resolve(circleData);
                             }
                             else {

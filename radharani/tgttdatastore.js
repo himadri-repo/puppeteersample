@@ -8,7 +8,7 @@ const DEFAULT_USER_ID = 104;
 var pool = null;
 
 function getDBPool() {
-    if(pool) return pool;
+    if(pool && !pool._closed) return pool;
 
     //Local DB
     // pool = mysql.createPool({
@@ -23,28 +23,30 @@ function getDBPool() {
     // });
 
     // Local DB
+    // pool = mysql.createPool({
+    //     connectionLimit : 2,
+    //     connectTimeout  : 60 * 60 * 1000,
+    //     acquireTimeout  : 60 * 60 * 1000,
+    //     timeout         : 60 * 60 * 1000,        
+    //     host: "localhost",
+    //     user: "root",
+    //     password: "",
+    //     database: "oxytra",
+    //     port: 3306
+    // });    
+
+    //Remote DB
     pool = mysql.createPool({
-        connectionLimit : 30,
+        connectionLimit: 2,
         connectTimeout  : 60 * 60 * 1000,
         acquireTimeout  : 60 * 60 * 1000,
         timeout         : 60 * 60 * 1000,        
-        host: "localhost",
-        user: "root",
-        password: "",
+        host: "www.oxytra.com",
+        user: "oxyusr",
+        password: "oxy@321-#",
         database: "oxytra",
         port: 3306
-    });    
-
-    //Remote DB
-    // pool = mysql.createPool({
-    //     connectionLimit: 30,
-    //     connectTimeout: 15000,
-    //     host: "www.oxytra.com",
-    //     user: "oxyusr",
-    //     password: "oxy@321-#",
-    //     database: "oxytra",
-    //     port: 3306
-    // });
+    });
 
     return pool;
 }
@@ -354,11 +356,14 @@ function getAirlines(conn, callback) {
 }
 
 function updateExhaustedCircleInventory(runid, deptid, arrvid, callback) {
-    getDBPool().getConnection(function(err, conn) {
+    let pool = getDBPool();
+
+    pool.getConnection(function(err, conn) {
         try
         {
             if(err) {
                 console.log(err);
+                callback(null);
             }
             let currentDate = moment.utc(new Date().toGMTString()).format("YYYY-MM-DD HH:mm:ss"); //moment(new Date()).format("YYYY-MM-DD HH:mm");
             
@@ -370,11 +375,20 @@ function updateExhaustedCircleInventory(runid, deptid, arrvid, callback) {
                         console.log(err);
                     }
                     conn.release();
+                    conn.destroy();
+                    pool.end((err) => {
+                        if(err) {
+                            console.log(`Unable to end the pool ${err}`);
+                        }
+                        if(callback) {
+                            callback(data);
+                        }
+                    });
 
                     //console.log(JSON.stringify(data));
-                    if(callback) {
-                        callback(data);
-                    }
+                    // if(callback) {
+                    //     callback(data);
+                    // }
                 });
             }
             catch(e1) {
@@ -406,7 +420,8 @@ function updateExhaustedCircleInventory(runid, deptid, arrvid, callback) {
 
 function saveCircleBatchData(runid, circleData, circleKey, callback) {
     let impactedRecCount = 0;
-    getDBPool().getConnection(function(err, con) {
+    let pool = getDBPool();
+    pool.getConnection(function(err, con) {
         try
         {
             if(err) {
@@ -434,9 +449,15 @@ function saveCircleBatchData(runid, circleData, circleKey, callback) {
                             let circleDataList = transformCircleData(con, circleData, cities);
                             saveTicketsData(con, circleDataList, runid, function(status) {
                                 con.release();
-                                if(callback) {
-                                    callback(circleDataList);
-                                }
+                                con.destroy();
+                                pool.end((err) => {
+                                    if(err) {
+                                        console.log(`Unable to end the pool ${err}`);
+                                    }
+                                    if(callback) {
+                                        callback(circleDataList);
+                                    }
+                                });
                                 //con.destroy();
                             });
                         });

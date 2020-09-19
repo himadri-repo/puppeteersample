@@ -64,7 +64,7 @@ const USERINPUT = {
 app = express();
 
 const TIMEOUT = 10000;
-const POSTBACK_TIMEOUT = 12000;
+const POSTBACK_TIMEOUT = 8000;
 const POLLINGDELAY = 300;
 
 var browser = null;
@@ -230,17 +230,17 @@ async function navigatePage(pageName) {
                         //log('Going to click');
                         await page.click(val.selector).then(function(val1, val2) {
                             //log('Click finished');
-                        });
+                        }).catch((reason) => log(`Error : Click | ${reason}`));
                         //log('Clicked');
                         await page.keyboard.type(val.value).then(function(val1, val2) {
                             //log('Key pressed');
-                        });
+                        }).catch((reason) => log(`Error : KeyPress | ${reason}`));
                         //log('Keyed');
                     }
                     else if(val.action==='click') { 
                         let chkControl = null;
                         pageLoaded = false;
-                        await page.click(val.selector);
+                        await page.click(val.selector).catch((reason) => log(`Error | click : ${reason}`));
                         //await page.waitFor(200);
                         if(val.haspostback!==undefined && val.haspostback!==null && val.haspostback) {
                             //log(`N01 : haspostback? ${val.selector}`);
@@ -261,7 +261,7 @@ async function navigatePage(pageName) {
                                     //await takeSnapshot('N01');
                                     chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
                                     if(chkControl===null || chkControl===undefined)
-                                        await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
+                                        await page.waitFor(1000).catch((reason) => log(`Error : WaitFor | ${reason}`)); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                                 });    
                             }
                         }
@@ -542,7 +542,12 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                         }).catch(reason => {
                             log(`Error: ${reason}`);
                         });
-                        //log(`Next operation ${i} starting`);
+                        log(`Next operation ${i} starting`);
+                        
+                        // if(i>2) {
+                        //     i=999; pageIdx=999;
+                        //     log(`Breaking the process - temporary`);
+                        // }
                     }
                 }
             }
@@ -805,6 +810,7 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, option
                         //await page.waitFor(200);
                         if(userInput.haspostback!==undefined && userInput.haspostback!==null && userInput.haspostback) {
                             //log(`N03 : haspostback? ${userInput.selector}`);
+                            log(`Page loaded ? ${pageLoaded}`);
                             await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch((reason) => log(reason.message));
 
                             if(!pageLoaded) {
@@ -820,9 +826,9 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, option
                                     log(`N03 = ${reason} - ${pageLoaded}`); 
                                     //await takeSnapshot('N03');
                                     if(userInput && userInput.checkselector!==null && userInput.checkselector!==undefined && userInput.checkselector!=='')
-                                        chkControl = await page.$(userInput.checkselector).catch((reason)=> log(reason));
+                                        chkControl = await page.$(userInput.checkselector).catch((reason)=> log(`Error check selector | ${reason}`));
                                     if(chkControl===null || chkControl===undefined)
-                                        await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
+                                        await page.waitFor(1000).catch((reason) => log(`Error waitFor: ${reason}`)); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                                 });    
 
                                 // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
@@ -1116,7 +1122,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                                     //await takeSnapshot('N02');
                                     // chkControl = await page.$(task.checkselector).catch((reason)=> log(reason));
                                     // if(chkControl===null || chkControl===undefined)
-                                    await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
+                                    await page.waitFor(1000).catch((reason) => log(`Error : WaitFor : ${reason}`)); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                                 });
                             }
                         }
@@ -1335,13 +1341,13 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 //     });
 // }
 
-// var excutionStarted = false;
-// cron.schedule("*/10 * * * *", function() {
-//     log("Cron started");
-//     if(excutionStarted) {
-//         log('Previous process still running ...');
-//         return false;
-//     }
+var excutionStarted = false;
+cron.schedule("*/10 * * * *", function() {
+    log("Cron started");
+    if(excutionStarted) {
+        log('Previous process still running ...');
+        return false;
+    }
 
     try
     {
@@ -1394,6 +1400,6 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
         log(e);
         excutionStarted = false;
     }
-// });
+});
 
-// app.listen("5145");
+app.listen("5145");
