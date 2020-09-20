@@ -811,7 +811,9 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, option
                         if(userInput.haspostback!==undefined && userInput.haspostback!==null && userInput.haspostback) {
                             //log(`N03 : haspostback? ${userInput.selector}`);
                             log(`Page loaded ? ${pageLoaded}`);
-                            await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch((reason) => log(reason.message));
+                            if(!pageLoaded) {
+                                await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch((reason) => log(reason.message));
+                            }
 
                             if(!pageLoaded) {
                                 //log(`N03 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
