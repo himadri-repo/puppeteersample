@@ -98,17 +98,17 @@ async function navigatePage(pageName) {
                 return;
             });
         //const page = await browser.newPage();
-        let pages = await browser.pages();
-        page = pages.length>0?pages[0]:await browser.newPage();
+        let pages = await browser.pages().catch((reason) => log(`Error in browser.pages ${reason}`));
+        page = pages.length>0?pages[0]:await browser.newPage().catch((reason) => log(`Error in browser.newPage ${reason}`));
         //log('after new page created');
-        await page.setViewport({ width: 1366, height: 768});
+        await page.setViewport({ width: 1366, height: 768}).catch((reason) => log(`Error in page.setViewport ${reason}`));
         log('after view port');
         /*page.setRequestInterception(true);
         page.on("load", interceptedRequest => {
             log("Load -> " + interceptedRequest.url());
         });*/
         //const response = await page.goto("https://github.com/login");
-        await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1");
+        await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1").catch((reason) => log(`Error in page.setUserAgent ${reason}`));
         //let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
         //let response = await page.goto(pageName, {waitUntil:'load'}); //wait for 10 secs as timeout
         // let response = await page.goto(pageName, {waitUntil:'load'}).catch(async (reason) => {
@@ -242,10 +242,13 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
         if(targetUri===undefined || targetUri===null || targetUri==="")
             return;
 
-        await navigatePage(targetUri);
-        log('Page navigated...');
+        await navigatePage(targetUri).catch((reason) => {
+            log(`Error in navigation ${reason}`);
+        });
+
         if(browser!==null && page!==null) {
             //log('URL -> ' + page.url());
+            log('Page navigated...');
 
             for(pageIdx=1; pageIdx<metadata.pages.length; pageIdx++) {
                 pageConfig = metadata.pages[pageIdx];
@@ -472,8 +475,13 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                 }
             }
 
-            await browser.close();
+            if(browser) {
+                await browser.close().catch((reason) => log(`Browser close : ${reason}`));
+            }
             log('Operation completed');
+        }
+        else {
+            log(`Browser or Page is null`);
         }
     }
     catch(fe) {
@@ -1173,6 +1181,12 @@ cron.schedule("*/5 * * * *", function() {
     {
         excutionStarted = true;
         capturedData = {};
+
+        process.on('uncaughtExceptionMonitor', (err, origin) => {
+            // MyMonitoringTool.logSync(err, origin);
+            log(`Unhandled exception : Error : ${JSON.stringify(err)} | Origin : ${origin}`);
+        });        
+
         process.on('unhandledRejection', (reason, promise) => {
             //log('Unhandled Rejection at:', reason.stack || reason);
             log('Unhandled Rejection at:', reason);
@@ -1184,7 +1198,8 @@ cron.schedule("*/5 * * * *", function() {
         //let crawlingUri = "https://www.neptunenext.com/agent/general/index";
         //let crawlingUri = "https://airiq.in/Admin/Search.aspx";
         let crawlingUri = "http://www.makeourholiday.com/AgentLogin.aspx";
-        
+        log(`Starting the crawl - ${runid}`);
+
         ProcessActivity(crawlingUri, runid).then(()=> {
             //what to do after the promise being called
             try
@@ -1217,10 +1232,13 @@ cron.schedule("*/5 * * * *", function() {
         }).catch((reason) => {
             log(reason);
             log(JSON.stringify(capturedData));
+            excutionStarted = false;
             //log('Closing Browser');
             //page.waitFor(500);
-            excutionStarted = false;
             //browser.close();
+        }).finally(() => {
+            log('Process Activity finally called');
+            excutionStarted = false;
         });
     }
     catch(e) {
