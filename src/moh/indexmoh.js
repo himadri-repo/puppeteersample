@@ -85,30 +85,36 @@ let pageLoaded = true;
 async function navigatePage(pageName) {
     try
     {
-        //log('before launch of browser');
+        log('before launch of browser');
         browser = await puppeteer.launch(
             {
                 headless:true,
                 ignoreHTTPSErrors: true,
                 ignoreDefaultArgs: ['--enable-automation'],
-                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
+                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox'],
+                timeout: 30000
                 //args: ['--start-fullscreen']
             }).catch((reason) => {
                 log(reason);
                 return;
             });
         //const page = await browser.newPage();
+        log('Browser launched');
         let pages = await browser.pages().catch((reason) => log(`Error in browser.pages ${reason}`));
+        log('Got the pages');
         page = pages.length>0?pages[0]:await browser.newPage().catch((reason) => log(`Error in browser.newPage ${reason}`));
-        //log('after new page created');
+        log('after new page created');
         await page.setViewport({ width: 1366, height: 768}).catch((reason) => log(`Error in page.setViewport ${reason}`));
-        log('after view port');
+        log('after setting viewport');
+        await page.setCacheEnabled(true).catch((reason) => log(`Cache enable Error : ${reason}`));
+        log('after cache enabled');
         /*page.setRequestInterception(true);
         page.on("load", interceptedRequest => {
             log("Load -> " + interceptedRequest.url());
         });*/
         //const response = await page.goto("https://github.com/login");
         await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1").catch((reason) => log(`Error in page.setUserAgent ${reason}`));
+        log('user agent set');
         //let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
         //let response = await page.goto(pageName, {waitUntil:'load'}); //wait for 10 secs as timeout
         // let response = await page.goto(pageName, {waitUntil:'load'}).catch(async (reason) => {
@@ -187,11 +193,11 @@ async function navigatePage(pageName) {
                     // //log('Keyed');
                     await page.type(val.selector, val.value, {delay: 20}).then((val1, val2) => {
                         log(`Text typed : ${val.selector} - ${val.value}`);
-                    });
+                    }).catch((reason) => log(`page.type Error : ${reason}`));
                 }
                 else if(val.action==='click') { 
                     pageLoaded = false;
-                    await page.click(val.selector);
+                    await page.click(val.selector).catch((reason) => log(`page.click Error ${reason}`));
                     //await page.waitFor(200);
                     if(val.haspostback!==undefined && val.haspostback!==null && val.haspostback) {
                         //log(`N01 : haspostback? ${val.selector}`);
@@ -205,7 +211,7 @@ async function navigatePage(pageName) {
                             }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
                                 log(`N01 = ${reason} - ${pageLoaded}`); 
                                 //await takeSnapshot('N01');
-                                await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
+                                await page.waitFor(1000).catch(reason => log(`page.waitFor Error : ${reason}`)); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                             });    
 
                             // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 

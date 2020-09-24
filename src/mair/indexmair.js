@@ -85,31 +85,35 @@ let pageLoaded = true;
 async function navigatePage(pageName) {
     try
     {
-        //log('before launch of browser');
+        log('before launch of browser');
         browser = await puppeteer.launch(
             {
                 headless:true,
                 ignoreHTTPSErrors: true,
                 ignoreDefaultArgs: ['--enable-automation'],
-                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
+                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox'],
+                timeout: 30000
                 //args: ['--start-fullscreen']
             }).catch((reason) => {
                 log(reason);
                 return;
             });
         //const page = await browser.newPage();
-        let pages = await browser.pages();
-        page = pages.length>0?pages[0]:await browser.newPage();
-        //log('after new page created');
-        await page.setViewport({ width: 1366, height: 768});
-        await page.setCacheEnabled(true);
-        log('after view port');
+        log('Browser launched');
+        let pages = await browser.pages().catch((reason) => log(`Error in browser.pages ${reason}`));
+        log('Got the pages');
+        page = pages.length>0?pages[0]:await browser.newPage().catch((reason) => log(`Error in browser.newPage ${reason}`));
+        log('after new page created');
+        await page.setViewport({ width: 1366, height: 768}).catch((reason) => log(`Error in page.setViewport ${reason}`));
+        log('after setting viewport');
+        await page.setCacheEnabled(true).catch((reason) => log(`Cache enable Error : ${reason}`));
+        log('after cache enabled');
         /*page.setRequestInterception(true);
         page.on("load", interceptedRequest => {
             log("Load -> " + interceptedRequest.url());
         });*/
         //const response = await page.goto("https://github.com/login");
-        await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1");
+        await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1").catch((reason) => log(`Error in page.setUserAgent ${reason}`));
         //let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
         let response = await page.goto(pageName, {waitUntil:'load', timeout:40000}).catch(async (reason) => {
             log(`Navigation error : ${reason}`);
@@ -164,8 +168,8 @@ async function navigatePage(pageName) {
 
         //log(`Page Config : ${JSON.stringify(pageConfig)}`);
 
-        // await page.waitFor(5000).catch((reason) => { log(`Error -> ${reason}`)});
-        // log('Waited for 5secs more');
+        await page.waitFor(5000).catch((reason) => { log(`Error -> ${reason}`)});
+        log('Waited for 5secs more');
 
         for(var iidx=0; iidx<actionItem.userinputs.length; iidx++) {
             try
@@ -186,12 +190,12 @@ async function navigatePage(pageName) {
                     // //log('Keyed');
                     await page.type(val.selector, val.value, {delay: 20}).then((val1, val2) => {
                         log(`Text typed : ${val.selector} - ${val.value}`);
-                    });
+                    }).catch((reason) => log(`page.type Error : ${reason}`));
                 }
                 else if(val.action==='click') { 
                     pageLoaded = false;
                     //log(`Button clicking`);
-                    await page.click(val.selector);
+                    await page.click(val.selector).catch((reason) => log(`page.click Error ${reason}`));
                     //log(`Button clicked`);
                     //await page.waitFor(200);
                     if(val.haspostback!==undefined && val.haspostback!==null && val.haspostback) {
@@ -206,7 +210,7 @@ async function navigatePage(pageName) {
                             }, {polling: 50, timeout: POSTBACK_TIMEOUT}, pageLoaded).catch(async (reason) => { 
                                 log(`N01 = ${reason} - ${pageLoaded}`); 
                                 //await takeSnapshot('N01');
-                                await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
+                                await page.waitFor(1000).catch(reason => log(`page.waitFor Error : ${reason}`)); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
                             });    
 
                             // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
@@ -245,11 +249,14 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
         if(targetUri===undefined || targetUri===null || targetUri==="")
             return;
 
-        await navigatePage(targetUri);
-        log('Page navigated...');
+        await navigatePage(targetUri).catch((reason) => {
+            log(`Error in navigation ${reason}`);
+        });
+
         //takeSnapshot('After_navigating_out_login');
         if(browser!==null && page!==null) {
             //log('URL -> ' + page.url());
+            log('Page navigated...');
 
             for(pageIdx=1; pageIdx<metadata.pages.length; pageIdx++) {
                 pageConfig = metadata.pages[pageIdx];
@@ -475,7 +482,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                                     log(keyName, `Count => ${getStore()[keyName].length}`);
                                 }
                                 catch(eex) {
-                                    log(keyName, `Error (ProcessActivity) ${eex}`);
+                                    log('Error', `Error (ProcessActivity) ${eex}`);
                                 }
                             }
                             log(`Next operation ${i} starting`);
@@ -1185,6 +1192,12 @@ cron.schedule("*/5 * * * *", function() {
     {
         excutionStarted = true;
         capturedData = {};
+
+        process.on('uncaughtExceptionMonitor', (err, origin) => {
+            // MyMonitoringTool.logSync(err, origin);
+            log(`Unhandled exception : Error : ${JSON.stringify(err)} | Origin : ${origin}`);
+        });        
+
         process.on('unhandledRejection', (reason, promise) => {
             //log('Unhandled Rejection at:', reason.stack || reason);
             log('Unhandled Rejection at:', reason);
@@ -1197,6 +1210,7 @@ cron.schedule("*/5 * * * *", function() {
         //let crawlingUri = "https://airiq.in/Admin/Search.aspx";
         //let crawlingUri = "http://www.makeourholiday.com/AgentLogin.aspx";
         let crawlingUri = "http://www.mittalair.com/AgentLogin.aspx";
+        log(`Starting the crawl - ${runid}`);
         
         ProcessActivity(crawlingUri, runid).then(()=> {
             //what to do after the promise being called
@@ -1215,8 +1229,8 @@ cron.schedule("*/5 * * * *", function() {
                 // });
 
                 process.removeAllListeners("unhandledRejection");
-                process.removeAllListeners('exit');
-                process.removeAllListeners();
+                // process.removeAllListeners('exit');
+                // process.removeAllListeners();
                 //process.listeners("unhandledRejection").
             }
             catch(e) {
@@ -1234,6 +1248,9 @@ cron.schedule("*/5 * * * *", function() {
             //page.waitFor(500);
             excutionStarted = false;
             //browser.close();
+        }).finally(() => {
+            log('Process Activity finally called');
+            excutionStarted = false;
         });
     }
     catch(e) {
