@@ -105,7 +105,8 @@ async function navigatePage(pageName) {
                 headless:true,
                 ignoreHTTPSErrors: true,
                 ignoreDefaultArgs: ['--enable-automation'],
-                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
+                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox'],
+                timeout:  30000
             }).catch((reason) => {
                 log(reason);
                 return;
@@ -279,7 +280,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
         if(targetUri===undefined || targetUri===null || targetUri==="")
             return;
 
-        await navigatePage(targetUri);
+        await navigatePage(targetUri).catch((reason) => log(`navigation error | Error : ${reason}`));
         //log('Page navigated...');
         if(browser!==null && page!==null) {
             //log('URL -> ' + page.url());
@@ -1221,13 +1222,13 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 //     });
 // }
 
-// var excutionStarted = false;
-// cron.schedule("*/5 * * * *", function() {
-//     log("Cron started");
-//     if(excutionStarted) {
-//         log('Previous process still running ...');
-//         return false;
-//     }
+var excutionStarted = false;
+cron.schedule("*/5 * * * *", function() {
+    log("Cron started");
+    if(excutionStarted) {
+        log('Previous process still running ...');
+        return false;
+    }
 
     try
     {
@@ -1275,6 +1276,6 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
         log(e);
         excutionStarted = false;
     }
-// });
+});
 
-// app.listen("3131");
+app.listen("3131");
