@@ -5,32 +5,36 @@
 const cron = require("node-cron");
 const express = require("express");
 const fs = require("fs");
+const logger = require('../common/logger').Logger;
+
+logger.init('moh');
+// logger.setApplicationName('mohcrawler');
 
 const uuidv4 = require('uuid/v4');
 const puppeteer = require('puppeteer');
 const metadata = require('./metadata_moh');
 const delay = require('delay');
 const moment = require('moment');
-const winston = require('winston');
-const {combine, timestamp, label, printf} = winston.format;
-const DailyRotateFile = require('winston-daily-rotate-file');
+// const winston = require('winston');
+// const {combine, timestamp, label, printf} = winston.format;
+// const DailyRotateFile = require('winston-daily-rotate-file');
 
-const myFormat = printf(({ level, message, label, timestamp }) => {
-    return `${timestamp} [${label}] ${level}: ${message}`;
-});
+// const myFormat = printf(({ level, message, label, timestamp }) => {
+//     return `${timestamp} [${label}] ${level}: ${message}`;
+// });
 
 var timeFormatFn = function() {
     'use strict';
     return moment().format(cfg.timeFormat);
 };
 
-winston.configure({
-    defaultMeta: {service: 'indexmoh-crawler'},
-    format: combine(label({label: 'mohcrawler'}), timestamp(), myFormat),
-    transports:[
-       new winston.transports.File({filename: `moh_execution_log_${moment().format("D_M_YYYY")}.log`, })
-    ]
-});
+// winston.configure({
+//     defaultMeta: {service: 'indexmoh-crawler'},
+//     format: combine(label({label: 'mohcrawler'}), timestamp(), myFormat),
+//     transports:[
+//        new winston.transports.File({filename: `moh_execution_log_${moment().format("D_M_YYYY")}.log`, })
+//     ]
+// });
 
 const USERINPUT = {
     id: 1,
@@ -73,7 +77,9 @@ function log() {
 
     args.unshift(time);
     console.log.apply(console, args);
-    winston.info(args.join(' '));
+    //winston.info(args.join(' '));
+    var msg = args.join(' ');
+    logger.log('info', msg);
 }
 
 async function takeSnapshot(filename) {

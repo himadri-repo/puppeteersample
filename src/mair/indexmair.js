@@ -11,26 +11,31 @@ const puppeteer = require('puppeteer');
 const metadata = require('./metadata_mair');
 const delay = require('delay');
 const moment = require('moment');
-const winston = require('winston');
-const {combine, timestamp, label, printf} = winston.format;
-const DailyRotateFile = require('winston-daily-rotate-file');
 
-const myFormat = printf(({ level, message, label, timestamp }) => {
-    return `${timestamp} [${label}] ${level}: ${message}`;
-});
+const logger = require('../common/logger').Logger;
+
+logger.init('mair');
+
+// const winston = require('winston');
+// const {combine, timestamp, label, printf} = winston.format;
+// const DailyRotateFile = require('winston-daily-rotate-file');
+
+// const myFormat = printf(({ level, message, label, timestamp }) => {
+//     return `${timestamp} [${label}] ${level}: ${message}`;
+// });
 
 var timeFormatFn = function() {
     'use strict';
     return moment().format(cfg.timeFormat);
 };
 
-winston.configure({
-    defaultMeta: {service: 'indexmair-crawler'},
-    format: combine(label({label: 'mair'}), timestamp(), myFormat),
-    transports:[
-       new winston.transports.File({filename: `mair_execution_log_${moment().format("D_M_YYYY")}.log`, })
-    ]
-});
+// winston.configure({
+//     defaultMeta: {service: 'indexmair-crawler'},
+//     format: combine(label({label: 'mair'}), timestamp(), myFormat),
+//     transports:[
+//        new winston.transports.File({filename: `mair_execution_log_${moment().format("D_M_YYYY")}.log`, })
+//     ]
+// });
 
 const USERINPUT = {
     id: 1,
@@ -73,7 +78,9 @@ function log() {
 
     args.unshift(time);
     console.log.apply(console, args);
-    winston.info(args.join(' '));
+    //winston.info(args.join(' '));
+    var msg = args.join(' ');
+    logger.log('info', msg);
 }
 
 async function takeSnapshot(filename) {
