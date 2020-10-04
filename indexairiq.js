@@ -11,9 +11,13 @@ const puppeteer = require('puppeteer');
 const metadata = require('./metadata_airiq');
 const delay = require('delay');
 const moment = require('moment');
-const winston = require('winston');
-const {combine, timestamp, label, printf} = winston.format;
-const DailyRotateFile = require('winston-daily-rotate-file');
+// const winston = require('winston');
+// const {combine, timestamp, label, printf} = winston.format;
+// const DailyRotateFile = require('winston-daily-rotate-file');
+
+const logger = require('./src/common/logger').Logger;
+
+logger.init('airiq');
 
 var customLevels = {
     levels: {
@@ -30,22 +34,22 @@ var customLevels = {
     }
 };
 
-const myFormat = printf(({ level, message, label, timestamp }) => {
-    return `${timestamp} [${label}] ${level}: ${message}`;
-});
+// const myFormat = printf(({ level, message, label, timestamp }) => {
+//     return `${timestamp} [${label}] ${level}: ${message}`;
+// });
 
 var timeFormatFn = function() {
     'use strict';
     return moment().format(cfg.timeFormat);
 };
 
-winston.configure({
-    defaultMeta: {service: 'indexairiq-crawler'},
-    format: combine(label({label: 'airiqcrawler'}), timestamp(), myFormat),
-    transports:[
-       new winston.transports.File({filename: `airiq_execution_log_${moment().format("D_M_YYYY")}.log`, })
-    ]
-});
+// winston.configure({
+//     defaultMeta: {service: 'indexairiq-crawler'},
+//     format: combine(label({label: 'airiqcrawler'}), timestamp(), myFormat),
+//     transports:[
+//        new winston.transports.File({filename: `airiq_execution_log_${moment().format("D_M_YYYY")}.log`, })
+//     ]
+// });
 
 const USERINPUT = {
     id: 1,
@@ -63,7 +67,7 @@ const USERINPUT = {
 
 app = express();
 
-const TIMEOUT = 6000;
+const TIMEOUT = 8000;
 const POSTBACK_TIMEOUT = 10000;
 const POLLINGDELAY = 100;
 
@@ -87,7 +91,9 @@ function log() {
 
     args.unshift(time);
     console.log.apply(console, args);
-    winston.info(args.join(' '));
+    //winston.info(args.join(' '));
+    var msg = args.join(' ');
+    logger.log('info', msg);    
 }
 
 async function takeSnapshot(filename) {
@@ -99,34 +105,52 @@ let pageLoaded = true;
 async function navigatePage(pageName) {
     try
     {
-        //log('before launch of browser');
+        log('before launch of browser');
         browser = await puppeteer.launch(
             {
-                headless:true,
+                headless: true,
                 ignoreHTTPSErrors: true,
                 ignoreDefaultArgs: ['--enable-automation'],
                 args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox'],
-                timeout:  30000
+                timeout: 30000
+                //args: ['--start-fullscreen']
             }).catch((reason) => {
                 log(reason);
                 return;
             });
         //const page = await browser.newPage();
-        let pages = await browser.pages();
-        page = pages.length>0?pages[0]:await browser.newPage();
-        //log('after new page created');
-        await page.setViewport({ width: 1366, height: 768});
-        //log('after view port');
+        log('Browser launched');
+        let pages = await browser.pages().catch((reason) => log(`Error in browser.pages ${reason}`));
+        log('Got the pages');
+        page = pages.length>0?pages[0]:await browser.newPage().catch((reason) => log(`Error in browser.newPage ${reason}`));
+        log('after new page created');
+        await page.setViewport({ width: 1366, height: 768}).catch((reason) => log(`Error in page.setViewport ${reason}`));
+        log('after setting viewport');
+        await page.setCacheEnabled(true).catch((reason) => log(`Cache enable Error : ${reason}`));
+        log('after cache enabled');
         /*page.setRequestInterception(true);
         page.on("load", interceptedRequest => {
             log("Load -> " + interceptedRequest.url());
         });*/
         //const response = await page.goto("https://github.com/login");
-        //await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1");
-        await page.setUserAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36");
-
+        await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1").catch((reason) => log(`Error in page.setUserAgent ${reason}`));
+        log('user agent set');
         //let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
-        let response = await page.goto(pageName, {waitUntil:'domcontentloaded', timeout:30000}); //wait for 10 secs as timeout
+        //let response = await page.goto(pageName, {waitUntil:'load'}); //wait for 10 secs as timeout
+        // let response = await page.goto(pageName, {waitUntil:'load'}).catch(async (reason) => {
+        //     log('Navigation error : ${reason}');
+        // }); 
+        // let response = await page.goto(pageName, {waitUntil:['networkidle2', 'load']}).catch(async (reason) => {
+        //     log(`Navigation error : ${reason}`);
+        // }); 
+        let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}).catch(async (reason) => {
+            log(`Navigation error : ${reason}`);
+        }); 
+
+        //log(await page.cookies());
+        //await page.waitForNavigation();
+        //takeSnapshot('After_pageload');
+        log('after navigation done');
         //log(await page.cookies());
         //await page.waitForNavigation();
         //log('after navigation done');
@@ -181,7 +205,11 @@ async function navigatePage(pageName) {
         
               setTimeout(check, polling);
             })
-          }
+        }
+
+        await page.waitFor(5000).catch((reason) => { log(`Error -> ${reason}`)});
+        //takeSnapshot('After_pageload');
+        log('Waited for 5secs more');
 
         /* puppeteer issues*/
         // const elementHandle = await page.$('body').catch((reason)=> log(reason));
@@ -324,7 +352,10 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                                 (pageConfig.actions[0].repeatsourceContentType);
 
                         if(type==='html') {
-                            await page.waitForSelector(pageConfig.actions[0].repeatsourceselector, {timeout: TIMEOUT}).catch(reason => log(`E1 => ${reason}`));
+                            await page.waitForSelector(pageConfig.actions[0].repeatsourceselector, {timeout: TIMEOUT}).catch(async (reason) => {
+                                log(`E1 => ${reason}`);
+                                await takeSnapshot('E1-RepetSelector');
+                            });
                             repeatsourceContent = await page.$eval(pageConfig.actions[0].repeatsourceselector, e => e.innerHTML).catch(reason => log(`E2 => ${reason}`));
                         }
                         else if(type==='text') {
@@ -503,7 +534,9 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                 }
             }
 
-            await browser.close();
+            if(browser) {
+                await browser.close().catch((reason) => log(`Browser close : ${reason}`));
+            }
             log('Operation completed');
         }
     }
@@ -1244,6 +1277,7 @@ cron.schedule("*/5 * * * *", function() {
         let runid = `${uuidv4()}_${moment().format("DD-MMM-YYYY HH:mm:ss.SSS")}`;
         //let crawlingUri = "https://www.neptunenext.com/agent/general/index";
         let crawlingUri = "https://airiq.in/Admin/Search.aspx";
+        log(`Starting the crawl - ${runid}`);
         ProcessActivity(crawlingUri, runid).then(()=> {
             //what to do after the promise being called
             try
@@ -1270,7 +1304,10 @@ cron.schedule("*/5 * * * *", function() {
             //page.waitFor(500);
             excutionStarted = false;
             //browser.close();
-        });
+        }).finally(() => {
+            log('Process Activity finally called');
+            excutionStarted = false;
+        })
     }
     catch(e) {
         log(e);

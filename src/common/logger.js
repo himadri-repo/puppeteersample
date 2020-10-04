@@ -32,7 +32,7 @@ function _init() {
                     datePattern: 'YYYY-MM-DD',
                     prepend: true,
                     zippedArchive: false,
-                    maxSize: '30k',
+                    maxSize: '100m',
                     maxFiles: '3d',
                     json: false,
                     format: winston.format.simple()
@@ -45,7 +45,7 @@ function _init() {
                 datePattern: 'YYYY-MM-DD',  //YYYY-MM-DD-HH
                 prepend: true,
                 zippedArchive: false,
-                maxSize: '30k',
+                maxSize: '100m',
                 maxFiles: '3d',
                 json: false,
                 format: winston.format.simple()                

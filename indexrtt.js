@@ -11,9 +11,13 @@ const puppeteer = require('puppeteer');
 const metadata = require('./metadata_rtt');
 const delay = require('delay');
 const moment = require('moment');
-const winston = require('winston');
-const {combine, timestamp, label, printf} = winston.format;
-const DailyRotateFile = require('winston-daily-rotate-file');
+// const winston = require('winston');
+// const {combine, timestamp, label, printf} = winston.format;
+// const DailyRotateFile = require('winston-daily-rotate-file');
+
+const logger = require('./src/common/logger').Logger;
+logger.init('rtt');
+
 
 var customLevels = {
     levels: {
@@ -30,22 +34,22 @@ var customLevels = {
     }
 };
 
-const myFormat = printf(({ level, message, label, timestamp }) => {
-    return `${timestamp} [${label}] ${level}: ${message}`;
-});
+// const myFormat = printf(({ level, message, label, timestamp }) => {
+//     return `${timestamp} [${label}] ${level}: ${message}`;
+// });
 
 var timeFormatFn = function() {
     'use strict';
     return moment().format(cfg.timeFormat);
 };
 
-winston.configure({
-    defaultMeta: {service: 'indexrtt-crawler'},
-    format: combine(label({label: 'rttcrawler'}), timestamp(), myFormat),
-    transports:[
-       new winston.transports.File({filename: `rtt_execution_log_${moment().format("D_M_YYYY")}.log`, })
-    ]
-});
+// winston.configure({
+//     defaultMeta: {service: 'indexrtt-crawler'},
+//     format: combine(label({label: 'rttcrawler'}), timestamp(), myFormat),
+//     transports:[
+//        new winston.transports.File({filename: `rtt_execution_log_${moment().format("D_M_YYYY")}.log`, })
+//     ]
+// });
 
 const USERINPUT = {
     id: 1,
@@ -87,7 +91,9 @@ function log() {
 
     args.unshift(time);
     console.log.apply(console, args);
-    winston.info(args.join(' '));
+    // winston.info(args.join(' '));
+    var msg = args.join(' ');
+    logger.log('info', msg);
 }
 
 async function takeSnapshot(filename) {
@@ -99,39 +105,51 @@ let pageLoaded = true;
 async function navigatePage(pageName) {
     try
     {
-        //log('before launch of browser');
+        log('before launch of browser');
         browser = await puppeteer.launch(
             {
-                headless: true,
+                headless:true,
                 ignoreHTTPSErrors: true,
                 ignoreDefaultArgs: ['--enable-automation'],
-                // args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
-                args: ['--start-fullscreen']
+                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox'],
+                timeout: 30000
+                //args: ['--start-fullscreen']
             }).catch((reason) => {
                 log(reason);
                 return;
             });
         //const page = await browser.newPage();
-        let pages = await browser.pages();
-        page = pages.length>0?pages[0]:await browser.newPage();
-        //log('after new page created');
-        await page.setViewport({ width: 1366, height: 768});
-        log('view port being set');
+        log('Browser launched');
+        let pages = await browser.pages().catch((reason) => log(`Error in browser.pages ${reason}`));
+        log('Got the pages');
+        page = pages.length>0?pages[0]:await browser.newPage().catch((reason) => log(`Error in browser.newPage ${reason}`));
+        log('after new page created');
+        await page.setViewport({ width: 1366, height: 768}).catch((reason) => log(`Error in page.setViewport ${reason}`));
+        log('after setting viewport');
+        await page.setCacheEnabled(true).catch((reason) => log(`Cache enable Error : ${reason}`));
+        log('after cache enabled');
         /*page.setRequestInterception(true);
         page.on("load", interceptedRequest => {
             log("Load -> " + interceptedRequest.url());
         });*/
         //const response = await page.goto("https://github.com/login");
-        //await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1");
-        await page.setUserAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36");
-
+        await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1").catch((reason) => log(`Error in page.setUserAgent ${reason}`));
+        log('user agent set');
         //let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
-        let response = await page.goto(pageName, {waitUntil:'domcontentloaded', timeout:30000}).catch((reason) => {
-            log(`GOTO request - Exception raised ${reason}`);
+        //let response = await page.goto(pageName, {waitUntil:'load'}); //wait for 10 secs as timeout
+        // let response = await page.goto(pageName, {waitUntil:'load'}).catch(async (reason) => {
+        //     log('Navigation error : ${reason}');
+        // }); 
+        // let response = await page.goto(pageName, {waitUntil:['networkidle2', 'load']}).catch(async (reason) => {
+        //     log(`Navigation error : ${reason}`);
+        // }); 
+        let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}).catch(async (reason) => {
+            log(`Navigation error : ${reason}`);
         }); 
-        //wait for 10 secs as timeout
+
         //log(await page.cookies());
         //await page.waitForNavigation();
+        //takeSnapshot('After_pageload');
         log('after navigation done');
         //assumed page loaded
 
@@ -157,18 +175,6 @@ async function navigatePage(pageName) {
         }
         log('after hackyWaitForFunction function set');
 
-        // try
-        // {
-        //     if(metadata && metadata.pages && metadata.pages.length>0) {
-        //         pageConfig = metadata.pages.find(pg => {
-        //             return response.url().indexOf(pg.name)>-1;
-        //         });
-        //     }
-        // }
-        // catch(ex) {
-        //     log(`Error -> ${ex}`);
-        // }
-        
         page.on('domcontentloaded',()=> {
             log('dom [domcontentloaded] even fired');
             pageLoaded = true;
@@ -299,11 +305,13 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
         if(targetUri===undefined || targetUri===null || targetUri==="")
             return;
 
-        await navigatePage(targetUri);
-        log('Page navigated...');
+        await navigatePage(targetUri).catch((reason) => {
+            log(`Error in navigation ${reason}`);
+        });
         //await takeSnapshot('RTT_Page_Navigated');
 
         if(browser!==null && page!==null) {
+            log('Page navigated...');
             //log('URL -> ' + page.url());
 
             for(pageIdx=0; pageIdx<metadata.pages.length; pageIdx++) {
@@ -424,7 +432,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                             while(iidx<pageConfig.actions[0].userinputs.length) {
                                 var userInput =  pageConfig.actions[0].userinputs[iidx];
                                 
-                                //log(`${repeatsourceDataValue} | Userinputs -> ${iidx} | ${repeatsourceType} | ${userInput.action}`);
+                                log(`${repeatsourceDataValue} | Userinputs -> ${iidx} | ${repeatsourceType} | ${userInput.action}`);
                                 //this is the place we need to use repeat functionality
                                 if(repeatsourceType===null) {
                                     await performUserOperation(page, userInput, null, i, runid, options).catch(reason => log(`E5 => ${reason}`));
@@ -537,7 +545,9 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                 }
             }
 
-            await browser.close();
+            if(browser) {
+                await browser.close().catch((reason) => log(`Browser close : ${reason}`));
+            }
             log('Operation completed');
         }
     }
@@ -608,8 +618,8 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, option
         var onError = false;
         //{'source': src_dest[0].trim(), 'destination': src_dest[1].trim(), 'key': key};
         var option = option || {'source': '', 'destination': '', 'key': ''};
-        //log(`performUserOperation ${userInput.action} starting`);
-        await page.waitFor(delay);
+        log(`performUserOperation ${userInput.action} starting`);
+        await page.waitFor(delay).catch(reason => log(`Error in wait : ${reason}`));
 
         switch (userInput.action) {
             case 'keyed':
@@ -647,13 +657,13 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, option
                         //log('2', userInput.selector);
                         let inputControl = await objPage.$(userInput.selector).catch((reason)=> log(reason));
                         if(inputControl && inputControl.click) {
-                            inputControl.click();
+                            inputControl.click().catch(reason => log(`Error in click : ${reason}`));
                             if(userInput.checkselector!=='' && userInput.checkselector!==null) {
-                                await objPage.waitForSelector(userInput.checkselector, {timeout: TIMEOUT});
+                                await objPage.waitForSelector(userInput.checkselector, {timeout: TIMEOUT}).catch(reason => log(`Error in waitForSelector : ${reason}`));
                             }
                             else
                             {
-                                await delay(200);
+                                await page.waitFor(delay).catch(reason => log(`E121 => ${reason}`)); //400 await delay(200);
                             }
                         }
                     }
@@ -673,21 +683,21 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, option
 
                         if(keyValue!==null && keyValue!=="") {
                             if(overrideEventType==="keydown" || overrideEventType==="down") {
-                                await objPage.keyboard.down(keyValue);
+                                await objPage.keyboard.down(keyValue).catch(reason => log(`Error in key down ${reason}`));
                             }
                             else if(overrideEventType==="keyup" || overrideEventType==="up") {
-                                await objPage.keyboard.up(keyValue);
+                                await objPage.keyboard.up(keyValue).catch(reason => log(`Error in key up ${reason}`));
                             }
                         }
 
                         if(delayValue>0) {
-                            await delay(delayValue);
+                            await page.waitFor(delayValue).catch(reason => log(`E122 => ${reason}`)); //400 await delay(200); // await delay(delayValue);
                         }
                     }
                 }
                 else if(typeof(userInput.value)==='function') { 
                     let fn = userInput.value;
-                    await page.keyboard.type(fn());
+                    await page.keyboard.type(fn()).catch(reason => log(`Error in keyboard : ${reason}`));
                 }
                 break;
             case 'click':
@@ -945,7 +955,7 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, option
                                 
                             // }, userInput).catch(reason => log(`E9 => ${reason}`));;
 
-                            await page.select(userInput.selector, keyedValue);
+                            await page.select(userInput.selector, keyedValue).catch(reason => log(`Error in select : ${reason}`));
                         }
                         // await page.keyboard.type(keyedValue).catch(reason => log(`E11 => ${reason}`));
                         if(userInput.delayafter>-1)
@@ -1313,18 +1323,24 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 //     });
 // }
 
-// var excutionStarted = false;
-// cron.schedule("*/10 * * * *", function() {
-//     log("Cron started");
-//     if(excutionStarted) {
-//         log('Previous process still running ...');
-//         return false;
-//     }
+var excutionStarted = false;
+cron.schedule("*/10 * * * *", function() {
+    log("Cron started");
+    if(excutionStarted) {
+        log('Previous process still running ...');
+        return false;
+    }
 
     try
     {
         excutionStarted = true;
         capturedData = {};
+
+        process.on('uncaughtExceptionMonitor', (err, origin) => {
+            // MyMonitoringTool.logSync(err, origin);
+            log(`Unhandled exception : Error : ${JSON.stringify(err)} | Origin : ${origin}`);
+        });
+
         process.on('unhandledRejection', (reason, promise) => {
             //log('Unhandled Rejection at:', reason.stack || reason);
             log('Unhandled Rejection at:', reason);
@@ -1338,7 +1354,8 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
         //let crawlingUri = "https://www.tripmaza.com/App/DealPage2A.aspx";
         let crawlingUri = "http://rttfd.in/";
         //let crawlingUri = "https://www.tripmaza.com/signin.aspx";
-        
+        log(`Starting the crawl - ${runid}`);
+
         ProcessActivity(crawlingUri, runid).then(()=> {
             //what to do after the promise being called
             try
@@ -1365,12 +1382,15 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
             //page.waitFor(500);
             excutionStarted = false;
             //browser.close();
+        }).finally(() => {
+            log('Process Activity finally called');
+            excutionStarted = false;
         });
     }
     catch(e) {
         log(e);
         excutionStarted = false;
     }
-// });
+});
 
-// app.listen("5142");
+app.listen("5142");

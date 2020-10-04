@@ -382,7 +382,7 @@ function finalizeData(runid, datasourceUrl) {
 function circleCrawlingFinished(runid, store, circleKey, callback) {
     const datastore = require('./radharani/rttdatastore');
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try
         {
             //console.log('circleCrawlingFinished called');
@@ -399,32 +399,33 @@ function circleCrawlingFinished(runid, store, circleKey, callback) {
             //console.log('going to call saveCircleBatchData');
             if(circleKey && store && store[circleKey] && store[circleKey].length>0) {
                 let targetRunId = runid;
-                let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey, function(circleData) {
-                    if(targetRunId!==null && targetRunId!==undefined && circleData.length>0) {
-                        let deptId = circleData[0].departure.id;
-                        let arrvId = circleData[0].arrival.id;
-                        let records = circleData.length;
-                        //let cdata = circleData;
-                        //updatedRecs = store[circleKey];
-                        let clearEmptyStock = datastore.updateExhaustedCircleInventory(runid, deptId, arrvId, function(status) {
-                            if(status!==null && status!==undefined) {
-                                let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
-                                // console.log();
-                                if(callback) {
-                                    callback(msg);
-                                }
+                let circleData = await datastore.saveCircleBatchData(runid, store[circleKey], circleKey); //, async function(circleData) {
+                if(targetRunId!==null && targetRunId!==undefined && circleData && circleData.length>0) {
+                    let deptId = circleData[0].departure.id;
+                    let arrvId = circleData[0].arrival.id;
+                    let records = circleData.length;
+                    //let cdata = circleData;
+                    //updatedRecs = store[circleKey];
+                    let status = await datastore.updateExhaustedCircleInventory(runid, deptId, arrvId); //, function(status) {
+                    if(status!==null && status!==undefined) {
+                        let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
 
-                                resolve(circleData);
-                            }
-                            else {
-                                reject("After exhausted circle inventory, return status invalid");
-                            }
-                        });
+                            console.log(msg);
+                        // if(callback) {
+                        //     callback(msg);
+                        // }
+
+                        resolve(circleData);
                     }
                     else {
-                        reject("Circle data couldn't be saved");
+                        reject("After exhausted circle inventory, return status invalid");
                     }
-                });
+                    //});
+                }
+                else {
+                    reject("Circle data couldn't be saved");
+                }
+                //});
             }
             else {
                 reject("Circle data shouldn't be empty");
