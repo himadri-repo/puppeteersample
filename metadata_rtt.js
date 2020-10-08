@@ -360,14 +360,14 @@ function persistDataItem(result, runid, callback) {
     });
 }
 
-function finalizeData(runid, datasourceUrl) {
+async function finalizeData(runid, datasourceUrl) {
     //const datastore = require('./radharani/datastore');
     const datastore = require('./radharani/rttdatastore');
     // const datasource = require(datasourceUrl);
 
     try
     {
-        datastore.finalization(runid);
+        await datastore.finalization(runid);
 
         // datastore.finalization(runid, function(data) {
         //     console.log(`Proceed with next record ${JSON.stringify(data)}`);
@@ -440,6 +440,7 @@ function circleCrawlingFinished(runid, store, circleKey, callback) {
 }
 
 module.exports = {
+    finalizeData: finalizeData,
     circlecrawlfinished: circleCrawlingFinished,
     pages: [
         {

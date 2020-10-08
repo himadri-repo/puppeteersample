@@ -14,6 +14,9 @@ const moment = require('moment');
 const winston = require('winston');
 const {combine, timestamp, label, printf} = winston.format;
 const DailyRotateFile = require('winston-daily-rotate-file');
+const logger = require('./src/common/logger').Logger;
+
+logger.init('sng');
 
 var customLevels = {
     levels: {
@@ -87,7 +90,9 @@ function log() {
 
     args.unshift(time);
     console.log.apply(console, args);
-    winston.info(args.join(' '));
+    // winston.info(args.join(' '));
+    var msg = args.join(' ');
+    logger.log('info', msg);
 }
 
 async function takeSnapshot(filename) {
@@ -95,8 +100,9 @@ async function takeSnapshot(filename) {
     await page.screenshot({path: `SNG_${filename}-${time}.png`});
 }
 
-let pageLoaded = true;
-async function navigatePage(pageName) {
+
+//let pageLoaded = true;
+async function navigatePage_old(pageName) {
     try
     {
         //log('before launch of browser');
@@ -292,6 +298,203 @@ async function navigatePage(pageName) {
     }
 }
 
+let pageLoaded = true;
+async function navigatePage(pageName) {
+    try
+    {
+        log('before launch of browser');
+        browser = await puppeteer.launch(
+            {
+                headless:true,
+                ignoreHTTPSErrors: true,
+                ignoreDefaultArgs: ['--enable-automation'],
+                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox'],
+                timeout: 30000
+                //args: ['--start-fullscreen']
+            }).catch((reason) => {
+                log(reason);
+                return;
+            });
+        //const page = await browser.newPage();
+        log('Browser launched');
+        let pages = await browser.pages().catch((reason) => log(`Error in browser.pages ${reason}`));
+        log('Got the pages');
+        page = pages.length>0?pages[0]:await browser.newPage().catch((reason) => log(`Error in browser.newPage ${reason}`));
+        log('after new page created');
+        await page.setViewport({ width: 1366, height: 768}).catch((reason) => log(`Error in page.setViewport ${reason}`));
+        log('after setting viewport');
+        await page.setCacheEnabled(true).catch((reason) => log(`Cache enable Error : ${reason}`));
+        log('after cache enabled');
+        /*page.setRequestInterception(true);
+        page.on("load", interceptedRequest => {
+            log("Load -> " + interceptedRequest.url());
+        });*/
+        //const response = await page.goto("https://github.com/login");
+        await page.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1").catch((reason) => log(`Error in page.setUserAgent ${reason}`));
+        log('user agent set');
+        //let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}); //wait for 10 secs as timeout
+        //let response = await page.goto(pageName, {waitUntil:'load'}); //wait for 10 secs as timeout
+        // let response = await page.goto(pageName, {waitUntil:'load'}).catch(async (reason) => {
+        //     log('Navigation error : ${reason}');
+        // }); 
+        // let response = await page.goto(pageName, {waitUntil:['networkidle2', 'load']}).catch(async (reason) => {
+        //     log(`Navigation error : ${reason}`);
+        // }); 
+        let response = await page.goto(pageName, {waitUntil:'load', timeout:30000}).catch(async (reason) => {
+            log(`Navigation error : ${reason}`);
+        }); 
+
+        //log(await page.cookies());
+        //await page.waitForNavigation();
+        //takeSnapshot('After_pageload');
+        log('after navigation done');
+        //assumed page loaded
+
+        page.hackyWaitForFunction = (predicate, opts = {}, isLoadedCtrl=false, chkControl=null) => {
+            const start = new Date()
+            const {timeout = 10000, polling = 10} = opts
+        
+            return new Promise((resolve, reject) => {
+              const check = async () => {
+                const result = await predicate();
+                //console.log(`result => ${result}`);
+                if (result) {
+                  resolve(result);
+                } else if ((new Date() - start) > timeout) {
+                  reject('Function timed out');
+                } else {
+                  setTimeout(check, polling);
+                }
+              }
+        
+              setTimeout(check, polling);
+            })
+        }
+        log('after hackyWaitForFunction function set');
+
+        page.on('domcontentloaded',()=> {
+            log('dom [domcontentloaded] even fired');
+            pageLoaded = true;
+        });
+
+        page.on('load',()=> {
+            log('dom [load] even fired');
+            pageLoaded = true;
+        });
+
+        log('Event handler set');
+
+        //var actionItem = pageConfig.actions[0];
+
+        //block image loading
+        await page.setCacheEnabled(true);
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            let url = req.url().toLowerCase();
+            //log(`Req.Type : ${req.resourceType()} - ${req.url()}`);
+            if(req.resourceType() === 'image' || req.resourceType() === 'font' || url.indexOf('fonts')>-1
+             || url.indexOf('animate')>-1 || url.indexOf('des')>-1 || url.indexOf('tabs')>-1){
+                req.abort();
+            }
+            else {
+                //log(`Req.Type : ${req.resourceType()} - ${req.url()}`);
+                req.continue();
+            }
+        });
+        log('request handler set');
+
+        /* puppeteer issues*/
+        // const elementHandle = await page.$('body').catch((reason)=> log(reason));
+        // elementHandle.constructor.prototype.boundingBox = async function() {
+        //   const box = await this.executionContext().evaluate(element => {
+        //     const rect = element.getBoundingClientRect();
+        //     const x = Math.max(rect.left, 0);
+        //     const width = Math.min(rect.right, window.innerWidth) - x;
+        //     const y = Math.max(rect.top, 0);
+        //     const height = Math.min(rect.bottom, window.innerHeight) - y;
+        //     return { x: x, width: width, y: y, height: height };
+        //   }, this);
+        //   return box;
+        // };
+        // elementHandle.dispose();
+        /*End of fixes */
+
+        //log(actionItem);
+
+        if(actionItem && actionItem.userinputs && actionItem.userinputs.length>0) {
+            for(var iidx=0; iidx<actionItem.userinputs.length; iidx++) {
+                try
+                {
+                    var val = actionItem.userinputs[iidx];
+                    var idx = iidx;
+    
+                    //log(JSON.stringify(val) + ' - ' + idx);
+                    if(val.action==='keyed') {
+                        //log('Going to click');
+                        await page.click(val.selector).then(function(val1, val2) {
+                            //log('Click finished');
+                        });
+                        //log('Clicked');
+                        await page.keyboard.type(val.value).then(function(val1, val2) {
+                            //log('Key pressed');
+                        });
+                        //log('Keyed');
+                    }
+                    else if(val.action==='click') { 
+                        let chkControl = null;
+                        pageLoaded = false;
+                        await page.click(val.selector);
+                        //await page.waitFor(200);
+                        if(val.haspostback!==undefined && val.haspostback!==null && val.haspostback) {
+                            //log(`N01 : haspostback? ${val.selector}`);
+                            if(!pageLoaded) {
+                                //log(`N01 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
+                                
+                                await page.hackyWaitForFunction(async (isLoaded) => {
+                                    //let time = new Date().toLocaleTimeString();
+                                    //console.log(`${time} N01 checking isLoaded ${pageLoaded}`);
+                                    //let chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
+                                    // let chkControl = await page.$eval(val.checkselector, e => e.outerHTML).catch((reason)=> a=1);
+                                    // return (pageLoaded || (chkControl!==null && chkControl!==undefined));
+                                    return pageLoaded;
+                                }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, val.checkselector).catch(async (reason) => { 
+                                    log(`N01 = ${reason} - ${pageLoaded}`); 
+                                    //await takeSnapshot('N01');
+                                    chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
+                                    if(chkControl===null || chkControl===undefined)
+                                        await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
+                                });    
+                            }
+                        }
+                        
+                        if((chkControl===null || chkControl===undefined) && val.checkselector!=='' && val.checkselector!==undefined && val.checkselector!==null) {
+                            
+                            let selectedItem = await page.waitForSelector(val.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
+                                log(`2.eclick - child - ${reason}`);
+                                await takeSnapshot('2_eclick-child');
+                            });
+                            if(selectedItem===null || selectedItem===undefined) {
+                                selectedItem = await page.$(task.checkselector).catch(reason=> log('2_checkselector not found', reason));
+                            }
+                        }
+    
+                        // if(val.checkselector!=='' && val.checkselector!==null) {
+                        //     await page.waitForSelector(val.checkselector, {timeout: TIMEOUT});
+                        // }
+                    }
+                }
+                catch(err) {
+                    log('err1');
+                    log(err);
+                }
+            }
+        }
+    }
+    catch(fe) {
+
+    }
+}
+
 async function ProcessActivity(targetUri, runid=uuid5()) {
     //await navigatePage("https://github.com/login");
     try
@@ -299,7 +502,9 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
         if(targetUri===undefined || targetUri===null || targetUri==="")
             return;
 
-        await navigatePage(targetUri);
+        await navigatePage(targetUri).catch((reason) => {
+            log(`Error in navigation ${reason}`);
+        });
         log('Page navigated...');
         //await takeSnapshot('TMZ_Page_Navigated');
 
@@ -529,20 +734,22 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                         //going for next circle
                         //log('moving to next circle');
                         log(`${key} crawl process finished. Now saving circle data into table.`);
-                        let impactedRows = await metadata.circlecrawlfinished(runid, getStore(), key, function(status) {
-                            log(`Finaliation of ${key} - ${status}`);
-                        }).then(val => {
+                        let status = await metadata.circlecrawlfinished(runid, getStore(), key).then(val => {
+                            log(`Finaliation of ${key}`);
                             log(`Tickets Data: ${JSON.stringify(val)}`);
                         }).catch(reason => {
-                            log(`Error: ${reason}`);
+                            log(`Error: ${reason} | Key: ${key}`);
                         });
                         //log(`Next operation ${i} starting`);
                     }
                 }
             }
 
-            await browser.close();
+            if(browser) {
+                await browser.close().catch((reason) => log(`Browser close : ${reason}`));
+            }
             log('Operation completed');
+            metadata.finalizeData(runid);
         }
     }
     catch(fe) {
@@ -1248,12 +1455,13 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                     {
                         for(var i=0; i<content.length; i++) {
                             let contentItem = content[i];
+                            log('Original Content: ', contentItem, ` - ${i} out of ${content.length}`);
+
                             for(var iidx=0; iidx<task.plugins.length; iidx++) {
                                 let plugin = task.plugins[iidx];
                             // task.plugins.forEach((plugin, iidx) => {
                                 let parsedContent = null;
                                 if(plugin.parser!==null && typeof(plugin.parser)==='function') {
-                                    log('Original Content: ', contentItem);
                                     parsedContent = plugin.parser(contentItem, i, storeData, runid, option);
                                     log('Parsed Content: ', JSON.stringify(parsedContent));
                                     if(parsedContent===null) {

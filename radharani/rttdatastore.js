@@ -979,6 +979,7 @@ function saveCity(conn, city, callback) {
 function saveAirline(conn, airline, callback) {
     // return new Promise((resolve, reject) => {
         let qry = `insert into airline_tbl(aircode, airline, image) values('${airline.substr(0,3).toUpperCase()}', '${airline}', 'flight.png')`;
+        console.log(qry);
 
         try
         {

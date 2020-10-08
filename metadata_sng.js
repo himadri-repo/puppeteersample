@@ -352,14 +352,14 @@ function persistDataItem(result, runid, callback) {
     });
 }
 
-function finalizeData(runid, datasourceUrl) {
+async function finalizeData(runid, datasourceUrl='') {
     //const datastore = require('./radharani/datastore');
     const datastore = require('./radharani/sngdatastore');
     // const datasource = require(datasourceUrl);
 
     try
     {
-        datastore.finalization(runid);
+        await datastore.finalization(runid);
 
         // datastore.finalization(runid, function(data) {
         //     console.log(`Proceed with next record ${JSON.stringify(data)}`);
@@ -369,54 +369,57 @@ function finalizeData(runid, datasourceUrl) {
     catch(e3) {
         console.log(e3);
     }
+
+    return;
 }
 
 function circleCrawlingFinished(runid, store, circleKey, callback) {
     const datastore = require('./radharani/sngdatastore');
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try
         {
             //console.log('circleCrawlingFinished called');
             if(circleKey===null || circleKey===undefined || circleKey==="") {
                 reject(`Invalid circle key passed - circleKey => ${circleKey}`);
-                //return -1;
+                return -1;
             }
 
             if(store[circleKey]===null || store[circleKey]===undefined || !(store[circleKey] instanceof Array)) {
                 reject('Invalid circle data passed');
-                //return -1;
+                return -1;
             }
 
             //console.log('going to call saveCircleBatchData');
             if(circleKey && store && store[circleKey] && store[circleKey].length>0) {
                 let targetRunId = runid;
-                let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey, function(circleData) {
-                    if(targetRunId!==null && targetRunId!==undefined && circleData.length>0) {
-                        let deptId = circleData[0].departure.id;
-                        let arrvId = circleData[0].arrival.id;
-                        let records = circleData.length;
-                        //let cdata = circleData;
-                        //updatedRecs = store[circleKey];
-                        let clearEmptyStock = datastore.updateExhaustedCircleInventory(runid, deptId, arrvId, function(status) {
-                            if(status!==null && status!==undefined) {
-                                let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
-                                // console.log();
-                                if(callback) {
-                                    callback(msg);
-                                }
+                //let returnValue = datastore.saveCircleBatchData(runid, store[circleKey], circleKey, function(circleData) {
+                let circleData = await datastore.saveCircleBatchData(runid, store[circleKey], circleKey); //, function(circleData) {
+                if(targetRunId!==null && targetRunId!==undefined && circleData.length>0) {
+                    let deptId = circleData[0].departure.id;
+                    let arrvId = circleData[0].arrival.id;
+                    let records = circleData.length;
+                    //let cdata = circleData;
+                    //updatedRecs = store[circleKey];
+                    let status = await datastore.updateExhaustedCircleInventory(runid, deptId, arrvId); //, function(status) {
+                    if(status!==null && status!==undefined) {
+                        let msg = `Clear exhausted inventory [${circleData[0].departure.circle}-${circleData[0].arrival.circle} -> ${records}] ${status.affectedRows} - ${status.message})`;
+                        console.log(msg);
+                        // if(callback) {
+                        //     callback(msg);
+                        // }
 
-                                resolve(circleData);
-                            }
-                            else {
-                                reject("After exhausted circle inventory, return status invalid");
-                            }
-                        });
+                        resolve(circleData);
                     }
                     else {
-                        reject("Circle data couldn't be saved");
+                        reject("After exhausted circle inventory, return status invalid");
                     }
-                });
+                    //});
+                }
+                else {
+                    reject("Circle data couldn't be saved");
+                }
+                //});
             }
             else {
                 reject("Circle data shouldn't be empty");
@@ -431,6 +434,7 @@ function circleCrawlingFinished(runid, store, circleKey, callback) {
 }
 
 module.exports = {
+    finalizeData: finalizeData,
     circlecrawlfinished: circleCrawlingFinished,
     pages: [        
         {
@@ -470,7 +474,7 @@ module.exports = {
                             type: 'select',
                             value: '${data}',
                             action: 'select',
-                            delayafter: 1000,
+                            delayafter: 3000,
                             checkselector: '',
                             next: 5
                         },

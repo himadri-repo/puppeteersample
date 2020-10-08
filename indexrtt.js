@@ -549,6 +549,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                 await browser.close().catch((reason) => log(`Browser close : ${reason}`));
             }
             log('Operation completed');
+            metadata.finalizeData(runid);
         }
     }
     catch(fe) {

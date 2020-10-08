@@ -1,0 +1,14 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 3
+    },
+    "auditLog": ".956c674ad5969aac78cf7ca3b7cceb2630d36cc0-audit.json",
+    "files": [
+        {
+            "date": 1602160242456,
+            "name": "sng-Error-2020-10-08.log",
+            "hash": "23bfe89b5e63059ecccf3982a22b3cd4"
+        }
+    ]
+}

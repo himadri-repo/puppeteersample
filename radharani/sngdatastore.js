@@ -1,5 +1,7 @@
 //jshint esversion:6
 //jshint ignore:start
+const logger = require('../src/common/logger').Logger;
+logger.init('sng');
 
 const mysql = require('mysql');
 const moment = require('moment');
@@ -7,8 +9,19 @@ const DEFAULT_COMPANY_ID = 1;
 const DEFAULT_USER_ID = 104;
 var pool = null;
 
+function log() {
+    var time = moment().format("HH:mm:ss.SSS");
+    var args = Array.from(arguments);
+
+    args.unshift(time);
+    console.log.apply(console, args);
+    // winston.info(args.join(' '));
+    var msg = args.join(' ');
+    logger.log('info', msg);
+}
+
 function getDBPool() {
-    if(pool) return pool;
+    if(pool && !pool._closed) return pool;
 
     //Local DB
     // pool = mysql.createPool({
@@ -24,7 +37,7 @@ function getDBPool() {
 
     // Local DB
     // pool = mysql.createPool({
-    //     connectionLimit : 30,
+    //     connectionLimit : 2,
     //     connectTimeout  : 60 * 60 * 1000,
     //     acquireTimeout  : 60 * 60 * 1000,
     //     timeout         : 60 * 60 * 1000,        
@@ -54,11 +67,11 @@ async function saveData(result, runid, callback) {
         try
         {
             if(err) {
-                console.log(err);
+                log(err);
                 await saveData(result, runid, callback);
                 return;
             }
-            //console.log('DB connected');
+            //log('DB connected');
             var srccity = result.departure.circle;
             var dstcity = result.arrival.circle;
             var aircode = result.flight;
@@ -68,18 +81,18 @@ async function saveData(result, runid, callback) {
             var insertStatus = {};
             con.query(sql, function (err, data) {
                 if (err) 
-                    console.log(err);
+                    log(err);
                 let cityid = 0;
                 if(data && data.length) {
                     cityid = data[0].id;
                 }
-                //console.log(JSON.stringify(data));
-                //console.log(`${srccity} & ${dstcity} record inserted`);
+                //log(JSON.stringify(data));
+                //log(`${srccity} & ${dstcity} record inserted`);
                 if(cityid===0) {
                     let insertQry = `INSERT INTO city_tbl ( city, code ) values ('${srccity}', '${srccity}')`;
                     con.query(insertQry, function(err1, data1) {
                         if (err1) 
-                            console.log(err1);
+                            log(err1);
                         insertStatus.firstQueryFeedback = data1;
                     });
                 }
@@ -89,9 +102,9 @@ async function saveData(result, runid, callback) {
                 //sql = `INSERT INTO city_tbl ( city, code ) SELECT '${dstcity}', '${dstcity}' WHERE NOT EXISTS (SELECT * FROM city_tbl WHERE code = '${dstcity}')`;
                 con.query(sql, function (err1, data1) {
                     if (err1) 
-                        console.log(err1);
-                    //console.log(JSON.stringify(data));
-                    //console.log(`${srccity} & ${dstcity} record inserted`);
+                        log(err1);
+                    //log(JSON.stringify(data));
+                    //log(`${srccity} & ${dstcity} record inserted`);
                     cityid=0;
                     
                     if(data1 && data1.length>0) {
@@ -104,9 +117,9 @@ async function saveData(result, runid, callback) {
                         insertQry = `INSERT INTO city_tbl ( city, code ) values ('${dstcity}', '${dstcity}')`;
                         con.query(insertQry, async function (err2, data2) {
                             if (err2) 
-                                console.log(err2);
-                            //console.log(JSON.stringify(data));
-                            //console.log(`${srccity} & ${dstcity} record inserted`);
+                                log(err2);
+                            //log(JSON.stringify(data));
+                            //log(`${srccity} & ${dstcity} record inserted`);
                             insertStatus.secondQueryFeedback = data2;
                         });
                     }
@@ -116,7 +129,7 @@ async function saveData(result, runid, callback) {
                     //sql = `INSERT INTO city_tbl ( city, code ) SELECT '${dstcity}', '${dstcity}' WHERE NOT EXISTS (SELECT * FROM city_tbl WHERE code = '${dstcity}')`;
                     con.query(sql, async function (err2, data2) {
                         if (err2) 
-                            console.log(err2);
+                            log(err2);
                         if(data2 && data2.length>0)
                             airline_id = data2[0].id;
                         
@@ -124,9 +137,9 @@ async function saveData(result, runid, callback) {
                             insertQry = `INSERT INTO airline_tbl (aircode,airline, image) values ('${aircode}','${airline}', 'flight.png')`;
                             con.query(insertQry, async function (err3, data3) {
                                 if (err3) 
-                                    console.log(err3);
-                                //console.log(JSON.stringify(data));
-                                //console.log(`${srccity} & ${dstcity} record inserted`);
+                                    log(err3);
+                                //log(JSON.stringify(data));
+                                //log(`${srccity} & ${dstcity} record inserted`);
                                 insertStatus.thirdQueryFeedback = data3;
                             });
                         }
@@ -146,7 +159,7 @@ async function saveData(result, runid, callback) {
             });
         }
         catch(ex) {
-            console.log(ex);
+            log(ex);
         }
     });
 }
@@ -211,25 +224,25 @@ async function saveTicket(conn, result, runid, callback) {
     var qrySql = `select id from tickets_tbl where source='${result.departure.id}' and destination=${result.arrival.id} and departure_date_time='${deptDate}' and arrival_date_time='${arrvDate}' and airline='${result.flight_id}' and data_collected_from='neptunenext'`;
     conn.query(qrySql, function (err, data) {
         if(err) {
-            console.log(err);
+            log(err);
         }
         let insertStatus = {};
 
-        //console.log((data.length>0?'Update':'Insert') + JSON.stringify(result));
+        //log((data.length>0?'Update':'Insert') + JSON.stringify(result));
         if(data.length>0) {
             //var updateSql = `update tickets_tbl set no_of_person=${result.availability}, max_no_of_person=${result.availability}, availibility= ${result.availability}, price=${result.price}, total=${result.price}+baggage+meal+markup+admin_markup-discount where source='${result.departure.id}' and destination='${result.arrival.id}' and departure_date_time='${deptDate}' and arrival_date_time='${arrvDate}' and airline='${result.flight_id}' and data_collected_from='neptunenext'`;
             var updateSql = `update tickets_tbl set no_of_person=${result.availability}, max_no_of_person=${result.availability}, availibility= ${result.availability}, available='${result.availability>0?'YES':'NO'}', price=${result.price}, total=${result.price}, last_sync_key='${runid}', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where source='${result.departure.id}' and destination='${result.arrival.id}' and departure_date_time='${deptDate}' and arrival_date_time='${arrvDate}' and airline='${result.flight_id}' and data_collected_from='neptunenext'`;
-            //console.log(`Duplicate ticket (${data[0].id}) exists. Updating record.`);
-            //console.log(JSON.stringify(result));
+            //log(`Duplicate ticket (${data[0].id}) exists. Updating record.`);
+            //log(JSON.stringify(result));
 
             conn.query(updateSql, function (err, data) {
                 if (err) {
-                    console.log(err);
+                    log(err);
                 }
                 else {
-                    //console.log(JSON.stringify(data));
-                    //console.log(JSON.stringify(result));
-                    //console.log(`${data.insertId} ticket record inserted - ${JSON.stringify(data)}`);
+                    //log(JSON.stringify(data));
+                    //log(JSON.stringify(result));
+                    //log(`${data.insertId} ticket record inserted - ${JSON.stringify(data)}`);
                     insertStatus = data;
                 }
         
@@ -241,15 +254,15 @@ async function saveTicket(conn, result, runid, callback) {
         else {
             var insertSql = `INSERT INTO tickets_tbl (source, destination, source1, destination1, trip_type, departure_date_time, arrival_date_time, flight_no, terminal, departure_date_time1, arrival_date_time1, flight_no1, terminal1, terminal2, terminal3, no_of_person, max_no_of_person, no_of_stops, stops_name, no_of_stops1, stops_name1, class, class1, airline, airline1, aircode, aircode1, pnr, ticket_no, price, baggage, meal, markup, admin_markup, discount, total, sale_type, refundable, availibility, user_id, remarks, approved, available, data_collected_from, last_sync_key, companyid, created_by) 
             VALUES ('${result.departure.id}','${result.arrival.id}',0,0,'ONE','${deptDate}','${arrvDate}','NPTNX-${result.flight_number}','NA', '${emptyDate}','${emptyDate}','','','','',${result.availability},${result.availability},0,'NA',0,'NA', '${result.ticket_type.toUpperCase()}','','${result.flight_id}',0,'${result.flight}','','','TKT-',${result.price}, 0,0,0,0,0,${result.price},'request','N',${result.availability},${DEFAULT_USER_ID},'',1, '${result.availability>0?'YES':'NO'}', 'neptunenext', '${runid}', ${DEFAULT_COMPANY_ID}, ${DEFAULT_USER_ID})`;
-            //console.log(insertSql);
+            //log(insertSql);
             conn.query(insertSql, function (err, data) {
                 if (err) {
-                    console.log(err);
+                    log(err);
                 }
                 else {
-                    //console.log(JSON.stringify(data));
-                    //console.log(JSON.stringify(result));
-                    //console.log(`${data.insertId} ticket record inserted`);
+                    //log(JSON.stringify(data));
+                    //log(JSON.stringify(result));
+                    //log(`${data.insertId} ticket record inserted`);
                     insertStatus = data;
                 }
         
@@ -262,35 +275,49 @@ async function saveTicket(conn, result, runid, callback) {
 }
 
 function finalization(runid, callback) {
-    getDBPool().getConnection(function(err, conn) {
-        try
-        {
-            if(err) {
-                console.log(err);
-            }
-            let currentDate = moment.utc(new Date().toGMTString()).format("YYYY-MM-DD HH:mm:ss"); //moment(new Date()).format("YYYY-MM-DD HH:mm");
-
-            var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where available='YES' and data_collected_from='sng' and last_sync_key<>'${runid}'`;
-            
-            try {
-                conn.query(sql, function (err, data) {
-                    if (err || data===null || data===undefined) {
-                        console.log(err);
+    return new Promise((resolve, reject) => {
+        try {
+            let pool = getDBPool();
+            pool.getConnection(function(err, conn) {
+                try
+                {
+                    if(err) {
+                        log(err);
                     }
-                    conn.release();
-
-                    //console.log(JSON.stringify(data));
-                    if(callback) {
-                        callback(data);
+                    let currentDate = moment.utc(new Date().toGMTString()).format("YYYY-MM-DD HH:mm:ss"); //moment(new Date()).format("YYYY-MM-DD HH:mm");
+    
+                    var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where available='YES' and data_collected_from='sng' and last_sync_key<>'${runid}'`;
+                    
+                    try {
+                        conn.query(sql, function (err, data) {
+                            if (err || data===null || data===undefined) {
+                                log(err);
+                                reject(err);
+                            }
+                            conn.release();
+                            conn.destroy();
+                            pool.end((err) => {
+                                if(err) {
+                                    log(`Unable to end the pool ${err}`);
+                                }
+                                resolve(data);
+                            });
+                        });
                     }
-                });
-            }
-            catch(e1) {
-                console.log(e1);
-            }
+                    catch(e1) {
+                        log(e1);
+                        reject(e1);
+                    }
+                }
+                catch(ex) {
+                    log(ex);
+                    reject(ex);
+                }
+            });
         }
-        catch(ex) {
-            console.log(ex);
+        catch(ex1) {
+            log(ex1);
+            reject(ex1)
         }
     });
 }
@@ -299,7 +326,7 @@ async function getCity(conn, city, callback) {
     var sql = `select id from city_tbl where code='${city}'`;
     conn.query(sql, function (err, data) {
         if (err || data===null || data===undefined) {
-            console.log(err);
+            log(err);
         }
         if(data!=null && data.length>0) {
             data = data[0].id;
@@ -314,7 +341,7 @@ async function getCities(conn, callback) {
     var sql = `select * from city_tbl`;
     conn.query(sql, function (err, data) {
         if (err || data===null || data===undefined) {
-            console.log(err);
+            log(err);
         }
         if(callback) {
             callback(data);
@@ -327,7 +354,7 @@ async function getAirline(conn, aircode='', callback) {
 
     conn.query(sql, function (err, data) {
         if (err || data===null || data===undefined) {
-            console.log(err);
+            log(err);
         }
 
         if(data!=null && data.length>0) {
@@ -344,7 +371,7 @@ function getAirlines(conn, callback) {
 
     conn.query(sql, function (err, data) {
         if (err || data===null || data===undefined) {
-            console.log(err);
+            log(err);
         }
 
         if(callback) {
@@ -354,36 +381,46 @@ function getAirlines(conn, callback) {
 }
 
 function updateExhaustedCircleInventory(runid, deptid, arrvid, callback) {
-    getDBPool().getConnection(function(err, conn) {
-        try
-        {
-            if(err) {
-                console.log(err);
+    return new Promise((resolve, reject) => {
+        let pool = getDBPool();
+        pool.getConnection(function(err, conn) {
+            try
+            {
+                if(err) {
+                    log(err);
+                    reject(err);
+                    return;
+                }
+                let currentDate = moment.utc(new Date().toGMTString()).format("YYYY-MM-DD HH:mm:ss"); //moment(new Date()).format("YYYY-MM-DD HH:mm");
+                
+                var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where available='YES' and data_collected_from='sng' and source=${deptid} and destination=${arrvid} and last_sync_key<>'${runid}'`;
+                
+                try {
+                    conn.query(sql, function (err, data) {
+                        if (err || data===null || data===undefined) {
+                            log(err);
+                            reject(err);
+                        }
+                        conn.release();
+                        conn.destroy();
+                        pool.end((err) => {
+                            if(err) {
+                                log(`Unable to end the pool ${err}`);
+                            }
+                            resolve(data);
+                        });
+                    });
+                }
+                catch(e1) {
+                    log(e1);
+                    reject(e1)
+                }
             }
-            let currentDate = moment.utc(new Date().toGMTString()).format("YYYY-MM-DD HH:mm:ss"); //moment(new Date()).format("YYYY-MM-DD HH:mm");
-            
-            var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where available='YES' and data_collected_from='sng' and source=${deptid} and destination=${arrvid} and last_sync_key<>'${runid}'`;
-            
-            try {
-                conn.query(sql, function (err, data) {
-                    if (err || data===null || data===undefined) {
-                        console.log(err);
-                    }
-                    conn.release();
-
-                    //console.log(JSON.stringify(data));
-                    if(callback) {
-                        callback(data);
-                    }
-                });
+            catch(ex) {
+                log(ex);
+                reject(ex)
             }
-            catch(e1) {
-                console.log(e1);
-            }
-        }
-        catch(ex) {
-            console.log(ex);
-        }
+        });
     });
 }
 
@@ -399,62 +436,166 @@ function updateExhaustedCircleInventory(runid, deptid, arrvid, callback) {
 //             });
 //         }
 //         catch(e) {
-//             console.log(e);
+//             log(e);
 //         }
 //     // });
 // }
 
+/* Commented saveCircleBatchData
+
 function saveCircleBatchData(runid, circleData, circleKey, callback) {
-    let impactedRecCount = 0;
-    getDBPool().getConnection(function(err, con) {
-        try
-        {
-            if(err) {
-                // throw err;
-                console.log(err);
-                callback(null);
-            }
 
-            //console.log('DB connected');
-
-            let airlines = [];
-            let cities = [];
-            getAirlines(con, function(airlineData) {
-                airlines = airlineData;
-                let missingAirlines = getMissingAirlines(airlines, circleData);
-                saveMissingAirlines(con, missingAirlines, function(updatedAirlines) {
-                    airlines = updatedAirlines;
-                    transformAirlineData(con, circleData, airlines);
-                    //console.log('Got airlines');
-                    getCities(con, function(citiesData) {
-                        cities = citiesData;
-                        let missingCity = getMissingCities(con, cities, circleData)
-                        saveMissingCity(con, missingCity, function(updatedCities) {
-                            cities = updatedCities;
-                            let circleDataList = transformCircleData(con, circleData, cities);
-                            saveTicketsData(con, circleDataList, runid, function(status) {
-                                con.release();
-                                if(callback) {
-                                    callback(circleDataList);
-                                }
-                                //con.destroy();
+    return new Promise((resolve, reject) => {
+        let impactedRecCount = 0;
+        let pool = getDBPool();
+    
+        pool.getConnection(function(err, con) {
+            try
+            {
+                if(err) {
+                    // throw err;
+                    log(err);
+                    callback(null);
+                }
+    
+                //log('DB connected');
+    
+                let airlines = [];
+                let cities = [];
+                getAirlines(con, function(airlineData) {
+                    airlines = airlineData;
+                    let missingAirlines = getMissingAirlines(airlines, circleData);
+                    saveMissingAirlines(con, missingAirlines, function(updatedAirlines) {
+                        airlines = updatedAirlines;
+                        transformAirlineData(con, circleData, airlines);
+                        //log('Got airlines');
+                        getCities(con, function(citiesData) {
+                            cities = citiesData;
+                            let missingCity = getMissingCities(con, cities, circleData)
+                            saveMissingCity(con, missingCity, function(updatedCities) {
+                                cities = updatedCities;
+                                let circleDataList = transformCircleData(con, circleData, cities);
+                                saveTicketsData(con, circleDataList, runid, function(status) {
+                                    con.release();
+                                    if(callback) {
+                                        callback(circleDataList);
+                                    }
+                                    //con.destroy();
+                                });
                             });
                         });
                     });
                 });
-            });
-        }
-        catch(e) {
-            console.log(e);
-            if(callback) {
-                callback(null);
             }
-        }
+            catch(e) {
+                log(e);
+                if(callback) {
+                    callback(null);
+                }
+            }
+        });
     });
 
     return impactedRecCount;
 }
 
+*/
+
+
+function saveCircleBatchData(runid, circleData, circleKey) {
+    return new Promise((resolve, reject) => {
+        let impactedRecCount = 0;
+        let pool = getDBPool();
+        log(`saving batch data ${circleKey}`);
+        pool.getConnection(function(err, con) {
+            try
+            {
+                if(err) {
+                    //throw err;
+                    log(err);
+                    reject(err);
+                    return;
+                }
+    
+                let airlines = [];
+                let cities = [];
+                getAirlines(con, function(airlineData) {
+                    try
+                    {
+                        airlines = airlineData;
+                        let missingAirlines = getMissingAirlines(airlines, circleData);
+                        log(`Missing airlines : ${missingAirlines.length}`);
+                        saveMissingAirlines(con, missingAirlines, function(updatedAirlines) {
+                            try
+                            {
+                                airlines = updatedAirlines;
+                                transformAirlineData(con, circleData, airlines);
+                                log('Got airlines');
+                                getCities(con, function(citiesData) {
+                                    try
+                                    {
+                                        cities = citiesData;
+                                        let missingCity = getMissingCities(con, cities, circleData)
+                                        log(`Missing city : ${missingCity.length}`);
+                                        saveMissingCity(con, missingCity, function(updatedCities) {
+                                            try
+                                            {
+                                                cities = updatedCities;
+                                                let circleDataList = transformCircleData(con, circleData, cities);
+                                                log(`Circle data : ${circleDataList.length}`);
+                                                saveTicketsData(con, circleDataList, runid, function(status) {
+                                                    try
+                                                    {
+                                                        con.release();
+                                                        con.destroy();
+                                                        pool.end((err) => {
+                                                            if(err) {
+                                                                log(`Unable to end the pool ${err}`);
+                                                            }
+                                                            resolve(circleDataList);
+                                                        });
+                                                    }
+                                                    catch(e5) {
+                                                        log(e5);
+                                                        reject(e5);
+                                                    }
+                                                });
+                                            }
+                                            catch(e4) {
+                                                log(e4);
+                                                reject(e4);
+                                            }
+                                        });
+                                    }
+                                    catch(e3) {
+                                        log(e3);
+                                        reject(e3);
+                                    }
+                                });
+                            }
+                            catch(e2) {
+                                log(e2);
+                                reject(e2);
+                            }
+                        });
+                    }
+                    catch(e1) {
+                        log(e1);
+                        reject(e1);
+                    }
+                });
+            }
+            catch(e) {
+                log(e);
+                reject(e);
+            }
+        });
+    
+        return impactedRecCount;
+    });
+}
+
+/* original saveTicketData
 function saveTicketsData(conn, circleDataList, runid, callback) {
     try
     {
@@ -467,10 +608,10 @@ function saveTicketsData(conn, circleDataList, runid, callback) {
                         //status should be inserted it etc.
                         if(status) {
                             ticket.id = status.insertId;
-                            console.log(`Data After Insert: ${JSON.stringify(ticket)}`);
+                            log(`Data After Insert: ${JSON.stringify(ticket)}`);
                         }
                         else {
-                            console.log(`Data After Insert: ${JSON.stringify(status)}`);
+                            log(`Data After Insert: ${JSON.stringify(status)}`);
                         }
                     });
                 }
@@ -478,8 +619,8 @@ function saveTicketsData(conn, circleDataList, runid, callback) {
                     //to be updated
                     updateTicketData(conn, ticket, runid, function(status) {
                         //status should be update status value
-                        //console.log(status);
-                        console.log(`Data After Update: ${JSON.stringify(ticket)}`);
+                        //log(status);
+                        log(`Data After Update: ${JSON.stringify(ticket)}`);
                     });
                 }
             });
@@ -490,7 +631,45 @@ function saveTicketsData(conn, circleDataList, runid, callback) {
         }
     }
     catch(e) {
-        console.log(e);
+        log(e);
+    }
+}
+
+*/
+
+async function saveTicketsData(conn, circleDataList, runid, callback) {
+    try
+    {
+        let status = null;
+
+        for(var i=0; i<circleDataList.length; i++) {
+            let ticket = circleDataList[i];
+            let ticketInfo = await getTicketData(conn, ticket);
+            if(ticketInfo!==null && ticketInfo.length===0) {
+                //to be inserted
+                status = await insertTicketData(conn, ticket, runid);
+                if(status && status.insertId) {
+                    ticket.id = status.insertId;
+                    log(`Data After Insert: ${JSON.stringify(ticket)}`);
+                }
+                else {
+                    log(status);
+                }
+            }
+            else if(ticketInfo!==null && ticketInfo.length>0) {
+                status = await updateTicketData(conn, ticket, runid);
+                if(status) {
+                    log(`Data After Update: ${JSON.stringify(ticket)}`);
+                }
+            }
+        }
+
+        if(callback) {
+            callback(status);
+        }        
+    }
+    catch(e) {
+        log(e);
     }
 }
 
@@ -500,16 +679,21 @@ function getTicketData(conn, ticket, callback) {
         let deptDate = moment(new Date(ticket.departure.epoch_date)).format("YYYY-MM-DD HH:mm");
         let qry = `select id from tickets_tbl where data_collected_from='sng' and source=${ticket.departure.id} and destination=${ticket.arrival.id} and ticket_no='TKT-${ticket.recid}'`;
 
-        conn.query(qry, function(err, data) {
-            if(err) {
-                data = null;
-            }
-            if(callback)
-                callback(data);
+        return new Promise((resolve, reject) => {
+            conn.query(qry, function(err, data) {
+                if(err) {
+                    data = null;
+                    reject(err);
+                }
+                else {
+                    resolve(data);
+                }
+            });
         });
+        
     }
     catch(e) {
-        console.log(e);
+        log(e);
     }
 }
 
@@ -521,16 +705,23 @@ function updateTicketData(conn, ticket, runid, callback) {
 
     var updateSql = `update tickets_tbl set no_of_person=${ticket.availability}, max_no_of_person=${ticket.availability}, availibility= ${ticket.availability}, available='${ticket.availability>0?'YES':'NO'}', price=${ticket.price}, total=${ticket.price}, last_sync_key='${runid}', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where source='${ticket.departure.id}' and destination='${ticket.arrival.id}' and ticket_no='TKT-${ticket_no}' and data_collected_from ='sng'`;
 
-    conn.query(updateSql, function (err, data) {
-        if (err) {
-            console.log(err);
+    return new Promise((resolve, reject) => {
+        try
+        {
+            conn.query(updateSql, function (err, data) {
+                if (err) {
+                    log(err);
+                    reject(err);
+                }
+                else {
+                    updateStatus = data;
+                    resolve(updateStatus);
+                }
+            });
         }
-        else {
-            updateStatus = data;
-        }
-
-        if(callback) {
-            callback(updateStatus);
+        catch(ex) {
+            log(ex);
+            reject(ex);
         }
     });
 }
@@ -544,17 +735,25 @@ function insertTicketData(conn, ticket, runid, callback) {
 
     var insertSql = `INSERT INTO tickets_tbl (source, destination, source1, destination1, trip_type, departure_date_time, arrival_date_time, flight_no, terminal, departure_date_time1, arrival_date_time1, flight_no1, terminal1, terminal2, terminal3, no_of_person, max_no_of_person, no_of_stops, stops_name, no_of_stops1, stops_name1, class, class1, airline, airline1, aircode, aircode1, pnr, ticket_no, price, baggage, meal, markup, admin_markup, discount, total, sale_type, refundable, availibility, user_id, remarks, approved, available, data_collected_from, last_sync_key, companyid, created_by) 
     VALUES ('${ticket.departure.id}','${ticket.arrival.id}',0,0,'ONE','${deptDate}','${arrvDate}','${ticket.flight_number}','NA', '${emptyDate}','${emptyDate}','','','','',${ticket.availability},${ticket.availability},0,'NA',0,'NA', '${ticket.ticket_type.toUpperCase()}','','${ticket.flight_id}',0,'${ticket.flight}','','','TKT-${ticket_no}', ${ticket.price},0,0,0,300,0,${ticket.price},'request','N',${ticket.availability},${DEFAULT_USER_ID},'',1, '${ticket.availability>0?'YES':'NO'}', 'sng', '${runid}', ${DEFAULT_COMPANY_ID}, ${DEFAULT_USER_ID})`;
-    //console.log(insertSql);
-    conn.query(insertSql, function (err, data) {
-        if (err) {
-            console.log(err);
-        }
-        else {
-            insertStatus = data;
-        }
+    //log(insertSql);
 
-        if(callback) {
-            callback(insertStatus);
+    return new Promise((resolve, reject) => {
+        try
+        {
+            conn.query(insertSql, function (err, data) {
+                if (err) {
+                    log(err);
+                    reject(err);
+                }
+                else {
+                    insertStatus = data;
+                    resolve(insertStatus);
+                }
+            });
+        }
+        catch(ex) {
+            log(ex);
+            reject(ex);
         }
     });
 }
@@ -617,7 +816,7 @@ function saveMissingCity(conn, missingCities, callback) {
         let recCount = 0;
         for(var i=0; i<missingCities.length; i++) {
             saveCity(conn, missingCities[i], function(id) {
-                //console.log(`Inserted record id ${id}`);
+                log(`Inserted record id ${id}`);
                 recCount++;
                 if(recCount===missingCities.length) {
                     getCities(conn, function(updatedCitiesData) {
@@ -646,7 +845,7 @@ function saveMissingAirlines(conn, missingAirlines, callback) {
         let recCount = 0;
         for(var i=0; i<missingAirlines.length; i++) {
             saveAirline(conn, missingAirlines[i], function(id) {
-                //console.log(`Inserted record id ${id}`);
+                //log(`Inserted record id ${id}`);
                 recCount++;
                 if(recCount===missingAirlines.length) {
                     getAirlines(conn, function(updatedAirlinesData) {
@@ -754,7 +953,7 @@ function saveCity(conn, city, callback) {
             });
         }
         catch(e) {
-            console.log(e);
+            log(e);
 //            reject(e);
         }
 //    });
@@ -772,7 +971,7 @@ function saveAirline(conn, airline, callback) {
             });
         }
         catch(e) {
-            console.log(e);
+            log(e);
         }
     // });
 }
