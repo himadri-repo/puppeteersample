@@ -101,6 +101,12 @@
             "request": "launch",
             "name": "Launch TGTT Program",
             "program": "${workspaceFolder}/indextgtt.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Email Processor",
+            "program": "${workspaceFolder}/indexmail.js"
         }
    ]
 }

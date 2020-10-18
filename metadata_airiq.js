@@ -325,10 +325,10 @@ module.exports = {
     pages: [
         {
             id: 1,
-            name: 'Default',
+            name: 'airiq',
             actions: [
                 {
-                    name: 'Default',
+                    name: 'airiq',
                     type: 'authentication',
                     userinputs: [
                         {

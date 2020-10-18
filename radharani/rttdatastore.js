@@ -121,7 +121,7 @@ async function saveData(result, runid, callback) {
                             airline_id = data2[0].id;
                         
                         if(airline_id===0) {
-                            insertQry = `INSERT INTO airline_tbl (aircode,airline, image) values ('${aircode}','${airline}', 'flight.png')`;
+                            insertQry = `INSERT INTO airline_tbl (aircode,airline, image, display_name) values ('${aircode}','${airline}', 'flight.png', '${aircode}')`;
                             con.query(insertQry, async function (err3, data3) {
                                 if (err3) 
                                     console.log(err3);
@@ -978,7 +978,7 @@ function saveCity(conn, city, callback) {
 
 function saveAirline(conn, airline, callback) {
     // return new Promise((resolve, reject) => {
-        let qry = `insert into airline_tbl(aircode, airline, image) values('${airline.substr(0,3).toUpperCase()}', '${airline}', 'flight.png')`;
+        let qry = `insert into airline_tbl(aircode, airline, image, display_name) values('${airline.substr(0,3).toUpperCase()}', '${airline}', 'flight.png', '${airline}')`;
         console.log(qry);
 
         try
