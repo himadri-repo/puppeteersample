@@ -121,8 +121,9 @@ class CheapPortal_Crawl {
         var content_list = content.split('\n');
         var items = [];
         for (let index = 0; index < content_list.length; index++) {
-            const contnet_listitem = content_list[index];
+            let contnet_listitem = content_list[index];
             if(contnet_listitem.trim() !== '') {
+                contnet_listitem = contnet_listitem.trim().replace('\t',' ');
                 items.push(contnet_listitem);
             }
         }
@@ -230,8 +231,8 @@ class CheapPortal_Crawl {
                                             const cell_item = cell_node.child[celliidx];
                                             if(cell_item.node === 'text') {
                                                 switch (cellidx) {
-                                                    case 1:
-                                                        var circle = cell_item.text.replace('\t', '').trim();
+                                                    case 1:                                                        
+                                                        var circle = cell_item.text.replace('\t', ' ').trim();
                                                         if(circle !== null && circle !== '') {
                                                             var airports = circle.split('-');
                                                             if(airports && airports.length===1)
