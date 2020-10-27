@@ -73,16 +73,19 @@ function contentParser(content, store, runid, option) {
                     //this is disp date
                     //disp_date = data.trim();
                     break;
-                case 6:
+                case 8:
                     //this is rate
-                    rate = parseFloat(data.replace(',', '').trim());
+                    //rate = parseFloat(data.replace(',', '').trim());
                     break;
                 case 2:
-                    deal.flight = data.trim();
+                    //deal.flight = data.trim();
+                    start_time = data.trim().split('-')[0];
+                    end_time = data.trim().split('-')[1];
                     break;
                 case 3:
                     //this is flight number
-                    flight_number = data.trim();
+                    flight_number = 'SPL-000';
+                    //flight_number = data.trim();
                     // let flightParts = flight_number.split('-');
                     // if(flightParts!==null && flightParts.length>0) {
                     //     deal.flight = flightParts[0].trim();
@@ -106,8 +109,9 @@ function contentParser(content, store, runid, option) {
                 case 4:
                     //this is flight number
                     // end_time = data.trim();
+                    rate = parseFloat(data.replace(',', '').trim());
                     break;
-                case 8:
+                case 6:
                     //this is flight number
                     qty = parseInt(data.trim());
                     break;
