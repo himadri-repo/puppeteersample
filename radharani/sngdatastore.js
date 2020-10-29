@@ -643,24 +643,31 @@ async function saveTicketsData(conn, circleDataList, runid, callback) {
         let status = null;
 
         for(var i=0; i<circleDataList.length; i++) {
-            let ticket = circleDataList[i];
-            let ticketInfo = await getTicketData(conn, ticket);
-            if(ticketInfo!==null && ticketInfo.length===0) {
-                //to be inserted
-                status = await insertTicketData(conn, ticket, runid);
-                if(status && status.insertId) {
-                    ticket.id = status.insertId;
-                    log(`Data After Insert: ${JSON.stringify(ticket)}`);
+            try
+            {
+                let ticket = circleDataList[i];
+                log(`Ticket to save : ${JSON.stringify(ticket)}`);
+                let ticketInfo = await getTicketData(conn, ticket);
+                if(ticketInfo!==null && ticketInfo.length===0) {
+                    //to be inserted
+                    status = await insertTicketData(conn, ticket, runid);
+                    if(status && status.insertId) {
+                        ticket.id = status.insertId;
+                        log(`Data After Insert: ${JSON.stringify(ticket)}`);
+                    }
+                    else {
+                        log(status);
+                    }
                 }
-                else {
-                    log(status);
+                else if(ticketInfo!==null && ticketInfo.length>0) {
+                    status = await updateTicketData(conn, ticket, runid);
+                    if(status) {
+                        log(`Data After Update: ${JSON.stringify(ticket)}`);
+                    }
                 }
             }
-            else if(ticketInfo!==null && ticketInfo.length>0) {
-                status = await updateTicketData(conn, ticket, runid);
-                if(status) {
-                    log(`Data After Update: ${JSON.stringify(ticket)}`);
-                }
+            catch(eex) {
+                log(`Error : saveTicketData : ${eex}`);
             }
         }
 
