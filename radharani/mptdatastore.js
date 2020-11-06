@@ -664,7 +664,6 @@ function getMissingAirlines(airlines, circleData) {
 
     for(var i=0; i<circleData.length; i++) {
         let airline = circleData[i].flight.toLowerCase();
-        let airline = circleData[i].flight.toLowerCase();
         let savedAirlineRecord = airlines.find((data, idx) => {
             return data.airline.toLowerCase()===airline || data.aircode.toLowerCase()===airline;
         });
