@@ -262,36 +262,68 @@ async function saveTicket(conn, result, runid, callback) {
 }
 
 function finalization(runid, callback) {
-    getDBPool().getConnection(function(err, conn) {
-        try
-        {
-            if(err) {
-                console.log(err);
-            }
-            let currentDate = moment.utc(new Date().toGMTString()).format("YYYY-MM-DD HH:mm:ss"); //moment(new Date()).format("YYYY-MM-DD HH:mm");
+    let pool = getDBPool();
 
-            var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where available='YES' and data_collected_from='airiq' and last_sync_key<>'${runid}'`;
-            
-            try {
-                conn.query(sql, function (err, data) {
-                    if (err || data===null || data===undefined) {
-                        console.log(err);
-                    }
-                    conn.release();
+    return new Promise((resolve, reject) => {
+        pool.getConnection(function(err, conn) {
+            try
+            {
+                if(err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
 
-                    //console.log(JSON.stringify(data));
-                    if(callback) {
-                        callback(data);
-                    }
-                });
+                let currentDate = moment.utc(new Date().toGMTString()).format("YYYY-MM-DD HH:mm:ss"); //moment(new Date()).format("YYYY-MM-DD HH:mm");
+    
+                var sql = `update tickets_tbl set no_of_person=0, max_no_of_person=0, availibility=0, available='NO', last_sync_key='MIGHT_BE_SOLD_OR_ON_REQUEST', updated_by=${DEFAULT_USER_ID}, updated_on='${currentDate}' where available='YES' and data_collected_from='airiq' and last_sync_key<>'${runid}'`;
+                var output = false;
+                try {
+                    conn.query(sql, function (err, data) {
+                        if (err || data===null || data===undefined) {
+                            console.log(err);
+                            reject(err);
+                            return;
+                        }
+                        else {
+                            output = data;
+                        }
+
+                        try
+                        {
+                            conn.release();
+                            conn.destroy();
+                            pool.end((err) => {
+                                if(err) {
+                                    console.log(`Unable to end the pool ${err}`);
+                                }
+                                resolve(output);
+                            });
+                        }
+                        catch(e5) {
+                            console.log(e5);
+                            reject(e5);
+                        }                        
+    
+                        //console.log(JSON.stringify(data));
+                        // if(callback) {
+                        //     callback(data);
+                        // }
+                    });
+                }
+                catch(e1) {
+                    console.log(e1);
+                    reject(e1);
+                }
+                finally {
+
+                }
             }
-            catch(e1) {
-                console.log(e1);
+            catch(ex) {
+                console.log(ex);
+                reject(ex);
             }
-        }
-        catch(ex) {
-            console.log(ex);
-        }
+        });
     });
 }
 

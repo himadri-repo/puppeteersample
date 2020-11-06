@@ -272,7 +272,7 @@ function finalizeData(runid, datasourceUrl) {
 
     try
     {
-        datastore.finalization(runid);
+        return datastore.finalization(runid);
 
         // datastore.finalization(runid, function(data) {
         //     console.log(`Proceed with next record ${JSON.stringify(data)}`);
@@ -321,6 +321,7 @@ function circleCrawlingFinished(runid, store, circleKey, callback) {
 }
 
 module.exports = {
+    finalizeData: finalizeData,
     circlecrawlfinished: circleCrawlingFinished,
     pages: [
         {

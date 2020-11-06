@@ -67,8 +67,8 @@ const USERINPUT = {
 
 app = express();
 
-const TIMEOUT = 8000;
-const POSTBACK_TIMEOUT = 10000;
+const TIMEOUT = 6000;
+const POSTBACK_TIMEOUT = 8000;
 const POLLINGDELAY = 100;
 
 var browser = null;
@@ -303,6 +303,7 @@ async function navigatePage(pageName) {
 
 async function ProcessActivity(targetUri, runid=uuid5()) {
     //await navigatePage("https://github.com/login");
+    let processed = false;
     try
     {
         if(targetUri===undefined || targetUri===null || targetUri==="")
@@ -426,6 +427,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                             //while(iidx<pageConfig.actions[0].userinputs.length) {
                             while(iidx<pageConfig.actions[0].userinputs.length) {
                                 var userInput =  pageConfig.actions[0].userinputs[iidx];
+                                processed = true;
                                 
                                 //this is the place we need to use repeat functionality
                                 if(repeatsourceType===null) {
@@ -538,6 +540,13 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                 await browser.close().catch((reason) => log(`Browser close : ${reason}`));
             }
             log('Operation completed');
+            if(processed) {
+                let data = await metadata.finalizeData(runid);
+                log(`Finalize airiq DB -> ${JSON.stringify(data)}`);
+            }
+            else {
+                log(`No record crawled so finalization didn't called`);
+            }
         }
     }
     catch(fe) {
