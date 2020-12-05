@@ -107,6 +107,12 @@
             "request": "launch",
             "name": "Launch Email Processor",
             "program": "${workspaceFolder}/indexmail.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch BMF Program",
+            "program": "${workspaceFolder}/indexbmf.js"
         }
    ]
 }
