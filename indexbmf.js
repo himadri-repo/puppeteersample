@@ -300,6 +300,7 @@ async function navigatePage(pageName) {
 
 async function ProcessActivity(targetUri, runid=uuid5()) {
     //await navigatePage("https://github.com/login");
+    let crawl_happened = false;
     try
     {
         if(targetUri===undefined || targetUri===null || targetUri==="")
@@ -537,10 +538,15 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                             log(`Finaliation of ${key} - ${status}`);
                         }).then(val => {
                             log(`Tickets Data: ${JSON.stringify(val)}`);
+                            return val.length;
                         }).catch(reason => {
                             log(`Error: ${reason}`);
+                            return 0;
                         });
-                        //log(`Next operation ${i} starting`);
+                        log(`Next operation ${i} starting | impacted records in previous operation : ${impactedRows}`);
+                        if(impactedRows>0) {
+                            crawl_happened = true;
+                        }
                     }
                 }
             }
@@ -549,7 +555,9 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                 await browser.close().catch((reason) => log(`Browser close : ${reason}`));
             }
             log('Operation completed');
-            metadata.finalizeData(runid);
+            if(crawl_happened) {
+                metadata.finalizeData(runid);
+            }
         }
     }
     catch(fe) {
