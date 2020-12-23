@@ -113,6 +113,18 @@
             "request": "launch",
             "name": "Launch BMF Program",
             "program": "${workspaceFolder}/indexbmf.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch JD Program",
+            "program": "${workspaceFolder}/indexjd.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch DS Program",
+            "program": "${workspaceFolder}/indexds.js"
         }
    ]
 }
