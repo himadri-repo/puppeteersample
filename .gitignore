@@ -108,3 +108,6 @@ typings/
 
 #shell scripts
 *.sh
+
+#image files
+*.png
