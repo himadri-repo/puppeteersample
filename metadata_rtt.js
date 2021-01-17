@@ -630,7 +630,7 @@ module.exports = {
                                     task_id: 1,
                                     task_name: 'read content',
                                     action: 'read',
-                                    selector: `body > div.container > div > div.col-md-12 > div > table > tbody:nth-child(2) > tr > td:nth-last-child(-n+1) > a`,
+                                    selector: `table.table-bordered > tbody > tr > td:nth-last-child(-n+2) > a`,  //`body > div.container > div > div.col-md-12 > div > table > tbody:nth-child(2) > tr > td:nth-last-child(-n+1) > a`,
                                     read_type: 'attributes',
                                     attributes: ['href'],
                                     plugins: [

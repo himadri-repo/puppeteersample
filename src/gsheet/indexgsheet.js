@@ -205,10 +205,10 @@ function listMajors(auth, sheetconf) {
                     sheet_items.push(sheet.properties.title);
         
                     // log(`Sheet Name : ${sheet.properties.title}`);
-                    tickets = await get_sheet_data(sheetconf, sheet.properties.title, sheets);
+                    tickets = await get_sheet_data(sheetconf, sheet.properties.title, sheets).catch(reason=> log(`Error received: ${reason}`));
 
                     if(tickets && Array.isArray(tickets)) {
-                        result = await save_sheet_data(tickets);
+                        result = await save_sheet_data(tickets).catch(reason => log(`Error received: ${reason}`));
                     }
                 }
                 // const sheet_name = response.data.sheets[0].properties.title;
@@ -236,7 +236,7 @@ async function get_sheet_data(sheetconf, sheet_name, sheets) {
 
             const tickets = [];
             const rows = res.data.values;
-            if (rows.length) {
+            if (rows && rows.length) {
                 log(`Sheet Name : ${sheet_name}`);
                 log("-".repeat(100));
                 log('Ticket #, Dept.Date, Sector, Flight #, Arrv.Date, PNR, PAX, Price');
