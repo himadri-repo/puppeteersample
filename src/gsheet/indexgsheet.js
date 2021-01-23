@@ -239,7 +239,7 @@ async function get_sheet_data(sheetconf, sheet_name, sheets) {
             if (rows && rows.length) {
                 log(`Sheet Name : ${sheet_name}`);
                 log("-".repeat(100));
-                log('Ticket #, Dept.Date, Sector, Flight #, Arrv.Date, PNR, PAX, Price');
+                log('Ticket #, Dept.Date, Sector, Flight #, Arrv.Date, PNR, PAX, Price, Remarks');
                 // Print columns A and E, which correspond to indices 0 and 4.
                 log("=".repeat(100));
                 rows.map((row, idx) => {
@@ -257,6 +257,7 @@ async function get_sheet_data(sheetconf, sheet_name, sheets) {
                             row[10] = row[10].replace(',', '');
                             let price = isNaN(row[10]) ? 0.00 : parseFloat(row[10]);  
                             let no_of_pax = isNaN(row[9]) ? 0 : parseInt(row[9], 10);  
+                            let remarks = isNaN(row[11]) ? row[11] : '';
 
                             if(isNaN(row[10]) && (row[10].toLowerCase() === 'sold' || row[10].toLowerCase() === 'close' || row[10].toLowerCase() === 'cancel')) {
                                 price = 0.00;
@@ -264,7 +265,7 @@ async function get_sheet_data(sheetconf, sheet_name, sheets) {
                             }
                             
                             //log(`${row[0]}, ${dept_datetime.format('DD-MMM-YYYY HH:mm:ss ZZ')}, ${row[2]}-${row[3]}, ${row[4]}-${row[5]}, ${arrv_datetime.format('DD-MMM-YYYY HH:mm:ss ZZ')}, ${row[8].trim()}, ${no_of_pax}, ${price}`);
-                            log(`${row[0]}, ${dept_datetime.format('DD-MMM-YYYY HH:mm:ss')}, ${row[2]}-${row[3]}, ${row[4]}-${row[5]}, ${arrv_datetime.format('DD-MMM-YYYY HH:mm:ss')}, ${row[8].trim()}, ${no_of_pax}, ${price}`);
+                            log(`${row[0]}, ${dept_datetime.format('DD-MMM-YYYY HH:mm:ss')}, ${row[2]}-${row[3]}, ${row[4]}-${row[5]}, ${arrv_datetime.format('DD-MMM-YYYY HH:mm:ss')}, ${row[8].trim()}, ${no_of_pax}, ${price}, ${remarks}`);
                             tickets.push({
                                 "ticket_no": `${sourcecode.toUpperCase()+'-'+row[0].trim()}`,
                                 // "departure_date_time": dept_datetime.format('DD-MMM-YYYY HH:mm:ss ZZ'),
@@ -283,7 +284,8 @@ async function get_sheet_data(sheetconf, sheet_name, sheets) {
                                 "data_collected_from": sourcecode,
                                 "class": 'ECONOMY',
                                 "trip_type": 'ONE',
-                                "runid": runid
+                                "runid": runid,
+                                'remarks': remarks
                             })
                         }
                     }
@@ -315,13 +317,13 @@ async function save_sheet_data(tickets) {
     });
 }
 
-// var excutionStarted = false;
-// cron.schedule("*/1 * * * *", function() {
-//     log("info", "Cron started");
-//     if(excutionStarted) {
-//         log("info", 'Previous process still running ...');
-//         return false;
-//     }
+var excutionStarted = false;
+cron.schedule("*/5 * * * *", function() {
+    log("info", "Cron started");
+    if(excutionStarted) {
+        log("info", 'Previous process still running ...');
+        return false;
+    }
 
     try
     {
@@ -340,6 +342,6 @@ async function save_sheet_data(tickets) {
     finally {
         excutionStarted = false;
     }
-// });
+});
 
-// app.listen("4401");
+app.listen("4401");
