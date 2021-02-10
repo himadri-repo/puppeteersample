@@ -138,23 +138,41 @@ function getNewToken(oAuth2Client, callback) {
 function login() {
     log('info', "Finding tenent codes ...");
 
-    // Load client secrets from a local file.
-    fs.readFile('credentials.json', (err, content) => {
-        if (err) return log('Error loading client secret file:', err);
-        // Authorize a client with credentials, then call the Google Sheets API.
-        authorize(JSON.parse(content), async function(authclient) {
-            const sheets = await getTenentsSheetCodes();
+    return new Promise((resolve, reject) => {
+        try
+        {
+            // Load client secrets from a local file.
+            fs.readFile('credentials.json', (err, content) => {
+                if (err) return log('Error loading client secret file:', err);
+                // Authorize a client with credentials, then call the Google Sheets API.
+                authorize(JSON.parse(content), async function(authclient) {
+                    try
+                    {
+                        const sheets = await getTenentsSheetCodes();
 
-            if(sheets && Array.isArray(sheets) && sheets.length>0) {
-                for (let index = 0; index < sheets.length; index++) {
-                    const sheet = sheets[index];
-                    let runid = `${uuidv4()}_${moment().format("DD-MMM-YYYY HH:mm:ss.SSS")}`;
-                    sheet.runid = runid;
-                    log(`Fetching data from ${sheet.name}`);
-                    await listMajors(authclient, sheet);
-                }
-            }
-        });
+                        if(sheets && Array.isArray(sheets) && sheets.length>0) {
+                            for (let index = 0; index < sheets.length; index++) {
+                                const sheet = sheets[index];
+                                let runid = `${uuidv4()}_${moment().format("DD-MMM-YYYY HH:mm:ss.SSS")}`;
+                                sheet.runid = runid;
+                                log(`Fetching data from ${sheet.name}`);
+                                await listMajors(authclient, sheet);
+                            }
+                        }
+                        log(`All sheet traverses`);
+                        resolve(sheets);
+                    }
+                    catch(ex1) {
+                        log(`Error : ${ex1}`);
+                        reject(ex1);
+                    }
+                });
+            });
+        }
+        catch(ex) {
+            log(`Error : ${ex}`);
+            reject(ex);
+        }
     });
 }
 
@@ -204,11 +222,12 @@ function listMajors(auth, sheetconf) {
                     const sheet = response.data.sheets[index];
                     sheet_items.push(sheet.properties.title);
         
-                    // log(`Sheet Name : ${sheet.properties.title}`);
-                    tickets = await get_sheet_data(sheetconf, sheet.properties.title, sheets).catch(reason=> log(`Error received: ${reason}`));
+                    log(`Sheet Name : ${sheet.properties.title}`);
+                    var tickets = await get_sheet_data(sheetconf, sheet.properties.title, sheets).catch(reason=> log(`Error received: ${reason}`));
 
                     if(tickets && Array.isArray(tickets)) {
-                        result = await save_sheet_data(tickets).catch(reason => log(`Error received: ${reason}`));
+                        log(`Going to save sheet data`);
+                        result = await save_sheet_data(tickets).catch(reason => log(`Error received (Saving sheet data): ${reason}`));
                     }
                 }
                 // const sheet_name = response.data.sheets[0].properties.title;
@@ -216,6 +235,7 @@ function listMajors(auth, sheetconf) {
                 resolve(true);
             }
             catch(ex) {
+                log(`Error in listMajors: ${ex}`);
                 reject(ex);
             }
         });
@@ -229,74 +249,85 @@ async function get_sheet_data(sheetconf, sheet_name, sheets) {
         const runid = sheetconf.runid;
         const sourcecode = sheetconf.sourcecode;
         sheets.spreadsheets.values.get({spreadsheetId: sheetid, range: `${sheet_name}`}, (err, res) => {
-            if (err) {
-                log('The API returned an error: ' + err);
-                reject(err);
-            }
 
-            const tickets = [];
-            const rows = res.data.values;
-            if (rows && rows.length) {
-                log(`Sheet Name : ${sheet_name}`);
-                log("-".repeat(100));
-                log('Ticket #, Dept.Date, Sector, Flight #, Arrv.Date, PNR, PAX, Price, Remarks');
-                // Print columns A and E, which correspond to indices 0 and 4.
-                log("=".repeat(100));
-                rows.map((row, idx) => {
-                    if(idx >=2) {
-                        const qty = parseInt(row[9], 10);
-                        const price = parseFloat(row[10]);
-                        if(row[9] && row[9] !== '' && row[10] && row[10] !== '' && row[1] && row[1] !== '' && row[2] && row[2] !== '' && row[3] && row[3] !== '') {
-                            let dept_datetime = moment(row[1]+'T'+row[6]+':00+05:30', 'DD-MMM-YYYY HH:mm');
-                            let arrv_datetime = moment(row[1]+'T'+row[7]+':00+05:30', 'DD-MMM-YYYY HH:mm');
-                            if(ENV === 'PROD') {
-                                dept_datetime = moment(row[1]+'T'+row[6]+':00+00:00', 'DD-MMM-YYYY HH:mm');
-                                arrv_datetime = moment(row[1]+'T'+row[7]+':00+00:00', 'DD-MMM-YYYY HH:mm');
+            try
+            {
+                if (err) {
+                    log(`The API returned an error: ${err}`);
+                    reject(err);
+                }
+
+                const tickets = [];
+                var rows = null;
+                if(res && res.data) {
+                    rows = res.data.values;
+                }
+                if (rows && rows.length) {
+                    log(`Sheet Name : ${sheet_name}`);
+                    log("-".repeat(100));
+                    log('Ticket #, Dept.Date, Sector, Flight #, Arrv.Date, PNR, PAX, Price, Remarks');
+                    // Print columns A and E, which correspond to indices 0 and 4.
+                    log("=".repeat(100));
+                    rows.map((row, idx) => {
+                        if(idx >=2) {
+                            const qty = parseInt(row[9], 10);
+                            const price = parseFloat(row[10]);
+                            if(row[9] && row[9] !== '' && row[10] && row[10] !== '' && row[1] && row[1] !== '' && row[2] && row[2] !== '' && row[3] && row[3] !== '') {
+                                let dept_datetime = moment(row[1]+'T'+row[6]+':00+05:30', 'DD-MMM-YYYY HH:mm');
+                                let arrv_datetime = moment(row[1]+'T'+row[7]+':00+05:30', 'DD-MMM-YYYY HH:mm');
+                                if(ENV === 'PROD') {
+                                    dept_datetime = moment(row[1]+'T'+row[6]+':00+00:00', 'DD-MMM-YYYY HH:mm');
+                                    arrv_datetime = moment(row[1]+'T'+row[7]+':00+00:00', 'DD-MMM-YYYY HH:mm');
+                                }
+
+                                row[10] = row[10].replace(',', '');
+                                let price = isNaN(row[10]) ? 0.00 : parseFloat(row[10]);  
+                                let no_of_pax = isNaN(row[9]) ? 0 : parseInt(row[9], 10);  
+                                let remarks = isNaN(row[11]) ? row[11] : '';
+
+                                if(isNaN(row[10]) && (row[10].toLowerCase() === 'sold' || row[10].toLowerCase() === 'close' || row[10].toLowerCase() === 'cancel')) {
+                                    price = 0.00;
+                                    no_of_pax = 0;
+                                }
+                                
+                                //log(`${row[0]}, ${dept_datetime.format('DD-MMM-YYYY HH:mm:ss ZZ')}, ${row[2]}-${row[3]}, ${row[4]}-${row[5]}, ${arrv_datetime.format('DD-MMM-YYYY HH:mm:ss ZZ')}, ${row[8].trim()}, ${no_of_pax}, ${price}`);
+                                log(`${row[0]}, ${dept_datetime.format('DD-MMM-YYYY HH:mm:ss')}, ${row[2]}-${row[3]}, ${row[4]}-${row[5]}, ${arrv_datetime.format('DD-MMM-YYYY HH:mm:ss')}, ${row[8].trim()}, ${no_of_pax}, ${price}, ${remarks}`);
+                                tickets.push({
+                                    "ticket_no": `${sourcecode.toUpperCase()+'-'+row[0].trim()}`,
+                                    // "departure_date_time": dept_datetime.format('DD-MMM-YYYY HH:mm:ss ZZ'),
+                                    // "arrival_date_time": arrv_datetime.format('DD-MMM-YYYY HH:mm:ss ZZ'),
+                                    "departure_date_time": dept_datetime.format('DD-MMM-YYYY HH:mm:ss'),
+                                    "arrival_date_time": arrv_datetime.format('DD-MMM-YYYY HH:mm:ss'),
+                                    "source_city": row[2],
+                                    "destination_city": row[3],
+                                    "airline": row[4],
+                                    "aircode": row[4],
+                                    "flight_code": `${row[4]}-${row[5]}`,
+                                    "pnr": row[8].trim(),
+                                    "no_of_person": no_of_pax,
+                                    "price": price,
+                                    "companyid": companyid,
+                                    "data_collected_from": sourcecode,
+                                    "class": 'ECONOMY',
+                                    "trip_type": 'ONE',
+                                    "runid": runid,
+                                    'remarks': remarks
+                                })
                             }
-
-                            row[10] = row[10].replace(',', '');
-                            let price = isNaN(row[10]) ? 0.00 : parseFloat(row[10]);  
-                            let no_of_pax = isNaN(row[9]) ? 0 : parseInt(row[9], 10);  
-                            let remarks = isNaN(row[11]) ? row[11] : '';
-
-                            if(isNaN(row[10]) && (row[10].toLowerCase() === 'sold' || row[10].toLowerCase() === 'close' || row[10].toLowerCase() === 'cancel')) {
-                                price = 0.00;
-                                no_of_pax = 0;
-                            }
-                            
-                            //log(`${row[0]}, ${dept_datetime.format('DD-MMM-YYYY HH:mm:ss ZZ')}, ${row[2]}-${row[3]}, ${row[4]}-${row[5]}, ${arrv_datetime.format('DD-MMM-YYYY HH:mm:ss ZZ')}, ${row[8].trim()}, ${no_of_pax}, ${price}`);
-                            log(`${row[0]}, ${dept_datetime.format('DD-MMM-YYYY HH:mm:ss')}, ${row[2]}-${row[3]}, ${row[4]}-${row[5]}, ${arrv_datetime.format('DD-MMM-YYYY HH:mm:ss')}, ${row[8].trim()}, ${no_of_pax}, ${price}, ${remarks}`);
-                            tickets.push({
-                                "ticket_no": `${sourcecode.toUpperCase()+'-'+row[0].trim()}`,
-                                // "departure_date_time": dept_datetime.format('DD-MMM-YYYY HH:mm:ss ZZ'),
-                                // "arrival_date_time": arrv_datetime.format('DD-MMM-YYYY HH:mm:ss ZZ'),
-                                "departure_date_time": dept_datetime.format('DD-MMM-YYYY HH:mm:ss'),
-                                "arrival_date_time": arrv_datetime.format('DD-MMM-YYYY HH:mm:ss'),
-                                "source_city": row[2],
-                                "destination_city": row[3],
-                                "airline": row[4],
-                                "aircode": row[4],
-                                "flight_code": `${row[4]}-${row[5]}`,
-                                "pnr": row[8].trim(),
-                                "no_of_person": no_of_pax,
-                                "price": price,
-                                "companyid": companyid,
-                                "data_collected_from": sourcecode,
-                                "class": 'ECONOMY',
-                                "trip_type": 'ONE',
-                                "runid": runid,
-                                'remarks': remarks
-                            })
                         }
-                    }
-                });
-                log("=".repeat(100));
+                    });
+                    log("=".repeat(100));
 
-                log(JSON.stringify(tickets));
-                resolve(tickets);
-            } else {
-                log('No data found.');
-                reject('No data found.');
+                    log(JSON.stringify(tickets));
+                    resolve(tickets);
+                } else {
+                    log(`No data found. ${sheet_name}`);
+                    reject(`No data found. ${sheet_name}`);
+                }
+            }
+            catch(ex) {
+                log(`Error in get_sheet_data : ${ex}`);
+                reject(ex);
             }
         });
     });
@@ -304,6 +335,8 @@ async function get_sheet_data(sheetconf, sheet_name, sheets) {
 
 async function save_sheet_data(tickets) {
     return new Promise((resolve, reject) => {
+        log(`Tickets payload - URL : ${URL}`);
+        log(`Tickets payload: ${JSON.stringify(tickets)}`);
         axios.post(URL, tickets)
         .then(response => {
             log(JSON.stringify(response.data));
@@ -318,7 +351,7 @@ async function save_sheet_data(tickets) {
 }
 
 var excutionStarted = false;
-cron.schedule("*/5 * * * *", function() {
+cron.schedule("*/5 * * * *", async function() {
     log("info", "Cron started");
     if(excutionStarted) {
         log("info", 'Previous process still running ...');
@@ -332,7 +365,7 @@ cron.schedule("*/5 * * * *", function() {
             log('info','Unhandled Rejection at:', reason);
         });
         //startProcess();
-        login();
+        await login();
 
         log('info','Process completed:');
     }

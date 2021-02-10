@@ -31,8 +31,18 @@ function repeatSource(elementData) {
         }
         for (let index = 0; index < elementData.length; index++) {
             const element = elementData[index];
-            if(index>0 && element.match(/[A-Z]{3}([- ])[A-Z]{3}/gm))
-                data.push(element);
+            
+            if(index>0 && element.match(/\([A-Z]{3}([- ]){1,}[A-Z]{3}\)/gm)) {
+                data.push(element.trim());
+            }
+
+            // if(index>0 && element.match(/\([A-Z]{3}([- ])[A-Z]{3}/gm))
+            // {
+            //     element.match(/\([A-Z]{3}([- ])[A-Z]{3}/gm).map((val, idx) => {
+            //         data.push(val.replace('(', '').trim());
+            //     })
+            // }
+                
         }
 
         //data = elementData.match(strreg).map((val, idx) => val.trim());
@@ -68,7 +78,9 @@ function contentParser(content, store, runid, option) {
         // let src_dest = content.match(/^([a-zA-Z0-9].*)$/gm);
         //let src_dest = content.match(/([a-zA-Z0-9,].*)$/gm);
         let src_dest = content.trim().split('\n');
-        
+        let source_city = option.source;
+        let destination_city = option.destination;
+
         let disp_date = null;
         let rate = 0.00;
         let qty = 0;
@@ -110,8 +122,8 @@ function contentParser(content, store, runid, option) {
         }
         deal.flight_number = flight_number;
         deal.ticket_type = 'Economy';
-        deal.departure = {'circle': option.source, 'date': disp_date, 'time': start_time, 'epoch_date': Date.parse(`${disp_date} ${start_time}`)};
-        deal.arrival = {'circle': option.destination, 'date': disp_date, 'time': end_time, 'epoch_date': Date.parse(`${disp_date} ${end_time}`)};
+        deal.departure = {'circle': source_city, 'date': disp_date, 'time': start_time, 'epoch_date': Date.parse(`${disp_date} ${start_time}`)};
+        deal.arrival = {'circle': destination_city, 'date': disp_date, 'time': end_time, 'epoch_date': Date.parse(`${disp_date} ${end_time}`)};
         deal.availability = qty;
         deal.price = rate;
     }

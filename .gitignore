@@ -111,3 +111,6 @@ typings/
 
 #image files
 *.png
+
+#ignore audit files
+*-audit.json
