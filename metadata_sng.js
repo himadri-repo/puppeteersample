@@ -106,7 +106,7 @@ function contentParser(content, store, runid, option) {
                     break;
                 case 5:
                     //this is both time (start and end)
-                    times = data.trim().replace('-',' ').split(' ');
+                    times = data.trim().replace('–','^').replace('-','^').split('^');
                     if(times && times.length>0)
                         start_time = times[0].trim();
                     if(times && times.length>1)

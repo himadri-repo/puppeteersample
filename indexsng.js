@@ -605,9 +605,12 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                         //repeatsourceDataValue = repeatsourceDataValue.match(/\([A-Z]{3}([- ])[A-Z]{3}\)/gm);
                         repeatsourceDataValue = repeatsourceDataValue.match(/\([A-Z]{3}([- ]){1,}[A-Z]{3}\)/gm);
                         if(repeatsourceDataValue && repeatsourceDataValue.length>0)
-                            repeatsourceDataValue = repeatsourceDataValue[0].replace('(', '');
+                            repeatsourceDataValue = repeatsourceDataValue[0].replace('(', '').replace(')', '');
                         
-                        let src_dest = repeatsourceDataValue.replace('(', '').replace(' ', '-').split('-');
+                        let src_dest = repeatsourceDataValue.replace('(', '').replace(')', '');
+
+                        src_dest = src_dest.indexOf('-')>-1 ? src_dest.replace(' ', '').split('-') : src_dest.replace(' ', '-').split('-');
+                        
                         let key = '';
                         let options = {};
                         if(src_dest!==null && src_dest.length>1) {
