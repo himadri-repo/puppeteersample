@@ -1417,7 +1417,8 @@ cron.schedule("*/5 * * * *", function() {
         //let crawlingUri = "https://www.neptunenext.com/agent/general/index";
         //let crawlingUri = "https://airiq.in/Admin/Search.aspx";
         //let crawlingUri = "https://www.tripmaza.com/App/DealPage2A.aspx";
-        let crawlingUri = "https://flight.journeydeal.com/flight/dashJourneydl.aspx";
+        //let crawlingUri = "https://flight.journeydeal.com/flight/dashJourneydl.aspx";
+        let crawlingUri = "https://journeydeal.in/flight/dashJourneydl.aspx";
         //let crawlingUri = "https://www.tripmaza.com/signin.aspx";
         log(`Starting the crawl - ${runid}`);
 
