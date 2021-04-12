@@ -42,7 +42,8 @@ function contentParser(content, store, runid) {
 
     try
     {
-        let src_dest = content.match(/([a-zA-Z0-9-:]*)([^\s])/gm);
+        //let src_dest = content.match(/([a-zA-Z0-9-:]*)([^\s])/gm);
+        let src_dest = content.trim().split('\t');
         let disp_date = null;
         let rate = 0.00;
         let qty = 0;
@@ -56,34 +57,39 @@ function contentParser(content, store, runid) {
         deal.ticket_type = 'Economy';
         for (let index = 0; index < src_dest.length; index++) {
             const data = src_dest[index];
+            let date_part = '';
 
             switch (index) {
                 case 0:
                     deal.flight = data.trim();
-                case 1:
-                    deal.flight_number = data.trim();
                 case 2:
+                    deal.flight_number = data.trim();
+                case 3:
                     source = data.trim();
                     break;
-                case 3:
+                case 4:
                     destination = data.trim();
                     break;
-                case 4:
-                    start_date = data.trim();
-                    break;
                 case 5:
-                    start_time = data.trim();
+                    date_part = data.trim().split(' ');
+                    start_date = date_part[0].trim(); // data.trim();
+                    start_time = date_part[1].trim(); // data.trim();
                     break;
                 case 6:
-                    end_date = data.trim();
+                    date_part = data.trim().split(' ');
+                    end_date = date_part[0].trim(); // data.trim();
+                    end_time = date_part[1].trim(); // data.trim();
                     break;
+                // case 6:
+                //     end_date = data.trim();
+                //     break;
+                // case 7:
+                //     end_time = data.trim();
+                //     break;
                 case 7:
-                    end_time = data.trim();
-                    break;
-                case 8:
                     qty = parseInt(data.trim(), 10);
                     break;
-                case 9:
+                case 8:
                     rate = parseFloat(data.trim());
                     break;
                 default:
