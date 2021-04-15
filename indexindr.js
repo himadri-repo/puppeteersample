@@ -105,8 +105,8 @@ async function navigatePage(pageName) {
                 headless:true,
                 ignoreHTTPSErrors: true,
                 ignoreDefaultArgs: ['--enable-automation'],
-                //args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox']
-                args: ['--start-fullscreen']
+                args: ['--start-fullscreen','--no-sandbox','--disable-setuid-sandbox'],
+                timeout: 30000
             }).catch((reason) => {
                 log(reason);
                 return;
