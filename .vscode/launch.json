@@ -125,6 +125,12 @@
             "request": "launch",
             "name": "Launch DS Program",
             "program": "${workspaceFolder}/indexds.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Flight Status Finder Program",
+            "program": "${workspaceFolder}/indexflightstats.js"
         }
    ]
 }

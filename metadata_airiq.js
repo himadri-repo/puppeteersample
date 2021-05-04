@@ -17,7 +17,8 @@ function repeatSource(elementData) {
             //console.log(`${idx} - ${val}`);
             //if(idx>0 && idx%2===0) {
             //if(idx>0 && val.indexOf('Bagdogra // Kolkata')>-1) {
-            if(idx>0) {
+            let isRound = val.trim().split('//').length>2; //means round sectors
+            if(idx>0 && !isRound ) {
                 //console.log(`${idx} - ${val}`);
                 return val.replace('>','').replace('<','');
             }
@@ -348,7 +349,7 @@ module.exports = {
                             selector: '#pwd_txt',
                             checkcontent: '',
                             type: 'textbox',
-                            value: '9800412356',
+                            value: 'Sumit@12356',
                             action: 'keyed',
                             checkselector: ''
                         },
