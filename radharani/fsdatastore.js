@@ -481,9 +481,10 @@ function saveFlightStat(flightstats) {
                             let check_status_change = await checkFlightStatusChanged(existing_flight_stat[0], flightstat);
                             if(check_status_change && check_status_change.result && check_status_change.booking_id>0) {
                                 //This is place to send email to booking email id and company email.
+                                log(`Change identified -> Sending email | BK-${check_status_change.booking_id} | Id: ${flightstat.id}`)
                                 log(`Notify booker about the change : BK-${check_status_change.booking_id} | ${JSON.stringify(flightstat)}`);
                                 _postData({
-                                    'url': `${API_HOST}/api/company/notify`,
+                                    'url': `${config.API_HOST}/api/company/notify`,
                                     'data': {
                                         'docno': flightstat.id,
                                         'doctype': 'flight_status_change',
@@ -494,7 +495,7 @@ function saveFlightStat(flightstats) {
                                 });
                             }
 
-                            log(`Flight stat Updated : ${flightstat.id} - ${flightstat.stat_key}`);
+                            log(`Flight stat Updated : ${flightstat.id} - ${flightstat.stat_key} | BK-${check_status_change.booking_id} | Check Status : ${JSON.stringify(check_status_change)}`);
                         }
                         else {
                             //insert new record
