@@ -1,6 +1,20 @@
 //jshint esversion: 6
 var colors = require('colors');
 const moment = require('moment');
+const logger = require('./src/common/logger').Logger;
+
+logger.init('airiq');
+
+function log() {
+    var time = moment().format("HH:mm:ss.SSS");
+    var args = Array.from(arguments);
+
+    args.unshift(time);
+    console.log.apply(console, args);
+    //winston.info(args.join(' '));
+    var msg = args.join(' ');
+    logger.log('info', msg);    
+}
 
 const ALLOWPERSIST = true;
 
@@ -18,7 +32,8 @@ function repeatSource(elementData) {
             //if(idx>0 && idx%2===0) {
             //if(idx>0 && val.indexOf('Bagdogra // Kolkata')>-1) {
             let isRound = val.trim().split('//').length>2; //means round sectors
-            if(idx>0 && !isRound ) {
+            //if(idx>0 && !isRound && val.indexOf('Goa // Delhi')>-1) {
+            if(idx>0 && !isRound) {
                 //console.log(`${idx} - ${val}`);
                 return val.replace('>','').replace('<','');
             }
@@ -30,6 +45,7 @@ function repeatSource(elementData) {
         console.log(e);
     }
 
+    log(`Repeated source -> ${JSON.stringify(data)}`);
     return data;
 }
 
@@ -416,7 +432,7 @@ module.exports = {
                             type: 'textbox',
                             value: '${data}',
                             action: 'keyed',
-                            delayafter: 200,
+                            delayafter: 100,
                             checkselector: '',
                             next: 2
                         },                        
@@ -424,14 +440,14 @@ module.exports = {
                             id: 2,
                             controlid: '',
                             delaybefore: 100,
-                            selector: '#select2-dest_cmd-results > li',
+                            selector: '#select2-dest_cmd-results > li:last-child',
                             isarray: false,
                             checkcontent: 'Please Select',
                             type: 'hyperlink',
                             value: '',
                             action: 'click',
                             haspostback: true,
-                            delayafter: 400,
+                            delayafter: 200,
                             checkselector: 'input#check_out.form-control.hasDatepicker',
                             next: 3
                         },
@@ -446,7 +462,7 @@ module.exports = {
                             value: ``,
                             action: 'click',
                             checkselector: 'div#ui-datepicker-div[style*="display: block"]',
-                            delayafter: 800,
+                            delayafter: 400,
                             next: 4
                         },
                         {

@@ -53,7 +53,7 @@ const transporter = nodemailer.createTransport({
     port: 587,
     auth: {
         user: 'read-only@travelmergers.com',
-        pass: 'tm@readonly'
+        pass: 'tr@ve1merger@2o2l'  //'tm@readonly'
     }
 });
 

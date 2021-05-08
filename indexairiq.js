@@ -67,8 +67,8 @@ const USERINPUT = {
 
 app = express();
 
-const TIMEOUT = 6000;
-const POSTBACK_TIMEOUT = 8000;
+const TIMEOUT = 8000; //6000;
+const POSTBACK_TIMEOUT = 10000; //8000
 const POLLINGDELAY = 100;
 
 var browser = null;
@@ -160,12 +160,12 @@ async function navigatePage(pageName) {
         });
         
         page.on('domcontentloaded',()=> {
-            //log('dom even fired');
+            //log('Content Loaded - dom even fired');
             pageLoaded = true;
         });
 
         page.on('load',()=> {
-            //log('dom even fired');
+            //log('Load - dom even fired');
             pageLoaded = true;
         });
 
@@ -193,7 +193,7 @@ async function navigatePage(pageName) {
             return new Promise((resolve, reject) => {
               const check = async () => {
                 const result = await predicate();
-                //console.log(`result => ${result}`);
+                //log(`result => ${result}`);
                 if (result) {
                   resolve(result);
                 } else if ((new Date() - start) > timeout) {
@@ -207,9 +207,11 @@ async function navigatePage(pageName) {
             })
         }
 
-        await page.waitFor(5000).catch((reason) => { log(`Error -> ${reason}`)});
-        //takeSnapshot('After_pageload');
-        log('Waited for 5secs more');
+        // await page.waitFor(5000).catch((reason) => { log(`Error -> ${reason}`)});
+        // //takeSnapshot('After_pageload');
+        // log('Waited for 5secs more');
+
+        log('Wait handler added');
 
         /* puppeteer issues*/
         // const elementHandle = await page.$('body').catch((reason)=> log(reason));
@@ -252,33 +254,34 @@ async function navigatePage(pageName) {
                     pageLoaded = false;
                     await page.click(val.selector);
                     //await page.waitFor(200);
-                    if(val.haspostback!==undefined && val.haspostback!==null && val.haspostback) {
-                        //log(`N01 : haspostback? ${val.selector}`);
-                        if(!pageLoaded) {
-                            //log(`N01 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
+                    // if(val.haspostback!==undefined && val.haspostback!==null && val.haspostback) {
+                    //     //log(`N01 : haspostback? ${val.selector}`);
+                    //     if(!pageLoaded) {
+                    //         //log(`N01 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
                             
-                            await page.hackyWaitForFunction(async (isLoaded) => {
-                                //let time = new Date().toLocaleTimeString();
-                                //console.log(`${time} N01 checking isLoaded ${pageLoaded}`);
-                                //let chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
-                                // let chkControl = await page.$eval(val.checkselector, e => e.outerHTML).catch((reason)=> a=1);
-                                // return (pageLoaded || (chkControl!==null && chkControl!==undefined));
-                                return pageLoaded;
-                            }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, val.checkselector).catch(async (reason) => { 
-                                log(`N01 = ${reason} - ${pageLoaded}`); 
-                                //await takeSnapshot('N01');
-                                chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
-                                if(chkControl===null || chkControl===undefined)
-                                    await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
-                            });    
-                        }
-                    }
+                    //         await page.hackyWaitForFunction(async (isLoaded) => {
+                    //             //let time = new Date().toLocaleTimeString();
+                    //             //console.log(`${time} N01 checking isLoaded ${pageLoaded}`);
+                    //             //let chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
+                    //             // let chkControl = await page.$eval(val.checkselector, e => e.outerHTML).catch((reason)=> a=1);
+                    //             // return (pageLoaded || (chkControl!==null && chkControl!==undefined));
+                    //             return pageLoaded;
+                    //         }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, val.checkselector).catch(async (reason) => { 
+                    //             log(`N01 = ${reason} - ${pageLoaded}`); 
+                    //             //await takeSnapshot('N01');
+                    //             chkControl = await page.$(val.checkselector).catch((reason)=> log(reason));
+                    //             if(chkControl===null || chkControl===undefined)
+                    //                 await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
+                    //         });    
+                    //     }
+                    // }
                     
-                    if((chkControl===null || chkControl===undefined) && val.checkselector!=='' && val.checkselector!==undefined && val.checkselector!==null) {
+                    // if((chkControl===null || chkControl===undefined) && val.checkselector!=='' && val.checkselector!==undefined && val.checkselector!==null) {
+                    if(val.checkselector!=='' && val.checkselector!==undefined && val.checkselector!==null) {
                         
                         let selectedItem = await page.waitForSelector(val.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
                             log(`2.eclick - child - ${reason}`);
-                            await takeSnapshot('2_eclick-child');
+                            //await takeSnapshot('2_eclick-child');
                         });
                         if(selectedItem===null || selectedItem===undefined) {
                             selectedItem = await page.$(task.checkselector).catch(reason=> log('2_checkselector not found', reason));
@@ -355,7 +358,7 @@ async function ProcessActivity(targetUri, runid=uuid5()) {
                         if(type==='html') {
                             await page.waitForSelector(pageConfig.actions[0].repeatsourceselector, {timeout: TIMEOUT}).catch(async (reason) => {
                                 log(`E1 => ${reason}`);
-                                await takeSnapshot('E1-RepetSelector');
+                                //await takeSnapshot('E1-RepetSelector');
                             });
                             repeatsourceContent = await page.$eval(pageConfig.actions[0].repeatsourceselector, e => e.innerHTML).catch(reason => log(`E2 => ${reason}`));
                         }
@@ -798,33 +801,34 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                         pageLoaded = false;
                         await page.click(userInput.selector).catch(reason => log(`E13 => ${reason}`));
                         //await page.waitFor(200);
-                        if(userInput.haspostback!==undefined && userInput.haspostback!==null && userInput.haspostback) {
-                            //log(`N03 : haspostback? ${userInput.selector}`);
-                            if(!pageLoaded) {
-                                //log(`N03 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
-                                await page.hackyWaitForFunction(async (isLoaded) => {
-                                    //let time = new Date().toLocaleTimeString();
-                                    //console.log(`${time} N03 checking isLoaded ${pageLoaded}`);
-                                    //let chkControl = await page.$(userInput.checkselector).catch((reason)=> log(reason));
-                                    //let chkControl = await page.$eval(userInput.checkselector, e => e.outerHTML).catch((reason)=> a=1);
-                                    //return (pageLoaded || (chkControl!==null && chkControl!==undefined));
-                                    return pageLoaded;
-                                }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, userInput.checkselector).catch(async (reason) => { 
-                                    log(`N03 = ${reason} - ${pageLoaded}`); 
-                                    //await takeSnapshot('N03');
-                                    chkControl = await page.$(userInput.checkselector).catch((reason)=> log(reason));
-                                    if(chkControl===null || chkControl===undefined)
-                                        await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
-                                });    
+                        // if(userInput.haspostback!==undefined && userInput.haspostback!==null && userInput.haspostback) {
+                        //     //log(`N03 : haspostback? ${userInput.selector}`);
+                        //     if(!pageLoaded) {
+                        //         //log(`N03 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
+                        //         await page.hackyWaitForFunction(async (isLoaded) => {
+                        //             //let time = new Date().toLocaleTimeString();
+                        //             //console.log(`${time} N03 checking isLoaded ${pageLoaded}`);
+                        //             //let chkControl = await page.$(userInput.checkselector).catch((reason)=> log(reason));
+                        //             //let chkControl = await page.$eval(userInput.checkselector, e => e.outerHTML).catch((reason)=> a=1);
+                        //             //return (pageLoaded || (chkControl!==null && chkControl!==undefined));
+                        //             return pageLoaded;
+                        //         }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, userInput.checkselector).catch(async (reason) => { 
+                        //             log(`N03 = ${reason} - ${pageLoaded}`); 
+                        //             //await takeSnapshot('N03');
+                        //             chkControl = await page.$(userInput.checkselector).catch((reason)=> log(reason));
+                        //             if(chkControl===null || chkControl===undefined)
+                        //                 await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
+                        //         });    
 
-                                // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
-                                //     log(`N03 = ${reason} - ${pageLoaded}`); 
-                                //     await takeSnapshot('N03');
-                                // });    
-                            }
-                        }
+                        //         // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
+                        //         //     log(`N03 = ${reason} - ${pageLoaded}`); 
+                        //         //     await takeSnapshot('N03');
+                        //         // });    
+                        //     }
+                        // }
                         
-                        if((chkControl===null || chkControl===undefined) && userInput.checkselector!=='' && userInput.checkselector!==null) {
+                        // if((chkControl===null || chkControl===undefined) && userInput.checkselector!=='' && userInput.checkselector!==null) {
+                        if(userInput.checkselector!=='' && userInput.checkselector!==null) {
                             try
                             {
                                 await page.waitForSelector(userInput.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
@@ -832,7 +836,7 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                                     let chkSelector = await page.$(userInput.checkselector).catch((reason)=> log(`E16-DoubleCheck - ${reason}`));
                                     if(chkSelector===null || chkSelector===undefined)
                                     {
-                                        await takeSnapshot('E16-DoubleCheck');
+                                        //await takeSnapshot('E16-DoubleCheck');
                                     }
                                 });
                             }
@@ -877,7 +881,33 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                                                 onError = false;
                                                 try
                                                 {
+                                                    //await page.waitFor(200);
                                                     await page.waitForSelector(tsk.selector, {timeout: TIMEOUT}).catch(reason => log(`E18 => ${reason}`));
+                                                    // // if(userInput.haspostback!==undefined && userInput.haspostback!==null && userInput.haspostback) {
+                                                    //     //log(`N03 : haspostback? ${userInput.selector}`);
+                                                    //     if(!pageLoaded) {
+                                                    //         //log(`N03 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
+                                                    //         await page.hackyWaitForFunction(async (isLoaded) => {
+                                                    //             //let time = new Date().toLocaleTimeString();
+                                                    //             //console.log(`${time} N03 checking isLoaded ${pageLoaded}`);
+                                                    //             //let chkControl = await page.$(userInput.checkselector).catch((reason)=> log(reason));
+                                                    //             //let chkControl = await page.$eval(userInput.checkselector, e => e.outerHTML).catch((reason)=> a=1);
+                                                    //             //return (pageLoaded || (chkControl!==null && chkControl!==undefined));
+                                                    //             return pageLoaded;
+                                                    //         }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, tsk.selector).catch(async (reason) => { 
+                                                    //             log(`N04 = ${reason} - ${pageLoaded}`); 
+                                                    //             //await takeSnapshot('N04');
+                                                    //             chkControl = await page.$(tsk.selector).catch((reason)=> log(reason));
+                                                    //             if(chkControl===null || chkControl===undefined)
+                                                    //                 await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
+                                                    //         });    
+                            
+                                                    //         // await page.waitForNavigation({waitUntil: 'domcontentloaded', timeout: POSTBACK_TIMEOUT}).catch(async (reason) => { 
+                                                    //         //     log(`N03 = ${reason} - ${pageLoaded}`); 
+                                                    //         //     await takeSnapshot('N03');
+                                                    //         // });    
+                                                    //     }
+                                                    // // }                                                    
                                                 }
                                                 catch(e1) {
                                                     log('e1');
@@ -897,8 +927,8 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                                         }
                                         //log("Going to perform Task", i, tsk.selector);
                                         let returnValue = await performTask(objPage, userInput, inputControl, targetElement, tsk, i, runid).catch(reason => log(`E20 => ${reason}`));
-                                        //log("Task done", tsk, i);
-                                        await page.waitFor(200).catch(reason => log(`E21 => ${reason}`)); //delay to get UI refreshed with json data
+                                        //log("Task done", JSON.stringify(tsk), i);
+                                        //await page.waitFor(200).catch(reason => log(`E21 => ${reason}`)); //delay to get UI refreshed with json data
                                         if(returnValue===-1 || (userInput.exit!==undefined && userInput.exit!==null && userInput.exit)) 
                                         {
                                             //userInput.exit = false;
@@ -920,6 +950,45 @@ async function performUserOperation(objPage, userInput, data, ndx, runid, callba
                 }
                 
                 break;
+            case 'select':
+                try
+                {
+                    if(typeof(userInput.value)==="string") {
+                        let keyedValue = userInput.value;
+                        if(userInput.value.indexOf('${')>-1) {
+                            keyedValue = transformData(userInput.value, data);
+                        }
+                        //await objPage.click(userInput.selector);
+                        if(userInput.selector) {
+                            //log('1', userInput.selector);
+                            //let inputControl = await objPage.$(userInput.selector).catch((reason)=> log(reason));
+                            // let inputControl = await page.$(userInput.selector).catch((reason)=> log(reason));
+                            // //let inputControl = await page.evaluate((selector) => document.querySelector(selector).click(), userInput.selector);
+                            // if(inputControl && inputControl.click) {
+                            //     await inputControl.click().catch(reason=> log(reason));
+                            // }
+                            
+                            // await page.evaluate(function(ui) {
+                            //     let element = document.querySelector(ui.selector);
+                            //     if(element)
+                            //         element.value='';
+                                
+                            // }, userInput).catch(reason => log(`E9 => ${reason}`));;
+
+                            await page.select(userInput.selector, keyedValue).catch(reason => log(`Error in select : ${reason}`));
+                        }
+                        // await page.keyboard.type(keyedValue).catch(reason => log(`E11 => ${reason}`));
+                        if(userInput.delayafter>-1)
+                            delay = userInput.delayafter;
+    
+                        await page.waitFor(delay).catch(reason => log(`E12 => ${reason}`)); //400
+                        //log(`performUserOperation ${userInput.action} KEY CODE SENT`, keyedValue);
+                    }
+                }
+                catch(ex) {
+                    log(ex);
+                }
+                break;                
             default:
                 break;
         }
@@ -1013,7 +1082,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
     try
     {
         //log('Start performTask => ', idx, task.selector, task.action);
-        await page.waitFor(200).catch(reason => log(`E122 => ${reason}`));
+        //await page.waitFor(200).catch(reason => log(`E122 => ${reason}`));
         if(task && task.action) {
             if(task.action==='click') {
                 try
@@ -1030,29 +1099,29 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                         pageLoaded = false;
                         await page.click(task.selector).catch(reason=> log('task.selector', reason));
                         //await page.waitFor(200);
-                        if(task.haspostback!==undefined && task.haspostback!==null && task.haspostback) {
-                            //log(`N02 : haspostback? ${task.selector}`);
-                            if(!pageLoaded) {
-                                //log(`N02 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
-                                let previousLoadValue = pageLoaded;
-                                await page.hackyWaitForFunction(async (isLoaded) => {
-                                    // if(previousLoadValue!==pageLoaded) {
-                                    //     let time = new Date().toLocaleTimeString();
-                                    //     console.log(`${time} N02 checking isLoaded ${pageLoaded}`);
-                                    // }
-                                    //chkControl = await page.$(task.checkselector).catch((reason)=> log(reason));
-                                    //chkControl = await page.$eval(task.checkselector, e => e.outerHTML).catch((reason)=> a=1);
-                                    //return (pageLoaded || (chkControl!==null && chkControl!==undefined));
-                                    return pageLoaded;
-                                }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, task.checkselector).catch(async (reason) => { 
-                                    log(`N02 = ${reason} - ${pageLoaded}`); 
-                                    //await takeSnapshot('N02');
-                                    // chkControl = await page.$(task.checkselector).catch((reason)=> log(reason));
-                                    // if(chkControl===null || chkControl===undefined)
-                                    await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
-                                });
-                            }
-                        }
+                        // if(task.haspostback!==undefined && task.haspostback!==null && task.haspostback) {
+                        //     //log(`N02 : haspostback? ${task.selector}`);
+                        //     if(!pageLoaded) {
+                        //         //log(`N02 : ${pageLoaded}`); //domcontentloaded, load, networkidle0
+                        //         let previousLoadValue = pageLoaded;
+                        //         await page.hackyWaitForFunction(async (isLoaded) => {
+                        //             // if(previousLoadValue!==pageLoaded) {
+                        //             //     let time = new Date().toLocaleTimeString();
+                        //             //     console.log(`${time} N02 checking isLoaded ${pageLoaded}`);
+                        //             // }
+                        //             //chkControl = await page.$(task.checkselector).catch((reason)=> log(reason));
+                        //             //chkControl = await page.$eval(task.checkselector, e => e.outerHTML).catch((reason)=> a=1);
+                        //             //return (pageLoaded || (chkControl!==null && chkControl!==undefined));
+                        //             return pageLoaded;
+                        //         }, {polling: POLLINGDELAY, timeout: POSTBACK_TIMEOUT}, pageLoaded, task.checkselector).catch(async (reason) => { 
+                        //             log(`N02 = ${reason} - ${pageLoaded}`); 
+                        //             //await takeSnapshot('N02');
+                        //             // chkControl = await page.$(task.checkselector).catch((reason)=> log(reason));
+                        //             // if(chkControl===null || chkControl===undefined)
+                        //             await page.waitFor(1000); //Lets wait for another 1 sec and then proceed further. But this is exceptional case
+                        //         });
+                        //     }
+                        // }
                     }
                     else {
                         if(element.click) {
@@ -1069,11 +1138,12 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                         }
                     }
 
-                    if((chkControl===null || chkControl===undefined) && task.checkselector!=='' && task.checkselector!==undefined && task.checkselector!==null) {
+                    //if((chkControl===null || chkControl===undefined) && task.checkselector!=='' && task.checkselector!==undefined && task.checkselector!==null) {
+                    if(task.checkselector!=='' && task.checkselector!==undefined && task.checkselector!==null) {
                         
                         let selectedItem = await page.waitForSelector(task.checkselector, {timeout: TIMEOUT}).catch(async (reason) => {
                             log(`eclick - child - ${reason}`);
-                            await takeSnapshot('eclick-child');
+                            //await takeSnapshot('eclick-child');
                         });
                         if(selectedItem===null || selectedItem===undefined) {
                             selectedItem = await page.$(task.checkselector).catch(reason=> log('checkselector not found', reason));
@@ -1189,11 +1259,11 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                         }
                     }
                 }
-
                 if(task.plugins!==null && task.plugins.length>0 && content!==null && content!=='')
                 {
                     try
                     {
+                        //log(`Executing plugins | Content length ${content.length}`);
                         for(var i=0; i<content.length; i++) {
                             let contentItem = content[i];
                             for(var iidx=0; iidx<task.plugins.length; iidx++) {
@@ -1226,6 +1296,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
                                 }
                             };
                         }
+                        //log(`Executing plugins end ---`);
                     }
                     catch (ex1) {
                         log('ex1');
@@ -1265,12 +1336,12 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 // }
 
 var excutionStarted = false;
-cron.schedule("*/5 * * * *", function() {
-    log("Cron started");
-    if(excutionStarted) {
-        log('Previous process still running ...');
-        return false;
-    }
+// cron.schedule("*/5 * * * *", function() {
+//     log("Cron started");
+//     if(excutionStarted) {
+//         log('Previous process still running ...');
+//         return false;
+//     }
 
     try
     {
@@ -1322,6 +1393,6 @@ cron.schedule("*/5 * * * *", function() {
         log(e);
         excutionStarted = false;
     }
-});
+// });
 
-app.listen("3131");
+// app.listen("3131");
