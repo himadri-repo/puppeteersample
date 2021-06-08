@@ -114,3 +114,7 @@ typings/
 
 #ignore audit files
 *-audit.json
+
+token.json
+credentials.json
+package-lock.json
