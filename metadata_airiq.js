@@ -51,7 +51,9 @@ function repeatSource(elementData) {
 
 function parseContent(content) {
     //console.log(`Data : \n${content}`);
-    let contentItem = contentParser(content);
+    //let contentItem = contentParser(content);
+    let contentItem = contentParserV2(content);
+    
     //console.log(`Data : ${JSON.stringify(contentItem)}`);
     // if(content.indexOf('Seats Available, Please send offline request')>-1 ||
     //     content.indexOf('On Request')>-1) 
@@ -63,11 +65,106 @@ function parseContent(content) {
     return contentItem;
 }
 
+function contentParserV2(content) {
+    let deal =  {availability: -1};
+
+    try
+    {
+        content = content.replace(/\n/g, '');
+        contentParts = content.split('\t');
+
+        for (let index = 0; contentParts.length>1 && index < contentParts.length; index++) {
+            const part = contentParts[index].trim();
+            
+            switch (index) {
+                case 0:
+                    //for airline
+                    deal.flight = part.toLowerCase();
+                    deal.flight_number = 'SPL-000';
+                    deal.ticket_type = 'Economy';
+                    break;
+                case 1:
+                    let circle = part.split('//');
+                    if(circle.length>1) {
+                        deal.departure = {"circle": circle[0].trim()};
+                        deal.arrival = {"circle": circle[1].trim()};
+                    }
+                    else {
+                        deal.departure = {"circle": ''};
+                        deal.arrival = {"circle": ''};
+                    }
+                    break;
+                case 3:
+                    let dept_arv_date = part.match(/([0-9]{2})\s([a-zA-Z]{3})\s([0-9]{4})|([0-9]{0,2}:[0-9]{0,2})/gm);
+
+                    if(dept_arv_date && dept_arv_date.length>0) {
+                        let date = dept_arv_date[0].trim(); //src_dest[0].replace(' ','/');
+                        let time = dept_arv_date.length>1 ? dept_arv_date[1].trim() : '00:00';
+            
+                        //console.log(`${date} - ${time}`);
+                        deal.departure = {"circle": deal.departure.circle, "date": date, "time": time, epoch_date: Date.parse(`${date} ${time}:00.000`)}; //+05:30
+                        deal.arrival = {"circle": deal.arrival.circle, "date": date, "time": time, epoch_date: Date.parse(`${date} ${time}:00.000`)}; //+05:30
+                    }
+
+                    break;
+                case 4:
+                    if(part) {
+                        deal.flight_number = part;
+                    }
+                    else {
+                        deal.flight_number = part;
+                    }
+
+                    break;
+                case 5:
+                    let time = part.trim();
+                    if(time) {
+                        deal.departure.time = time;
+                        deal.arrival.time = time;
+                    }
+
+                    break;
+                case 6:
+                    let qty = parseInt(part.replace('+', ''));
+        
+                    if(qty>0) {
+                        deal.availability = qty;
+                    }
+                    else {
+                        deal.availability = -1;
+                    }
+                    break;
+                case 7:
+                    src_dest = content.match(/((AQP)\d+)/gm);
+                    if(src_dest!==null && src_dest!==undefined && src_dest.length>0) {
+                        //console.log(src_dest[0].replace('AQP','').trim());
+                        let price = parseFloat(src_dest[0].replace('AQP','').trim());
+            
+                        deal.price = price;
+                    }
+                    else {
+                        deal.price = -1;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    catch(e) {
+        console.log(e);
+    }
+
+    return deal;
+}
+
 function contentParser(content) {
     let deal = {};
 
     try
     {
+        
+        content = content.replace(/\n/g, '');
         //get class value
         let src_dest = content.match(/\((.*?)\)/gm);
         if(src_dest!==null && src_dest!==undefined && src_dest.length>0) {
