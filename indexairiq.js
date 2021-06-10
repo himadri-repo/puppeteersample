@@ -1336,12 +1336,12 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 // }
 
 var excutionStarted = false;
-// cron.schedule("*/5 * * * *", function() {
-//     log("Cron started");
-//     if(excutionStarted) {
-//         log('Previous process still running ...');
-//         return false;
-//     }
+cron.schedule("*/10 * * * *", function() {
+    log("Cron started");
+    if(excutionStarted) {
+        log('Previous process still running ...');
+        return false;
+    }
 
     try
     {
@@ -1393,6 +1393,6 @@ var excutionStarted = false;
         log(e);
         excutionStarted = false;
     }
-// });
+});
 
-// app.listen("3131");
+app.listen("3131");
