@@ -1336,7 +1336,7 @@ async function performTask(objPage, userInput, inputControl, element, task, idx,
 // }
 
 var excutionStarted = false;
-cron.schedule("*/10 * * * *", function() {
+cron.schedule("0 0 */8 * * *", function() {
     log("Cron started");
     if(excutionStarted) {
         log('Previous process still running ...');
