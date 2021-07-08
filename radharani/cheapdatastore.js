@@ -548,23 +548,28 @@ function getTicketData(conn, ticket, callback) {
     return new Promise((resolve, reject) => {
         try
         {
-            let deptDate = moment(new Date(ticket.departure.epoch_date)).format("YYYY-MM-DD HH:mm");
-            let qry = `select id from tickets_tbl where source=${ticket.departure.id} and destination=${ticket.arrival.id} and ticket_no='TKT-${ticket.recid}' and data_collected_from='cheap'`;
+            if(ticket.departure.id && ticket.arrival.id) {
+                let deptDate = moment(new Date(ticket.departure.epoch_date)).format("YYYY-MM-DD HH:mm");
+                let qry = `select id from tickets_tbl where source=${ticket.departure.id} and destination=${ticket.arrival.id} and ticket_no='TKT-${ticket.recid}' and data_collected_from='cheap'`;
+        
+                conn.query(qry, function(err, data) {
+                    if(err) {
+                        data = null;
+                        reject(err);
+                    }
     
-            conn.query(qry, function(err, data) {
-                if(err) {
-                    data = null;
-                    return reject(err);
-                }
-
-                resolve(data);
-                // if(callback)
-                //     callback(data);
-            });
+                    resolve(data);
+                    // if(callback)
+                    //     callback(data);
+                });
+            }
+            else {
+                reject(`Invalid departure and/or arrival city`);
+            }
         }
         catch(e) {
             console.log(e);
-            return reject(e);
+            reject(e);
         }
     });
 }
@@ -646,9 +651,9 @@ function getMissingCities(conn, cities, circleData) {
         try
         {
             //for departure city
-            let city = circleData[i].departure.circle.toLowerCase().trim();
+            let city = circleData[i].departure.circle ? circleData[i].departure.circle.toLowerCase().trim() : null;
 
-            if(processedCities.indexOf(city)===-1) {
+            if(city && processedCities.indexOf(city)===-1) {
                 let savedCityRecord = cities.find((data, idx) => {
                     //return data.city.toLowerCase().indexOf(city)===-1;
                     var flag = false;
@@ -678,9 +683,9 @@ function getMissingCities(conn, cities, circleData) {
             }
 
             //for arrival city
-            city = circleData[i].arrival.circle.toLowerCase().trim();
+            city = circleData[i].arrival.circle ? circleData[i].arrival.circle.toLowerCase().trim() : null;
             
-            if(processedCities.indexOf(city)===-1) {
+            if(city && processedCities.indexOf(city)===-1) {
                 savedCityRecord = cities.find((data, idx) => {
                     //return data.city.toLowerCase().indexOf(city)===-1;
                     //return data.city.toLowerCase().indexOf(city)>-1 || (data.code !== '' && data.code.trim().toLowerCase() === city);
@@ -795,12 +800,12 @@ function getMissingAirlines(airlines, circleData) {
 
 function transformCircleData(conn, circleData, cities) {
     circleData.map(async (ticket, idx) => {
-        let deptCityName = ticket.departure.circle.toLowerCase().trim();
-        let arrvCityName = ticket.arrival.circle.toLowerCase().trim();
+        let deptCityName = ticket.departure.circle ? ticket.departure.circle.toLowerCase().trim() : null;
+        let arrvCityName = ticket.arrival.circle ? ticket.arrival.circle.toLowerCase().trim() : null;
         let deptCity = null;
         let arrvCity = null;
         
-        if(deptCity===null) {
+        if(deptCityName !==null && deptCity===null) {
             deptCity = cities.find((data, ndx)=> {
                 var flag = false;
                 // flag = data.city.toLowerCase().indexOf(city)>-1 || (data.code !== '' && data.code.trim().toLowerCase() === city);
@@ -832,7 +837,7 @@ function transformCircleData(conn, circleData, cities) {
             ticket.departure.id = -1;
         }
 
-        if(arrvCity===null) {
+        if(arrvCityName!==null && arrvCity===null) {
             arrvCity = cities.find((data, ndx)=> {
                 // return city.city.toLowerCase().indexOf(arrvCityName)>-1;
                 var flag = false;
@@ -870,10 +875,10 @@ function transformCircleData(conn, circleData, cities) {
 
 function transformAirlineData(conn, circleData, airlines) {
     circleData.map((ticket, idx) => {
-        let flight = ticket.flight.toLowerCase();
+        let flight = ticket.flight ? ticket.flight.toLowerCase() : null;
         let flightData = null;
         
-        if(flightData===null) {
+        if(flight!==null && flightData===null) {
             flightData = airlines.find((airline, ndx)=> {
                 return airline.airline.toLowerCase().indexOf(flight)>-1 || airline.aircode.toLowerCase().indexOf(flight)>-1;
             });
