@@ -22,28 +22,28 @@ function getDBPool() {
     //     port: 3306
     // });
 
-    pool = mysql.createPool({
-        connectionLimit : 2,
-        connectTimeout  : 60 * 60 * 1000,
-        acquireTimeout  : 60 * 60 * 1000,
-        timeout         : 60 * 60 * 1000,        
-        host: "localhost",
-        user: "root",
-        password: "",
-        database: "oxytra",
-        port: 3306
-    });
-
-    //Remote DB
     // pool = mysql.createPool({
-    //     connectionLimit: 30,
-    //     connectTimeout: 15000,
-    //     host: "www.oxytra.com",
-    //     user: "oxyusr",
-    //     password: "oxy@321-#",
+    //     connectionLimit : 2,
+    //     connectTimeout  : 60 * 60 * 1000,
+    //     acquireTimeout  : 60 * 60 * 1000,
+    //     timeout         : 60 * 60 * 1000,        
+    //     host: "localhost",
+    //     user: "root",
+    //     password: "",
     //     database: "oxytra",
     //     port: 3306
     // });
+
+    //Remote DB
+    pool = mysql.createPool({
+        connectionLimit: 30,
+        connectTimeout: 15000,
+        host: "www.oxytra.com",
+        user: "oxyusr",
+        password: "oxy@321-#",
+        database: "oxytra",
+        port: 3306
+    });
 
     return pool;
 }
@@ -643,41 +643,41 @@ function getMissingCities(conn, cities, circleData) {
 
     let processedCities = [];
     for(var i=0; i<circleData.length; i++) {
-        //for departure city
-        let city = circleData[i].departure.circle.toLowerCase().trim();
-
-        if(processedCities.indexOf(city)===-1) {
-            let savedCityRecord = cities.find((data, idx) => {
-                //return data.city.toLowerCase().indexOf(city)===-1;
-                var flag = false;
-                // flag = data.city.toLowerCase().indexOf(city)>-1 || (data.code !== '' && data.code.trim().toLowerCase() === city);
-                flag = data.city.toLowerCase().startsWith(city) || (data.code !== '' && data.code.trim().toLowerCase() === city);
-                
-                if(!flag) {
-                    //now check synonyms
-                    var synonyms = data.synonyms ? data.synonyms.trim().toLowerCase().split(',') : [];
-                    for (let index = 0; !flag && index < synonyms.length; index++) {
-                        const synonyms_city_name = synonyms[index];
-                        flag = synonyms_city_name.trim().toLowerCase()===city;
-
-                        if(flag) {
-                            console.log(`City name found in synonyms : ${city}`);
-                        }
-                    }
-                }
-                // return data.city.toLowerCase().indexOf(city)>-1 || (data.code !== '' && data.code.trim().toLowerCase() === city);
-                return flag;
-            });
-            if(savedCityRecord===undefined || savedCityRecord===null) {
-                if(missingData.indexOf(circleData[i].departure.circle)===-1)
-                    missingData.push(circleData[i].departure.circle);
-            }
-            processedCities.push(city);
-        }
-
-        //for arrival city
         try
         {
+            //for departure city
+            let city = circleData[i].departure.circle.toLowerCase().trim();
+
+            if(processedCities.indexOf(city)===-1) {
+                let savedCityRecord = cities.find((data, idx) => {
+                    //return data.city.toLowerCase().indexOf(city)===-1;
+                    var flag = false;
+                    // flag = data.city.toLowerCase().indexOf(city)>-1 || (data.code !== '' && data.code.trim().toLowerCase() === city);
+                    flag = data.city.toLowerCase().startsWith(city) || (data.code !== '' && data.code.trim().toLowerCase() === city);
+                    
+                    if(!flag) {
+                        //now check synonyms
+                        var synonyms = data.synonyms ? data.synonyms.trim().toLowerCase().split(',') : [];
+                        for (let index = 0; !flag && index < synonyms.length; index++) {
+                            const synonyms_city_name = synonyms[index];
+                            flag = synonyms_city_name.trim().toLowerCase()===city;
+
+                            if(flag) {
+                                console.log(`City name found in synonyms : ${city}`);
+                            }
+                        }
+                    }
+                    // return data.city.toLowerCase().indexOf(city)>-1 || (data.code !== '' && data.code.trim().toLowerCase() === city);
+                    return flag;
+                });
+                if(savedCityRecord===undefined || savedCityRecord===null) {
+                    if(missingData.indexOf(circleData[i].departure.circle)===-1)
+                        missingData.push(circleData[i].departure.circle);
+                }
+                processedCities.push(city);
+            }
+
+            //for arrival city
             city = circleData[i].arrival.circle.toLowerCase().trim();
             
             if(processedCities.indexOf(city)===-1) {
